@@ -1,0 +1,54 @@
+# Publica o site de documentação (gitpages/, Astro + Starlight) no GitHub Pages.
+# Baseado no workflow recomendado em https://docs.astro.build/en/guides/deploy/github/
+# ajustado para o projeto Astro estar na subpasta gitpages/.
+name: Deploy da documentação (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "gitpages/**"
+      - ".github/workflows/deploy-docs.yml"
+  workflow_dispatch:
+
+# Mínimo necessário para publicar no Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy do Pages por vez. Não cancela o que já está em andamento,
+# para não interromper uma publicação no meio.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build do site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v7
+
+      - name: Instalar, fazer o build e enviar o artefato do Pages
+        uses: withastro/action@v6
+        with:
+          # Raiz do projeto Astro dentro do repositório (onde estão package.json e pnpm-lock.yaml).
+          path: gitpages
+          # package.json pede node >=22.12.0; 22 é a versão usada no build local.
+          node-version: 22
+          # Sem campo packageManager no package.json: fixa a versão do pnpm usada localmente.
+          package-manager: pnpm@11.5.2
+
+  deploy:
+    name: Publicar no GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
