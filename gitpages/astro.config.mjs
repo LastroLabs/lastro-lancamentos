@@ -14,6 +14,10 @@ export default defineConfig({
 		starlight({
 			plugins: [starlightThemeRapidePlugin()],
 			title: "Lastro",
+			defaultLocale: "root",
+			locales: {
+				root: { label: "Português", lang: "pt-BR" },
+			},
 			description:
 				"Documentação do Lastro: do extrato bancário ao lançamento contábil pronto para importar no Domínio.",
 			social: [
@@ -29,16 +33,30 @@ export default defineConfig({
 					label: "Início",
 					items: [
 						{ label: "O que é o Lastro", slug: "home/sobre" },
+						{ label: "Equipe", slug: "home/equipe" },
 					],
 				},
 				{
-					label: "Visão",
+					label: "Visão de produto e projeto",
 					items: [
 						{ label: "Cenário e dor", slug: "visao/cenario" },
 						{ label: "Solução", slug: "visao/solucao" },
-						{ label: "Requisitos v0.2", slug: "visao/requisitos" },
 						{ label: "Escopo do MVP", slug: "visao/escopo-mvp" },
 						{ label: "Cronograma", slug: "visao/cronograma" },
+					],
+				},
+				{
+					label: "Engenharia de requisitos",
+					items: [
+						{ label: "Processo", slug: "requisitos/engenharia-de-requisitos" },
+						{
+							label: "Requisitos de Software",
+							slug: "visao/requisitos",
+							badge: { text: "v0.2", variant: "note" },
+						},
+						{ label: "Rastreabilidade", slug: "requisitos/rastreabilidade" },
+						{ label: "Backlog", slug: "requisitos/backlog" },
+						{ label: "DoR e DoD", slug: "requisitos/dor-dod" },
 					],
 				},
 				{
@@ -75,12 +93,6 @@ export default defineConfig({
 					items: [
 						{ label: "Documentos e comandos", slug: "harness/documentos-e-comandos" },
 						{ label: "Regras e revisão de PR", slug: "harness/regras" },
-					],
-				},
-				{
-					label: "Equipe e processo",
-					items: [
-						{ label: "Equipe", slug: "home/equipe" },
 					],
 				},
 			],

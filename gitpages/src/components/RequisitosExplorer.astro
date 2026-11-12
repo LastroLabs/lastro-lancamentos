@@ -1,0 +1,360 @@
+---
+// Explorador dos requisitos: busca por texto e filtros, com contador. JS puro, sem dependências.
+import {
+	requisitos,
+	PRIORIDADES,
+	areas,
+	decisoes,
+	frentes,
+	classePrioridade,
+	linkRequisito,
+	linkDecisoes,
+	link,
+} from '../data/requisitos';
+
+const sem = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const listaAreas = areas();
+const listaFrentes = [...frentes.map((f) => f.frente).filter((f) => requisitos.some((r) => r.frente === f)), 'Sem frente na fonte'];
+---
+
+<div class="rx not-content" data-rx>
+	<div class="rx-filtros">
+		<label class="rx-busca">
+			<span class="rx-rotulo">Buscar</span>
+			<input type="search" data-rx-busca placeholder="Ex.: saldo, sócio, link, Domínio" autocomplete="off" />
+		</label>
+		<label>
+			<span class="rx-rotulo">Prioridade</span>
+			<select data-rx-filtro="prioridade">
+				<option value="">Todas</option>
+				{PRIORIDADES.map((p) => <option value={p}>{p}</option>)}
+			</select>
+		</label>
+		<label>
+			<span class="rx-rotulo">Área</span>
+			<select data-rx-filtro="area">
+				<option value="">Todas</option>
+				{listaAreas.map((a) => <option value={a}>{a}</option>)}
+			</select>
+		</label>
+		<label>
+			<span class="rx-rotulo">Frente</span>
+			<select data-rx-filtro="frente">
+				<option value="">Todas</option>
+				{listaFrentes.map((f) => <option value={f}>{f}</option>)}
+			</select>
+		</label>
+		<label>
+			<span class="rx-rotulo">Decisão</span>
+			<select data-rx-filtro="decisao">
+				<option value="">Todas</option>
+				<option value="*">Só com decisão</option>
+				{decisoes.map((d) => <option value={d.id}>{d.id}</option>)}
+			</select>
+		</label>
+		<label class="rx-check">
+			<input type="checkbox" data-rx-selo />
+			<span>Só NOVO/AJUSTADO</span>
+		</label>
+	</div>
+
+	<p class="rx-contador" aria-live="polite">
+		<strong data-rx-n>{requisitos.length}</strong> de {requisitos.length} requisitos
+		<button type="button" class="rx-limpar" data-rx-limpar>Limpar filtros</button>
+	</p>
+
+	<div class="rx-lista">
+		{
+			requisitos.map((r) => (
+				<details
+					class={`rx-item ${classePrioridade(r.prioridade)}`}
+					data-prioridade={r.prioridade}
+					data-area={r.area}
+					data-frente={r.frente ?? 'Sem frente na fonte'}
+					data-decisoes={r.decisoes.join(' ')}
+					data-selo={r.selo ?? ''}
+					data-texto={sem(`${r.id} ${r.requisito} ${r.criterio} ${r.origem} ${r.area} ${r.dores.join(' ')}`)}
+				>
+					<summary>
+						<span class="rx-prio">{r.prioridade}</span>
+						<span class="rx-id">{r.id}</span>
+						{r.selo && <span class={`req-selo req-selo--${r.selo.toLowerCase()}`}>{r.selo}</span>}
+						{r.decisoes.map((d) => <span class="req-selo req-selo--decisao">{d}</span>)}
+						<span class="rx-txt">{r.requisito}</span>
+					</summary>
+					<dl class="rx-det">
+						<dt>{r.prioridade === "Won't" ? 'Motivo' : 'Critério de aceitação'}</dt>
+						<dd>{r.criterio}</dd>
+						<dt>Área</dt>
+						<dd>{r.area}</dd>
+						<dt>Origem</dt>
+						<dd>{r.origem}</dd>
+						<dt>Frente</dt>
+						<dd>{r.frente ?? <em>sem frente na fonte</em>}</dd>
+						<dt>Módulo</dt>
+						<dd>
+							{r.modulo ? (
+								<>
+									<code>src/lastro/{r.modulo}/</code> <em>(mapeamento proposto)</em>
+								</>
+							) : (
+								<em>{r.prioridade === "Won't" ? 'fora desta versão' : 'sem módulo único (proposta)'}</em>
+							)}
+						</dd>
+						<dt>Dor</dt>
+						<dd>
+							{r.dores.length ? (
+								r.dores.join(' · ')
+							) : (
+								<em>não citado na tabela "Da dor ao requisito"</em>
+							)}
+						</dd>
+						<dt>Decisões</dt>
+						<dd>
+							{r.decisoes.length ? (
+								r.decisoes.map((d) => (
+									<a class="req-selo req-selo--decisao" href={linkDecisoes()}>
+										{d}
+									</a>
+								))
+							) : (
+								<em>nenhuma</em>
+							)}
+						</dd>
+					</dl>
+					<a class="rx-ver" href={linkRequisito(r.id)}>
+						Ver na tabela
+					</a>
+				</details>
+			))
+		}
+		<p class="rx-vazio" data-rx-vazio hidden>
+			Nenhum requisito com esses filtros. <a href={link('visao/requisitos/')}>Limpar e ver todos</a>.
+		</p>
+	</div>
+</div>
+
+<style>
+	.rx {
+		margin: 1.5rem 0;
+		padding: 1rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 12px;
+		background: var(--sl-color-bg-nav);
+	}
+
+	.rx-filtros {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		gap: 0.6rem 0.75rem;
+		align-items: end;
+	}
+
+	.rx-busca {
+		grid-column: 1 / -1;
+	}
+
+	.rx-filtros label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-size: 0.85rem;
+	}
+
+	.rx-rotulo {
+		font-weight: 600;
+		color: var(--sl-color-gray-2);
+	}
+
+	.rx-filtros input[type='search'],
+	.rx-filtros select {
+		width: 100%;
+		padding: 0.45rem 0.6rem;
+		border: 1px solid var(--sl-color-gray-4);
+		border-radius: 8px;
+		background: var(--sl-color-bg);
+		color: var(--sl-color-white);
+		font: inherit;
+		font-size: 0.9rem;
+	}
+
+	.rx-filtros .rx-check {
+		flex-direction: row;
+		align-items: center;
+		gap: 0.4rem;
+		padding-bottom: 0.45rem;
+	}
+
+	.rx-contador {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 0.9rem 0 0.6rem;
+		font-size: 0.9rem;
+		color: var(--sl-color-gray-2);
+	}
+
+	.rx-limpar {
+		margin-left: auto;
+		padding: 0.25rem 0.7rem;
+		border: 1px solid var(--sl-color-gray-4);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--sl-color-gray-2);
+		font: inherit;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	.rx-lista {
+		max-height: 32rem;
+		overflow-y: auto;
+		border-top: 1px solid var(--sl-color-gray-5);
+	}
+
+	.rx-item {
+		border-bottom: 1px solid var(--sl-color-gray-5);
+		border-left: 4px solid var(--req-cor);
+	}
+
+	.rx-item[hidden] {
+		display: none;
+	}
+
+	.rx-item summary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 0.5rem;
+		padding: 0.55rem 0.75rem;
+		cursor: pointer;
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+
+	.rx-item summary:hover {
+		background: var(--sl-color-gray-6);
+	}
+
+	.rx-prio {
+		min-width: 3.4rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--req-cor);
+	}
+
+	.rx-id {
+		font-family: 'Geist Mono', monospace;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--sl-color-white);
+	}
+
+	.rx-txt {
+		flex: 1 1 18rem;
+		color: var(--sl-color-gray-2);
+	}
+
+	.rx-det {
+		display: grid;
+		grid-template-columns: 10rem 1fr;
+		gap: 0.35rem 1rem;
+		margin: 0;
+		padding: 0.25rem 0.9rem 0.5rem 4.6rem;
+		font-size: 0.85rem;
+	}
+
+	.rx-det dt {
+		font-weight: 600;
+		color: var(--sl-color-gray-3);
+	}
+
+	.rx-det dd {
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		align-items: center;
+	}
+
+	.rx-ver {
+		display: inline-block;
+		margin: 0 0 0.75rem 4.6rem;
+		font-size: 0.85rem;
+		color: var(--lastro-indigo);
+	}
+
+	.rx-vazio {
+		padding: 1rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	@media (max-width: 40rem) {
+		.rx-det {
+			grid-template-columns: 1fr;
+			padding-left: 1rem;
+		}
+		.rx-ver {
+			margin-left: 1rem;
+		}
+	}
+</style>
+
+<script>
+	const sem = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+	function iniciar() {
+		document.querySelectorAll<HTMLElement>('[data-rx]').forEach((raiz) => {
+			if (raiz.dataset.rxPronto) return;
+			raiz.dataset.rxPronto = '1';
+
+			const busca = raiz.querySelector<HTMLInputElement>('[data-rx-busca]')!;
+			const filtros = [...raiz.querySelectorAll<HTMLSelectElement>('[data-rx-filtro]')];
+			const selo = raiz.querySelector<HTMLInputElement>('[data-rx-selo]')!;
+			const itens = [...raiz.querySelectorAll<HTMLDetailsElement>('.rx-item')];
+			const contador = raiz.querySelector<HTMLElement>('[data-rx-n]')!;
+			const vazio = raiz.querySelector<HTMLElement>('[data-rx-vazio]')!;
+			const valor = (nome: string) => filtros.find((f) => f.dataset.rxFiltro === nome)!.value;
+
+			function aplicar() {
+				const termos = sem(busca.value).split(/\s+/).filter(Boolean);
+				const prioridade = valor('prioridade');
+				const area = valor('area');
+				const frente = valor('frente');
+				const decisao = valor('decisao');
+				let n = 0;
+				for (const item of itens) {
+					const d = item.dataset;
+					const decs = (d.decisoes ?? '').split(' ').filter(Boolean);
+					const ok =
+						termos.every((t) => (d.texto ?? '').includes(t)) &&
+						(!prioridade || d.prioridade === prioridade) &&
+						(!area || d.area === area) &&
+						(!frente || d.frente === frente) &&
+						(!decisao || (decisao === '*' ? decs.length > 0 : decs.includes(decisao))) &&
+						(!selo.checked || !!d.selo);
+					item.hidden = !ok;
+					if (ok) n++;
+				}
+				contador.textContent = String(n);
+				vazio.hidden = n > 0;
+			}
+
+			busca.addEventListener('input', aplicar);
+			filtros.forEach((f) => f.addEventListener('change', aplicar));
+			selo.addEventListener('change', aplicar);
+			raiz.querySelector('[data-rx-limpar]')!.addEventListener('click', () => {
+				busca.value = '';
+				filtros.forEach((f) => (f.value = ''));
+				selo.checked = false;
+				aplicar();
+			});
+			aplicar();
+		});
+	}
+
+	document.addEventListener('astro:page-load', iniciar);
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+	else iniciar();
+</script>

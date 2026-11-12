@@ -1,0 +1,233 @@
+---
+// Vistas de rastreabilidade sobre src/data/requisitos.json.
+import {
+	requisitos,
+	dores,
+	decisoes,
+	frentes,
+	PRIORIDADES,
+	FONTES_ORDEM,
+	origens,
+	porPrioridade,
+	classePrioridade,
+	linkRequisito,
+} from '../data/requisitos';
+import Chips from './ReqChips.astro';
+
+interface Props {
+	vista: 'dores' | 'fontes' | 'frentes' | 'decisoes' | 'matriz';
+}
+const { vista } = Astro.props;
+
+const naoWont = requisitos.filter((r) => r.prioridade !== "Won't");
+
+// Fontes × prioridade: quantos requisitos citam cada fonte na coluna Origem.
+const todasFontes = [...new Set(requisitos.flatMap(origens))];
+const fontes = [...FONTES_ORDEM.filter((f) => todasFontes.includes(f)), ...todasFontes.filter((f) => !FONTES_ORDEM.includes(f))];
+const contaFonte = (f: string, p: string) => requisitos.filter((r) => r.prioridade === p && origens(r).includes(f)).length;
+
+// Frentes dos Must.
+const must = porPrioridade('Must');
+const gruposFrente = [
+	...frentes.map((f) => ({ frente: f.frente, reqs: must.filter((r) => r.frente === f.frente) })),
+	{ frente: 'Sem frente na fonte', reqs: must.filter((r) => !r.frente) },
+].filter((g) => g.reqs.length);
+---
+
+{
+	vista === 'dores' && (
+		<table class="rt">
+			<thead>
+				<tr>
+					<th>Dor</th>
+					<th>Quem relatou</th>
+					<th>Requisitos</th>
+				</tr>
+			</thead>
+			<tbody>
+				{dores.map((d) => (
+					<tr>
+						<td>{d.dor}</td>
+						<td>{d.relatou}</td>
+						<td>
+							<Chips ids={d.requisitos} />
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	)
+}
+
+{
+	vista === 'fontes' && (
+		<table class="rt rt-num">
+			<thead>
+				<tr>
+					<th>Fonte</th>
+					{PRIORIDADES.map((p) => (
+						<th class={classePrioridade(p)}>{p}</th>
+					))}
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{fontes.map((f) => (
+					<tr>
+						<td>{f}</td>
+						{PRIORIDADES.map((p) => (
+							<td>{contaFonte(f, p) || '·'}</td>
+						))}
+						<td>
+							<strong>{requisitos.filter((r) => origens(r).includes(f)).length}</strong>
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	)
+}
+
+{
+	vista === 'frentes' && (
+		<table class="rt">
+			<thead>
+				<tr>
+					<th>Frente</th>
+					<th>Must</th>
+					<th>Requisitos</th>
+				</tr>
+			</thead>
+			<tbody>
+				{gruposFrente.map((g) => (
+					<tr>
+						<td>{g.frente}</td>
+						<td class="rt-n">{g.reqs.length}</td>
+						<td>
+							<Chips ids={g.reqs.map((r) => r.id)} />
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	)
+}
+
+{
+	vista === 'decisoes' && (
+		<table class="rt">
+			<thead>
+				<tr>
+					<th>Decisão</th>
+					<th>Pergunta</th>
+					<th>Requisitos</th>
+				</tr>
+			</thead>
+			<tbody>
+				{decisoes.map((d) => {
+					const ids = requisitos.filter((r) => r.decisoes.includes(d.id)).map((r) => r.id);
+					return (
+						<tr>
+							<td>
+								<span class="req-selo req-selo--decisao">{d.id}</span>
+							</td>
+							<td>{d.decisao}</td>
+							<td>
+								<Chips ids={ids} />
+							</td>
+						</tr>
+					);
+				})}
+			</tbody>
+		</table>
+	)
+}
+
+{
+	vista === 'matriz' && (
+		<div class="rt-rolagem" tabindex="0" role="region" aria-label="Matriz de rastreabilidade">
+			<table class="rt rt-matriz">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Prioridade</th>
+						<th>Área</th>
+						<th>Fontes</th>
+						<th>Dor</th>
+						<th>Frente</th>
+						<th>Módulo (proposto)</th>
+						<th>Decisões</th>
+					</tr>
+				</thead>
+				<tbody>
+					{naoWont.map((r) => (
+						<tr>
+							<td>
+								<a class="rt-id" href={linkRequisito(r.id)}>
+									{r.id}
+								</a>
+							</td>
+							<td class={classePrioridade(r.prioridade)}>
+								<span class="rt-prio">{r.prioridade}</span>
+							</td>
+							<td>{r.area}</td>
+							<td>{origens(r).join(', ')}</td>
+							<td>{r.dores.join(' · ') || '·'}</td>
+							<td>{r.frente ?? '·'}</td>
+							<td>{r.modulo ? <code>{r.modulo}</code> : '·'}</td>
+							<td>
+								{r.decisoes.length
+									? r.decisoes.map((d) => <span class="req-selo req-selo--decisao">{d}</span>)
+									: '·'}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	)
+}
+
+<style>
+	.rt {
+		font-size: 0.9em;
+	}
+
+	.rt td {
+		vertical-align: top;
+	}
+
+	.rt-num td:not(:first-child),
+	.rt-num th:not(:first-child),
+	.rt-n {
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rt-rolagem {
+		overflow-x: auto;
+		margin: 1rem 0;
+	}
+
+	.rt-matriz {
+		min-width: 62rem;
+		margin: 0;
+		font-size: 0.82em;
+	}
+
+	.rt-matriz td,
+	.rt-matriz th {
+		padding: 8px 10px;
+	}
+
+	.rt-id {
+		font-family: 'Geist Mono', monospace;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.rt-prio {
+		font-weight: 700;
+		color: var(--req-cor);
+	}
+</style>

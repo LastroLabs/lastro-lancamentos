@@ -1,0 +1,49 @@
+---
+// Chips de IDs de requisito, cada um com link para a linha na página de requisitos.
+import { requisitos, classePrioridade, linkRequisito } from '../data/requisitos';
+
+interface Props {
+	ids: string[];
+}
+const prioridadeDe = new Map(requisitos.map((r) => [r.id, r.prioridade]));
+const { ids } = Astro.props;
+---
+
+<span class="rc">
+	{
+		ids.map((id) => {
+			const p = prioridadeDe.get(id);
+			return (
+				<a class={`rc-chip ${p ? classePrioridade(p) : ''}`} href={linkRequisito(id)} title={p ? `${id} · ${p}` : id}>
+					{id}
+				</a>
+			);
+		})
+	}
+</span>
+
+<style>
+	.rc {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+
+	.rc-chip {
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.75rem;
+		line-height: 1.5;
+		padding: 0.05rem 0.45rem;
+		border: 1px solid var(--sl-color-gray-4);
+		border-left: 3px solid var(--req-cor, var(--sl-color-gray-4));
+		border-radius: 6px;
+		white-space: nowrap;
+		text-decoration: none;
+		color: var(--sl-color-white);
+	}
+
+	.rc-chip:hover {
+		border-color: var(--lastro-indigo);
+		border-left-color: var(--req-cor, var(--lastro-indigo));
+	}
+</style>

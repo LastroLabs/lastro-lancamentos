@@ -1,0 +1,82 @@
+---
+title: DoR e DoD
+description: Definição de Pronto para começar (DoR) e Definição de Feito (DoD) no Lastro.
+---
+
+O **DoR** (Definition of Ready) diz quando algo está pronto para começar. O **DoD** (Definition of Done) diz quando está feito. Os itens abaixo reúnem regras que já estão registradas nos requisitos, no fluxo de desenvolvimento e no harness.
+
+## DoR: pronto para começar
+
+O DoR tem dois níveis. Um **requisito** fica pronto para virar feature. Uma **ficha** fica pronta para alguém iniciar.
+
+### Nível 1: requisito
+
+| Item | O requisito está pronto quando… | Quem confere | Base |
+|---|---|---|---|
+| R1 | Descreve o que o sistema deve fazer, sem misturar o como | Time, na avaliação dos requisitos | Pergunta "Coerência" |
+| R2 | Tem critério de aceitação verificável por alguém que não programou o item | Time, na avaliação dos requisitos | Pergunta "Testabilidade" |
+| R3 | Tem prioridade MoSCoW e origem registradas | Time, na avaliação dos requisitos | Formato dos requisitos v0.2 |
+| R4 | Não depende de decisão D-xx em aberto, ou a decisão já foi registrada | Líder, que decide as D-xx | Índice de decisões; Fluxo de desenvolvimento |
+| R5 | Tem uma estimativa de esforço | Time, na avaliação dos requisitos | Pergunta "Prazo" |
+
+Requisito com **[definir]** só fica pronto quando o valor for definido, ou quando a feature puder avançar com o valor em configuração. Exemplo: o prazo de validade do link fica em configuração (RF-SEG-01).
+
+### Nível 2: ficha da feature
+
+| Item | A ficha `features/<ID>.json` está pronta quando… | Quem confere | Quando |
+|---|---|---|---|
+| F1 | Os critérios de aceite são verificáveis | Donos do harness | Preparar (A) |
+| F2 | `depende_de` está preenchido | Donos do harness | Preparar (A) |
+| F3 | Tem o comando de verificação de cada critério | Líder de produto e dono do módulo | Preparar (A) |
+| F4 | Nenhuma decisão aberta a trava; se travar, ela fica `blocked` e fora da sprint | Donos do harness | Preparar (A) |
+| F5 | Os contratos de que ela precisa estão congelados | Dono B (contratos) | Antes da segunda |
+| F6 | O `responsavel` está gravado na ficha, por commit na main | Líder | Planejar (B) |
+| F7 | Foi lida em voz alta no planejamento e ninguém apontou critério errado | Time todo | Planejar (B) |
+
+Sem o item F6, o `harness.py feature start` recusa a ficha.
+
+## DoD: feito
+
+| Item | A feature está feita quando… | Como é provado |
+|---|---|---|
+| D1 | Os testes foram escritos antes do código, a partir dos critérios da ficha | Commit só com os testes, antes do código |
+| D2 | A implementação não editou os testes | Revisão do PR; sessão de implementação separada |
+| D3 | Lint, testes e regras de arquitetura passam | `hx verify` |
+| D4 | As jornadas completas passam | `hx verify --e2e` |
+| D5 | Todos os critérios da ficha passam e o estado foi gravado como `passing` | `hx feature verify <ID>` (só o script grava) |
+| D6 | Não há dado real, nome proibido nem segredo | `hx check-clean` |
+| D7 | O progress está fechado: feito, rodei, falhou, decisão, próxima ação | `progress/<ID>.md` |
+| D8 | O PR traz a tabela critério → teste e outra pessoa aceitou pela rubrica | Template do PR e rubrica preenchida |
+| D9 | A CI refez a verificação e o PR entrou por squash na main | `pr.yml` verde; o noturno reverifica de madrugada |
+
+## Resultado da rubrica
+
+A rubrica de PR tem 6 itens de 0 a 2 pontos (total 12). Só três itens estão descritos nas fontes: correção, verificação e escopo. Os outros três estão pendentes.
+
+| Resultado | Quando |
+|---|---|
+| Aceitar | 9 ou mais de 12 e nenhum 0 em correção, verificação e escopo |
+| Bloquear | 0 em correção ou verificação, ou dado real ou segredo no código |
+| Pedir ajustes | Nos demais casos |
+
+Detalhes em [Regras e revisão de PR](/lastro-lancamentos/harness/regras/#rubrica).
+
+## Estado da ficha e a lista que libera cada etapa
+
+| Estado | O que libera a próxima etapa | Próximo estado |
+|---|---|---|
+| `not_started` | DoR da ficha (F1 a F7) → `hx feature start <ID> --owner <você>` | `in_progress` |
+| `in_progress` | D1 a D6 → `hx feature verify <ID>` grava `passing` na branch | `passing` |
+| `in_progress` | Falta uma decisão → issue `decisao:` | `blocked` |
+| `blocked` | Decisão registrada (R4) | `in_progress` |
+| `passing` (na branch) | D7 a D9 → PR aceito e merge na main | `passing` (na main) |
+| `passing` (na main) | O noturno das 03:00 reverifica; se falhar, abre issue | `regressed` |
+| `regressed` | Quem escreveu conserta antes de feature nova e passa de novo por D3 a D5 | `passing` |
+
+Fontes: Requisitos funcionais v0.2; Fluxo de desenvolvimento do Lastro ([semana](/lastro-lancamentos/fluxo/semana/) e [ciclo da feature](/lastro-lancamentos/fluxo/ciclo-da-feature/)); Lastro: guia do harness v0.1.
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada: DoR em dois níveis (requisito e ficha), DoD, resultados da rubrica e estados da ficha |

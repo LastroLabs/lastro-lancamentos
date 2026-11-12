@@ -1,0 +1,66 @@
+---
+// Histórias de usuário (RASCUNHO) dos requisitos Must das áreas indicadas.
+// Texto da história em src/data/historias.ts; critério de aceitação vem do requisito.
+import { porPrioridade, linkRequisito } from '../data/requisitos';
+import { historias } from '../data/historias';
+
+interface Props {
+	areas: string[];
+}
+const { areas } = Astro.props;
+const linhas = porPrioridade('Must').filter((r) => areas.includes(r.area));
+---
+
+<table class="hu">
+	<thead>
+		<tr>
+			<th scope="col">Requisito</th>
+			<th scope="col">História (rascunho)</th>
+			<th scope="col">Critério de aceitação (do requisito)</th>
+		</tr>
+	</thead>
+	<tbody>
+		{
+			linhas.map((r) => (
+				<tr>
+					<td>
+						<a class="hu-id" href={linkRequisito(r.id)}>
+							{r.id}
+						</a>
+						<span class="hu-area">{r.area}</span>
+					</td>
+					<td>{historias[r.id] ?? <em>história a escrever</em>}</td>
+					<td class="hu-crit">{r.criterio}</td>
+				</tr>
+			))
+		}
+	</tbody>
+</table>
+
+<style>
+	.hu {
+		font-size: 0.9em;
+	}
+
+	.hu td {
+		vertical-align: top;
+	}
+
+	.hu-id {
+		font-family: 'Geist Mono', monospace;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.hu-area {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.78rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	.hu-crit {
+		font-size: 0.9em;
+		color: var(--sl-color-gray-2);
+	}
+</style>

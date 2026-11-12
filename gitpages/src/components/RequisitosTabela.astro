@@ -1,0 +1,105 @@
+---
+// Tabela de requisitos lida de src/data/requisitos.json.
+// Cada linha tem id="<rf-id em minúsculas>" para servir de âncora (ex.: #rf-aut-01).
+import { porPrioridade, ancora, linkDecisoes, type Prioridade } from '../data/requisitos';
+
+interface Props {
+	prioridade: Prioridade;
+	/** Filtra por área (subtítulo dos Must). */
+	area?: string;
+}
+const { prioridade, area } = Astro.props;
+const linhas = porPrioridade(prioridade).filter((r) => !area || r.area === area);
+const colunaCriterio = prioridade === "Won't" ? 'Motivo' : 'Critério de aceitação';
+---
+
+<table class="req-tabela">
+	<thead>
+		<tr>
+			<th scope="col">ID</th>
+			<th scope="col">Requisito</th>
+			<th scope="col">{colunaCriterio}</th>
+			<th scope="col">Origem</th>
+		</tr>
+	</thead>
+	<tbody>
+		{
+			linhas.map((r) => (
+				<tr id={ancora(r.id)}>
+					<td class="req-id">
+						<a class="req-id-link" href={`#${ancora(r.id)}`}>
+							{r.id}
+						</a>
+						<span class="req-selos">
+							{r.selo === 'NOVO' && <span class="req-selo req-selo--novo">NOVO</span>}
+							{r.selo === 'AJUSTADO' && <span class="req-selo req-selo--ajustado">AJUSTADO</span>}
+							{r.decisoes.map((d) => (
+								<a class="req-selo req-selo--decisao" href={linkDecisoes()} title={`Depende da decisão ${d}`}>
+									{d}
+								</a>
+							))}
+						</span>
+					</td>
+					<td>{r.requisito}</td>
+					<td>{r.criterio}</td>
+					<td class="req-origem">{r.origem}</td>
+				</tr>
+			))
+		}
+	</tbody>
+</table>
+
+<style>
+	.req-tabela {
+		font-size: 0.92em;
+	}
+
+	.req-id {
+		min-width: 8.5rem;
+		vertical-align: top;
+	}
+
+	.req-id-link {
+		font-family: 'Geist Mono', monospace;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.req-selos {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		margin-top: 0.35rem;
+	}
+
+	.req-origem {
+		min-width: 7rem;
+		font-size: 0.9em;
+	}
+
+	td {
+		vertical-align: top;
+	}
+</style>
+
+<script>
+	// Ao abrir um link #rf-..., mostra a aba (Starlight Tabs) que contém a linha e rola até ela.
+	function revelarAlvo() {
+		const id = decodeURIComponent(location.hash.slice(1));
+		if (!id) return;
+		const alvo = document.getElementById(id);
+		if (!alvo) return;
+		const painel = alvo.closest<HTMLElement>('[role="tabpanel"]');
+		if (painel?.hidden) {
+			const aba = document.querySelector<HTMLAnchorElement>(`[role="tab"][href="#${painel.id}"]`);
+			aba?.click();
+		}
+		const det = alvo.closest('details');
+		if (det && !det.open) det.open = true;
+		requestAnimationFrame(() => alvo.scrollIntoView({ block: 'center' }));
+	}
+	window.addEventListener('hashchange', revelarAlvo);
+	document.addEventListener('astro:page-load', revelarAlvo);
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', revelarAlvo);
+	else revelarAlvo();
+</script>
