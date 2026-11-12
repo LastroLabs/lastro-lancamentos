@@ -1,0 +1,534 @@
+/* Fontes Geist */
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
+/* Paleta de acento do Lastro — usada em bordas, badges, hover e destaques,
+   nunca como cor de fundo fixa (o tema claro/escuro é controlado pelo Starlight). */
+:root {
+  --lastro-red: #EF4444;
+  --lastro-green: #10B981;
+  --lastro-blue: #3B82F6;
+  --lastro-blue-contrast: #3B82F6;
+}
+
+[data-theme='light'] {
+  /* Azul mais escuro no tema claro para manter contraste de leitura em links e texto. */
+  --lastro-blue-contrast: #1D4ED8;
+}
+
+body {
+  font-family: 'Geist Sans', system-ui, sans-serif;
+}
+
+code, pre {
+  font-family: 'Geist Mono', 'Fira Code', monospace;
+}
+
+/* ==========================================================================
+   Tabelas
+   ========================================================================== */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+table th {
+  background: var(--lastro-blue);
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  font-size: 0.95em;
+}
+
+table tbody tr:hover {
+  background: var(--sl-color-accent-low);
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Cards de conteúdo (usados em Visão de Produto, Cronograma etc.)
+   ========================================================================== */
+.lastro-card {
+  border: 2px solid var(--lastro-blue);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(239, 68, 68, 0.03));
+  transition: all 0.3s ease;
+}
+
+.lastro-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.2);
+  border-color: var(--lastro-red);
+}
+
+.lastro-card h3 {
+  background: linear-gradient(135deg, var(--lastro-blue), var(--lastro-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cronograma-card {
+  border: 2px solid var(--lastro-green);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.03));
+  transition: all 0.3s ease;
+}
+
+.cronograma-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  border-color: var(--lastro-blue);
+}
+
+.cronograma-card h3 {
+  background: linear-gradient(135deg, var(--lastro-green), var(--lastro-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================================================
+   Fases / marcos (Cronograma)
+   ========================================================================== */
+.fases-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.fase-item {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(16, 185, 129, 0.03));
+  border: 2px solid var(--lastro-blue);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.fase-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  border-color: var(--lastro-green);
+}
+
+.fase-item h4 {
+  color: var(--lastro-blue-contrast);
+  margin: 0 0 1rem 0;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.fase-item p {
+  margin: 0.5rem 0;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.fase-item strong {
+  color: var(--lastro-green);
+  font-weight: 600;
+}
+
+.marcos-container {
+  margin: 1.5rem 0;
+}
+
+.marco-item {
+  display: flex;
+  align-items: flex-start;
+  margin: 1rem 0;
+  padding: 0.5rem 0;
+}
+
+.marco-bola {
+  color: var(--lastro-green);
+  font-size: 1.2em;
+  margin-right: 1rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.marco-content {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.marco-content strong {
+  color: var(--lastro-red);
+  font-weight: 600;
+}
+
+.marco-item:hover .marco-bola {
+  color: #059669;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* ==========================================================================
+   Processo / listas ordenadas
+   ========================================================================== */
+.lastro-process blockquote {
+  border-left: 4px solid var(--lastro-red);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), rgba(59, 130, 246, 0.04));
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 1.1em;
+  font-weight: 500;
+}
+
+.lastro-list li {
+  padding: 0.5rem 0;
+  border-left: 3px solid transparent;
+  padding-left: 1rem;
+  transition: all 0.3s ease;
+}
+
+.lastro-list li:hover {
+  border-left-color: var(--lastro-blue);
+  background: var(--sl-color-accent-low);
+  padding-left: 1.5rem;
+}
+
+.lastro-flow li {
+  padding: 0.5rem 0;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.lastro-flow li::before {
+  content: counter(list-item);
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(135deg, var(--lastro-blue), var(--lastro-green));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.lastro-flow li:hover {
+  background: var(--sl-color-accent-low);
+  border-radius: 6px;
+  padding-left: 2.5rem;
+}
+
+/* ==========================================================================
+   Hero (página inicial)
+   ========================================================================== */
+.sl-hero .sl-hero-actions a {
+  background-color: var(--lastro-red) !important;
+  color: white !important;
+  border: 2px solid var(--lastro-red) !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.sl-hero .sl-hero-actions a:hover {
+  background-color: #B91C1C !important;
+  border-color: #B91C1C !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4) !important;
+}
+
+.sl-hero .sl-hero-actions a[data-variant="minimal"] {
+  background-color: transparent !important;
+  color: var(--lastro-blue-contrast) !important;
+  border-color: var(--lastro-blue) !important;
+}
+
+.sl-hero .sl-hero-actions a[data-variant="minimal"]:hover {
+  background-color: var(--lastro-blue) !important;
+  color: white !important;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* ==========================================================================
+   Tipografia do conteúdo Markdown
+   ========================================================================== */
+.sl-markdown-content a {
+  color: var(--lastro-blue-contrast);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sl-markdown-content a:hover {
+  border-bottom-color: var(--lastro-blue-contrast);
+}
+
+.sl-markdown-content h1 {
+  border-bottom: 2px solid var(--lastro-red);
+  padding-bottom: 0.5rem;
+}
+
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  padding-bottom: 0.3rem;
+}
+
+.sl-markdown-content h4,
+.sl-markdown-content h5,
+.sl-markdown-content h6 {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ==========================================================================
+   Cards da Equipe
+   ========================================================================== */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.team-card {
+  background: var(--sl-color-accent-low);
+  border: 1px solid var(--sl-color-accent);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+  border-color: var(--lastro-green);
+}
+
+.team-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--lastro-blue);
+  flex-shrink: 0;
+}
+
+.team-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--sl-color-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.team-role {
+  margin: 0 0 0.5rem 0;
+  color: var(--sl-color-text-accent);
+  font-size: 0.9rem;
+}
+
+.team-github {
+  color: var(--lastro-blue-contrast);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.team-github:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Badges
+   ========================================================================== */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 0.5rem;
+  color: #ffffff;
+}
+
+.badge--alta { background-color: var(--lastro-blue); }
+.badge--critica { background-color: var(--lastro-red); }
+.badge--media { background-color: var(--lastro-green); }
+
+.badge--approved { background-color: var(--lastro-green); }
+.badge--pending { background-color: var(--lastro-blue); }
+.badge--rejected { background-color: var(--lastro-red); }
+
+.lastro-list li .badge { margin-right: 0.5rem; margin-left: 0; }
+
+/* ==========================================================================
+   Diagrama de arquitetura (fluxo em caixas conectadas), sem dependências extras
+   ========================================================================== */
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  margin: 2rem 0;
+}
+
+.arch-layer {
+  border: 2px solid var(--lastro-blue);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  background: var(--sl-color-accent-low);
+  transition: all 0.3s ease;
+}
+
+.arch-layer:hover {
+  border-color: var(--lastro-red);
+  transform: translateY(-2px);
+}
+
+.arch-layer h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.1em;
+  color: var(--lastro-blue-contrast);
+}
+
+.arch-layer p {
+  margin: 0 0 0.6rem 0;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.arch-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.arch-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-text);
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+.arch-connector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  color: var(--lastro-green);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Cards de tecnologia (Stack Tecnológico)
+   ========================================================================== */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.tech-card {
+  border: 1px solid var(--sl-color-gray-5);
+  border-left: 4px solid var(--lastro-blue);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  background: var(--sl-color-bg-nav);
+  transition: all 0.25s ease;
+}
+
+.tech-card:hover {
+  border-left-color: var(--lastro-red);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.tech-card .tech-category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sl-color-text-accent);
+  font-weight: 600;
+  margin: 0 0 0.35rem 0;
+}
+
+.tech-card h4 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.05em;
+}
+
+.tech-card p {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.45;
+  color: var(--sl-color-text);
+}
+
+/* ==========================================================================
+   Callout de nota técnica (ex.: comportamento real vs. documentado)
+   ========================================================================== */
+.tech-note {
+  border-left: 4px solid var(--lastro-blue);
+  background: var(--sl-color-accent-low);
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  margin: 1.25rem 0;
+  font-size: 0.95em;
+}
+
+.tech-note strong {
+  color: var(--lastro-blue-contrast);
+}
+
+/* ==========================================================================
+   Container de vídeo responsivo
+   ========================================================================== */
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+  border: 2px solid var(--lastro-red);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+}

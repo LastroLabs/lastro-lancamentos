@@ -1,0 +1,57 @@
+---
+title: Solução
+description: Como o Lastro responde à dor do fechamento mensal.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+O Lastro ataca a dor em quatro pontos: a **coleta**, a **conferência**, a **classificação** e a **saída** para o Domínio.
+
+## 1. Coleta sem cobrança repetida
+
+- O contador gera um link por cliente e mês (RF-ENV-01).
+- O cliente abre o link no celular, sem login, e envia um ou mais PDFs ou OFX (RF-ENV-02).
+- A carteira mostra o status de cada cliente e mês: não enviado, parcial ou enviado (RF-ENV-03).
+- Quando falta algo, o cliente envia um complemento e o sistema refaz a conferência (RF-ENV-04).
+
+## 2. Conferência no envio, não no fechamento
+
+- O sistema detecta o formato sozinho e lê OFX de qualquer banco, sem cadastro por banco (RF-LEI-01, RF-LEI-02).
+- Lê PDF digital do Inter e do Banco do Brasil (RF-LEI-03). O terceiro banco depende de D-04.
+- Confere que saldo inicial mais movimentações é igual ao saldo final, **por cálculo em código, sem IA** (RF-VAL-01).
+- Confere a continuidade com o mês anterior e a cobertura até o último dia do mês (RF-VAL-03, RF-VAL-04).
+- Avisa o cliente na hora, em português simples, dizendo o que falta (RF-AVI-01, RF-AVI-02).
+
+## 3. Classificação em camadas
+
+Cada movimentação desce pelas camadas e para na primeira que resolve. Toda sugestão grava origem, confiança e evidência.
+
+<Mermaid code={`flowchart TD
+  M["Movimentação lida e conferida"] --> R{"1. Regras: tarifa, IOF, impostos, aplicação, transferência entre contas próprias, sócio, adquirente"}
+  R -- resolveu --> S["Sugestão com origem e confiança"]
+  R -- não resolveu --> H{"2. Histórico do mesmo cliente"}
+  H -- resolveu --> S
+  H -- não resolveu --> P{"3. Parecidas do mesmo cliente"}
+  P -- resolveu --> S
+  P -- não resolveu --> I{"4. IA, só com texto anonimizado"}
+  I --> S
+  S --> L{"Confiança acima do limite? (D-08)"}
+  L -- sim --> V["Revisão do contador"]
+  L -- não --> Q["Pergunta ao cliente, agrupada por contraparte"]
+  Q --> V
+`}/>
+
+- A sugestão é sempre uma conta do plano do cliente ou "não sei" (RF-CLA-01).
+- Regras por palavra-chave, transferência interna e sócio: RF-CLA-02a, 02b e 02c.
+- Histórico, parecidas e IA: RF-CLA-03, 04 e 05.
+- Origem e confiança em toda sugestão: RF-CLA-06. Abaixo do limite, a sugestão não é aplicada e vira pergunta: RF-CLA-07.
+- Créditos de maquininha recebem a conta de cartão sem virar pergunta (RF-MAQ-01), se D-02 for aprovada.
+
+## 4. Perguntas, revisão e exportação
+
+- As perguntas agrupam as movimentações por contraparte e são respondidas com um toque, com a opção "outro" ou "não sei" (RF-PER-01 a 05).
+- A resposta aceita pelo contador vira regra do cliente (RF-APR-01). A correção do contador substitui a sugestão anterior (RF-APR-02).
+- A revisão mostra três grupos: prontas, confirmadas pelo cliente e pendentes (RF-REV-01).
+- A exportação gera a planilha no layout do Domínio (RF-EXP-01, layout em D-05). As pendentes vão na conta transitória (RF-EXP-02). Linhas e totais conferem com o extrato antes do download (RF-EXP-03).
+
+Fontes: Requisitos funcionais v0.2; Lastro — Arquitetura do Sistema, seção 7.

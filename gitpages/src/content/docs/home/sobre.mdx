@@ -1,0 +1,46 @@
+---
+title: O que é o Lastro
+description: Uma camada de preparação e revisão de lançamentos para escritórios contábeis.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+O Lastro é uma camada de **preparação e revisão de lançamentos** para escritórios contábeis. Ele transforma o extrato bancário do cliente em lançamentos prontos para importar no Domínio.
+
+O objetivo imediato:
+
+- reduzir digitação, parametrização e perguntas repetidas;
+- manter a responsabilidade do contador, que revisa tudo antes de exportar.
+
+O Lastro **não é** um sistema de escrituração completo.
+
+## O fluxo do produto
+
+<Mermaid code={`flowchart LR
+  A["1. Cliente envia o extrato por link"] --> B["2. Sistema lê e confere o saldo por cálculo"]
+  B --> C["3. Sistema sugere a conta em camadas"]
+  C --> D["4. Sistema pergunta ao cliente o que não sabe"]
+  D --> E["5. Contador revisa e exporta para o Domínio"]
+  B -. "falta período ou saldo não fecha" .-> A
+`}/>
+
+## Princípios que vêm dos requisitos
+
+| Princípio | Requisitos |
+|---|---|
+| Saldo conferido por cálculo em código, nunca por IA | RF-VAL-01 a RF-VAL-05 |
+| IA só para o que regras, histórico e parecidas não resolveram | RF-CLA-05 |
+| Toda sugestão mostra a origem e o nível de confiança | RF-CLA-06 |
+| Nada é exportado sem revisão do contador; pendentes saem na conta transitória | RF-REV-04, RF-EXP-02 |
+| A planilha concilia com o extrato (linhas e totais iguais) | RF-EXP-03 |
+| O aprendizado fica com o cliente, não com o contador | RF-APR-03, RF-EXP-04 |
+
+## Quem usa
+
+| Pessoa | O que faz no Lastro |
+|---|---|
+| Contador | Cadastra clientes, gera links de envio, revisa e exporta |
+| Chefe do escritório | Cadastra contadores e clientes e atribui clientes a contadores |
+| Cliente do escritório | Envia o extrato e responde às perguntas pelo celular, sem login |
+
+Fontes: Requisitos funcionais v0.2; Banco de dados para o Lastro v1.0; Lastro — Arquitetura do Sistema.

@@ -1,0 +1,101 @@
+---
+title: Ciclo de uma feature
+description: Da ficha ao merge, passo a passo, e a estratégia de testes.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+Uma **feature** é um comportamento verificável que uma pessoa termina em 1 ou 2 sessões. Cada uma tem uma ficha em `features/<ID>.json`, com critérios de aceite, comando de verificação, dependências e estado.
+
+## Estados da ficha
+
+<Mermaid code={`stateDiagram-v2
+  [*] --> not_started
+  not_started --> in_progress: feature start
+  in_progress --> blocked: depende de decisão aberta (D-xx)
+  blocked --> in_progress: decisão registrada
+  in_progress --> passing: feature verify (só o script)
+  passing --> regressed: noturno falhou
+  regressed --> passing: corrigida e verificada pelo script
+`}/>
+
+- Quem marca `passing` é o script, rodando os comandos da ficha. Ninguém edita o estado à mão.
+- Uma feature `regressed` passa na frente de feature nova.
+
+## Os oito passos
+
+| Passo | Quem age | Estado | O que acontece |
+|---|---|---|---|
+| 1. Ficha com responsável | Líder | `not_started` | No planejamento, o líder grava o `responsavel` na ficha, em um commit na main. Sem responsável, o comando de início recusa. |
+| 2. Começar a feature | Dev e script | `in_progress` | O script cria a branch, muda o estado e abre o progress. Não chama o agente: só prepara os arquivos que ele vai ler. |
+| 3. Testes primeiro | Dev e agente | `in_progress` | Os testes são escritos a partir dos critérios da ficha e devem falhar. Se passassem sem código, não testariam nada. |
+| 4. Implementar | Agente | `in_progress` | Sessão nova do agente, com uma regra fixa: implementar até passar, sem editar os testes. Se o teste parecer errado, vira PR na ficha. |
+| 5. Verificar a feature | Script | `passing` (na branch) | `hx verify --e2e`, `hx feature verify` e `hx check-clean`. Só o script grava `passing`. |
+| 6. Abrir o PR | Dev | `passing` (na branch) | O template pede a tabela critério → teste, a saída da verificação e o checklist de segurança. Depois disso, pode iniciar a próxima feature (WIP continua 1). |
+| 7. Revisão pela rubrica | Revisor | `passing` (na branch) | Outra pessoa roda a verificação na branch e preenche a rubrica. Aceita com 9 ou mais de 12 e nenhum zero em correção, verificação e escopo. |
+| 8. CI e merge | CI e revisor | `passing` (na main) | A CI refaz a verificação e o PR entra por squash. De madrugada, o noturno reverifica tudo que está `passing`. |
+
+### Exemplo de comandos (saída ilustrativa)
+
+```text
+$ hx state
+LEI-02  not_started  responsavel: voce  depende_de: LEI-01 (passing)
+
+$ hx feature start LEI-02 --owner voce
+OK  branch feat/LEI-02-leitura-ofx criada
+OK  estado: in_progress
+OK  progress/LEI-02.md criado
+
+$ hx verify
+FALHOU  test_ofx.py::test_saldo_confere
+FALHOU  test_ofx.py::test_ignora_linha_vazia
+4 falharam, 0 passaram
+
+$ hx feature verify LEI-02
+OK  c1 saldo final confere
+OK  c2 linha vazia é ignorada
+estado: passing (gravado pelo script)
+```
+
+A tabela critério → teste do PR liga cada critério ao teste que o prova:
+
+| Critério | Teste |
+|---|---|
+| LEI-02-c1 saldo confere | `test_saldo_confere` |
+| LEI-02-c2 linha vazia ignorada | `test_ignora_linha_vazia` |
+
+## Critério de pronto
+
+Uma feature está pronta quando:
+
+- todos os critérios da ficha passam em `hx feature verify` e o script gravou `passing`;
+- `hx verify --e2e` e `hx check-clean` passam;
+- o PR traz a tabela critério → teste preenchida;
+- outra pessoa revisou pela rubrica e aceitou;
+- a CI refez a verificação e o PR entrou por squash na main.
+
+## Quem escreve os testes
+
+O risco é o agente **corrigir a própria prova**: escreve código e teste juntos, tudo passa e o erro continua. A estratégia não cria um QA separado. Ela usa **ordem e independência**:
+
+| Sem harness | Com harness |
+|---|---|
+| 1. O agente escreve o código | 1. Testes escritos a partir dos critérios da ficha |
+| 2. O mesmo agente escreve os testes do que acabou de escrever | 2. Eles falham, como esperado |
+| 3. Tudo fica verde | 3. Sessão nova implementa, sem editar os testes |
+| 4. O erro chega na demo | 4. Gabarito sintético e E2E conferem o resultado |
+| | 5. Outra pessoa revisa pela rubrica |
+
+Com o harness, o teste nasce do requisito, não do código, e o gabarito vem de fora do agente.
+
+## Três camadas de teste
+
+| Camada | O que cobre |
+|---|---|
+| Módulo | Testes por feature, escritos antes do código a partir dos critérios da ficha. Rápidos: rodam a cada commit. |
+| Contratos e arquitetura | Garantem que os módulos conversam como combinado e que só a pasta `ia/` fala com o LLM. Quebrou a regra, a CI avisa. |
+| Jornadas E2E | Um extrato falso é gerado a partir de um razão conhecido, então o gabarito já nasce junto. O Excel final é comparado com ele. |
+
+Para a IA: provedor falso nos testes (sem custo e sem rede) e um conjunto fixo de 40 a 60 casos, com cerca de 20% reservado como prova final.
+
+Fontes: Fluxo de desenvolvimento do Lastro, seções 05 e 06; Lastro: guia do harness v0.1.

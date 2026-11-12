@@ -1,0 +1,173 @@
+---
+title: Visão geral da arquitetura
+description: Monólito modular, containers, módulos, contratos e os quatro fluxos principais.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+:::note[Status]
+Recomendada, aguardando aprovação. Ver [Decisão: arquitetura do sistema](/lastro-lancamentos/decisoes/arquitetura/).
+:::
+
+O Lastro é um **monólito modular** em Python 3.14 + FastAPI, com:
+
+- frontend React 19 + TypeScript (Vite, SPA);
+- PostgreSQL 18 com Row-Level Security;
+- um worker com fila no próprio Postgres;
+- armazenamento S3 privado.
+
+Toda IA passa por um único gateway, que anonimiza os dados antes de chamar o modelo.
+
+## Contexto e containers (C4 nível 2)
+
+Três pessoas usam o sistema: contador, chefe e cliente do escritório. Dois sistemas externos recebem dados dele: o Domínio, pela planilha que o contador importa, e o provedor de LLM, só com texto anonimizado.
+
+<Mermaid code={`flowchart TB
+  dominio["Domínio<br/>sistema contábil externo"]
+  contador["Contador e chefe<br/>navegador, com login"]
+  cliente["Cliente do escritório<br/>celular, link sem login"]
+  front["Frontend: React 19 + TypeScript, SPA estática em CDN<br/>área do contador (desktop) e página do cliente /enviar/:token (celular)"]
+  subgraph backend["Backend do Lastro: Python 3.14, em Docker"]
+    api["API: FastAPI<br/>sessão e permissões, contexto RLS por transação"]
+    arquivos["Arquivos (S3)<br/>privado; SeaweedFS no dev, gerenciado no piloto"]
+    worker["Worker: Procrastinate<br/>leitura, conferência, classificação, exportação<br/>única saída para LLM: ia/"]
+    pg[("PostgreSQL 18<br/>RLS por escritório e carteira, pg_trgm,<br/>fila de tarefas, valores em centavos")]
+  end
+  llm["Provedor de LLM (externo)<br/>recebe só texto anonimizado"]
+  contador -- "xlsx" --> dominio
+  contador -- HTTPS --> front
+  cliente -- HTTPS --> front
+  front -- "JSON /api/v1 + cookie" --> api
+  api --> arquivos
+  api --> pg
+  worker --> arquivos
+  worker --> pg
+  worker --> llm
+`}/>
+
+- O navegador nunca acessa banco, arquivos nem LLM: tudo passa pela API, que checa a permissão.
+- API e worker são o mesmo código Python, em dois processos.
+- A fila vive no PostgreSQL, então gravar o envio e criar a tarefa é uma única transação.
+
+## Requisitos que dirigem a arquitetura
+
+| Driver | Requisitos | O que isso força |
+|---|---|---|
+| Isolamento por escritório e carteira, checado no servidor em toda requisição | RF-AUT-02, RF-SEG-02 | Autorização no backend e RLS no PostgreSQL (defesa em duas camadas) |
+| Revogação imediata ao reatribuir cliente, mesmo com sessão aberta | RF-AUT-04 | Sessão no servidor (não JWT com carteira embutida); download sempre mediado pelo backend |
+| Cliente envia pelo celular, sem login, por link com validade | RF-ENV-01, RF-SEG-01 | Página pública mobile-first; token de 32 bytes guardado só como hash |
+| Leitura de OFX/PDF pode demorar e falhar | RF-LEI-01 a 05, RF-ENV-02 | Processamento assíncrono em worker separado da API, com retentativa |
+| Saldo conferido em código, nunca por IA | RF-VAL-01 a 05 | Módulo de validação determinístico; dinheiro em centavos |
+| IA só para o que as regras não resolvem, sem CPF/CNPJ/conta | RF-CLA-05, RF-SEG-03 | Classificação em camadas; toda chamada de LLM por um único gateway com `anonimizar()` |
+| Cada decisão do sistema precisa ser reconstruída | RF-OBS-01, RF-CLA-06 | Sugestões, revisões e chamadas de IA versionadas e gravadas como eventos |
+| Planilha importada no Domínio sem edição | RF-EXP-01, RF-EXP-03 | Layout em `layouts/dominio.yaml`, nunca colunas fixas no código; fotografia imutável da exportação |
+
+Restrição de prazo: os Must precisam caber no cronograma. Isso exclui microsserviços, Kubernetes, fila dedicada (Redis/RabbitMQ) e banco vetorial no MVP.
+
+## Módulos
+
+Um monorepo, com os mesmos módulos que o harness nomeia em `docs/modulos/`.
+
+| Pasta | Responsabilidade |
+|---|---|
+| `src/lastro/nucleo/` | Config, sessão, permissões, contexto RLS, dinheiro (centavos) |
+| `src/lastro/acesso/` | Escritório, usuário, papel, atribuição, link do cliente |
+| `src/lastro/cadastro/` | Cliente, contas bancárias, sócios, plano de contas, configuração |
+| `src/lastro/envio/` | Upload, quarentena, status por cliente e mês |
+| `src/lastro/leitura/` | Detecção de formato, leitores OFX e PDF por banco |
+| `src/lastro/validacao/` | Saldo, continuidade, cobertura do mês (só código) |
+| `src/lastro/classificacao/` | Regras, histórico, parecidas (`pg_trgm`), chamada à IA |
+| `src/lastro/perguntas/` | Agrupamento, página do cliente, respostas |
+| `src/lastro/revisao/` | Três grupos, aceitar/trocar/pendente, aprendizado |
+| `src/lastro/exportacao/` | Fotografia, planilha Domínio, conciliação |
+| `src/lastro/ia/` | Único lugar que chama LLM: `anonimizar()`, schemas, custo |
+| `src/lastro/observabilidade/` | Registro de decisões e métricas do piloto |
+| `src/lastro/api/` | Rotas FastAPI finas: autorização e chamada ao serviço |
+| `src/lastro/worker/` | Tarefas Procrastinate |
+
+Fora de `src/`: `migrations/` (Alembic), `web/` (React + Vite), `tests/`, `fixtures/`, `layouts/dominio.yaml`, `features/`, `progress/`, `tools/harness.py` e `docs/`.
+
+## Regras de dependência
+
+As setas só descem. O `harness.py verify` confere isso com `import-linter`, e uma violação reprova o PR.
+
+1. `api/` e `worker/` chamam serviços dos módulos; nunca acessam tabela direto.
+2. Um módulo chama outro só pela interface pública (`servico.py` e `contratos.py`), nunca pelos modelos internos.
+3. Só `ia/` importa SDK de provedor de LLM. Só `envio/` e `exportacao/` falam com o armazenamento de arquivos.
+4. `validacao/` não importa `ia/`: a conferência de saldo nunca depende de modelo.
+
+## Contratos entre módulos
+
+Dataclasses imutáveis em `contratos.py`. Mudar um contrato exige issue `contrato:` e um PR que atualize os dois lados e o `docs/modulos/`.
+
+| De → para | Contrato | Campos essenciais |
+|---|---|---|
+| leitura → validação | `ExtratoLido` | Banco, conta, período, saldo inicial e final em centavos, pontos de saldo, lista de `MovimentacaoLida` |
+| leitura → classificação | `MovimentacaoLida` | Data, descrição original e normalizada, valor em centavos com sinal, id externo (FITID) opcional, origem (arquivo, página, linha) |
+| validação → revisão/exportação | `ResultadoConferencia` | Aprovado, reprovado ou não verificado; esperado, calculado, diferença, linha ou dia onde quebra, cobertura do mês |
+| classificação → revisão | `Sugestao` | Conta do plano ou "não sei", origem, confiança (alta, média, baixa), evidências, versão |
+| perguntas → revisão | `RespostaCliente` | Grupo, opção escolhida ou texto, conta mapeada, data |
+| revisão → exportação | `ItemRevisado` | Movimentação, conta final, decisão, usuário, versão |
+
+## API
+
+- REST com JSON, prefixo `/api/v1` e OpenAPI gerado pelo FastAPI e publicado no CI.
+- Paginação por cursor nas listas grandes (revisão).
+- Erros no formato RFC 9457 (`application/problem+json`), com mensagem em português simples (RF-AVI-02).
+- As rotas do cliente ficam em `/api/v1/publico/{token}/…` e só enxergam o envio e as perguntas da competência do link.
+
+## Fluxos principais
+
+### Envio e processamento do extrato
+
+<Mermaid code={`sequenceDiagram
+  participant C as Contador
+  participant Cl as Cliente (celular)
+  participant A as API
+  participant DB as PostgreSQL
+  participant S as Arquivos (S3)
+  participant W as Worker
+  C->>A: gera link (cliente + mês)
+  A->>DB: grava só o hash do token de 32 bytes
+  A-->>C: link, mostrado uma vez
+  Cl->>A: abre /enviar/:token e envia PDF/OFX
+  A->>A: valida hash, validade, revogação, tipo real e tamanho
+  A->>S: grava o arquivo em quarentena
+  A->>DB: registro de envio + tarefa processar_arquivo (mesma transação)
+  W->>DB: pega a tarefa
+  W->>W: detecta o formato, lê, confere saldo, continuidade e cobertura
+  W->>DB: publica movimentações e conferência (transação curta)
+  W->>DB: enfileira classificar_competencia
+  A-->>Cl: aviso em português simples, se faltou algo
+`}/>
+
+Reenvio com o mesmo hash ou o mesmo FITID não duplica.
+
+### Classificação em camadas
+
+1. Regras por palavra-chave e tipo (tarifa, IOF, impostos, aplicação, transferência entre contas próprias, sócio, adquirente), com precedência documentada (RF-CLA-09).
+2. Histórico do mesmo cliente: contraparte normalizada e direção já aceitas pelo contador.
+3. Parecidas: similaridade por trigramas (`pg_trgm`) com movimentações aprovadas do mesmo cliente.
+4. IA: só o que sobrou, anonimizado, com as contas do plano do cliente como únicas respostas válidas.
+5. Abaixo do limite de confiança (D-08): vira pergunta ao cliente, agrupada por contraparte.
+
+### Revisão e exportação
+
+1. O contador abre a competência: prontas, confirmadas pelo cliente e pendentes, com o resultado da conferência no topo.
+2. Aceita, troca ou marca pendente, item a item ou por grupo visível. Cada ação grava um evento com usuário, data e versão. Conflito de versão devolve erro e pede para recarregar.
+3. Aceite ou correção vira regra do cliente na mesma transação.
+4. Para exportar, a API:
+   - bloqueia a competência;
+   - confere as portas: revisão completa, conferência aprovada ou liberada, conta transitória válida;
+   - copia a fotografia dos itens;
+   - solta o bloqueio.
+5. O worker gera o Excel a partir de `layouts/dominio.yaml` e grava o hash. Antes do download, mostra as linhas e os totais de entradas e de saídas, iguais aos do extrato.
+
+### Reatribuição de cliente
+
+1. O chefe troca o responsável. Em uma transação: trava a linha do cliente, encerra a atribuição anterior, cria a nova, incrementa `versao_acesso` e grava auditoria.
+2. Toda requisição confere a atribuição vigente e o RLS filtra pelo usuário da transação. Depois do commit, o contador anterior recebe "sem acesso", mesmo com a sessão aberta.
+3. Downloads passam sempre pela API; não há URL assinada de longa duração para contador.
+4. Regras aprendidas e opções de exportação ficam com o cliente, não com o contador.
+
+**Fonte:** Lastro — Arquitetura do Sistema (10/11/2026), seções 1, 3, 4, 6 e 7.

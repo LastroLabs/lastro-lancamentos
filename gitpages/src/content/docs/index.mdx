@@ -1,0 +1,68 @@
+---
+title: Lastro
+description: Do extrato bancário ao lançamento contábil pronto para importar no Domínio.
+template: splash
+
+hero:
+  tagline: Extrato bancário vira lançamento contábil pronto para importar no Domínio. O sistema confere o saldo por cálculo, sugere a conta e pergunta ao cliente só o que não sabe. O contador revisa e exporta.
+  actions:
+    - text: O que é o Lastro
+      link: /lastro-lancamentos/home/sobre/
+      icon: right-arrow
+    - text: Fluxo de desenvolvimento
+      link: /lastro-lancamentos/fluxo/visao-geral/
+      icon: right-arrow
+      variant: minimal
+    - text: GitHub
+      link: https://github.com/LastroLabs/lastro-lancamentos
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## O problema
+
+O fechamento mensal é a dor central do escritório contábil. O contador:
+
+- gasta horas transformando extratos desorganizados em lançamentos;
+- cobra o mesmo cliente várias vezes até o extrato chegar;
+- só descobre o erro no fim, quando o saldo não bate.
+
+Os dois contadores entrevistados relatam de 2 a 4 horas por fechamento de um cliente. São relatos de dois profissionais, não uma amostra: servem para orientar o MVP, não para prometer ganho.
+
+## Para quem
+
+Escritórios contábeis pequenos que importam lançamentos no **Domínio**. Na pesquisa citada pela arquitetura, 69% dos respondentes trabalham em escritórios com até 9 colaboradores. O produto precisa funcionar sem implantação e sem equipe de TI.
+
+## Como funciona
+
+<CardGrid>
+  <Card title="1. O cliente envia" icon="document">
+    O cliente sobe o extrato (PDF ou OFX) por um link, no celular, sem login.
+  </Card>
+  <Card title="2. O sistema confere" icon="approve-check">
+    O sistema lê o arquivo e confere o saldo por cálculo em código, nunca por IA.
+  </Card>
+  <Card title="3. O sistema sugere" icon="list-format">
+    A conta é sugerida em camadas: regras, histórico, parecidas e, só por último, IA.
+  </Card>
+  <Card title="4. O sistema pergunta" icon="comment">
+    O que o sistema não sabe vira uma pergunta ao cliente, respondida com um toque.
+  </Card>
+  <Card title="5. O contador revisa e exporta" icon="rocket">
+    O contador revisa e exporta a planilha no layout de importação do Domínio.
+  </Card>
+</CardGrid>
+
+## Status em 12/11/2026
+
+| Item | Situação | Fonte |
+|---|---|---|
+| Requisitos funcionais | v0.2 (07/11/2026), em avaliação pelo time | Requisitos funcionais v0.2 |
+| Guia do harness | v0.1 (08/11/2026), sujeito a ajuste na primeira semana | Guia do harness |
+| Estudos | Arquitetura, banco de dados, avaliação com LLM e UX/UI concluídos; recomendações aguardando aprovação | [Decisões](/lastro-lancamentos/decisoes/) |
+| Decisões em aberto | D-01 a D-09 | [Índice de decisões](/lastro-lancamentos/decisoes/) |
+| Cronograma | Pelo plano, semana S1 (Fundação, 09/11 a 15/11); demo ao vivo em 07/12 | [Cronograma](/lastro-lancamentos/visao/cronograma/) |
+
+Este site não acompanha o andamento do código. O estado de cada feature fica nas fichas `features/<ID>.json` e aparece no painel `harness.py state`.
