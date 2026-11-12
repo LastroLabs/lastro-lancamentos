@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxo de desenvolvimento do Lastro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: uma página rolável em seções numeradas, pensada para projetar; navegação por pílulas fixas e setas do teclado. */
+:root {
+  --bg: #f3f6f9;
+  --surface: #ffffff;
+  --ink: #14202b;
+  --muted: #566879;
+  --line: #d3dce5;
+  --accent: #0a6c8f;
+  --accent-soft: #dff0f6;
+  --good: #1a7f4b;
+  --good-soft: #def3e7;
+  --warn: #a45206;
+  --warn-soft: #fdf0d8;
+  --bad: #b42318;
+  --bad-soft: #fde6e3;
+  --c-dev: #0a6c8f;
+  --c-agente: #6d4fc2;
+  --c-script: #1a7f4b;
+  --c-revisor: #a45206;
+  --c-ci: #4b5b6b;
+  --c-lider: #b0285f;
+  --term-bg: #0f1b26;
+  --term-fg: #d6e4ef;
+  --term-dim: #7f95a8;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d151c; --surface: #141f29; --ink: #e8eef3; --muted: #9aabba; --line: #26343f;
+    --accent: #55c6e8; --accent-soft: #0f2f3b;
+    --good: #52d08a; --good-soft: #10301f; --warn: #f0b05a; --warn-soft: #34260e;
+    --bad: #ff8a7c; --bad-soft: #3a1612;
+    --c-dev: #55c6e8; --c-agente: #b59cff; --c-script: #52d08a; --c-revisor: #f0b05a; --c-ci: #a9b8c6; --c-lider: #ff8fb8;
+    --term-bg: #081018; --term-fg: #d6e4ef; --term-dim: #7f95a8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d151c; --surface: #141f29; --ink: #e8eef3; --muted: #9aabba; --line: #26343f;
+  --accent: #55c6e8; --accent-soft: #0f2f3b;
+  --good: #52d08a; --good-soft: #10301f; --warn: #f0b05a; --warn-soft: #34260e;
+  --bad: #ff8a7c; --bad-soft: #3a1612;
+  --c-dev: #55c6e8; --c-agente: #b59cff; --c-script: #52d08a; --c-revisor: #f0b05a; --c-ci: #a9b8c6; --c-lider: #ff8fb8;
+  --term-bg: #081018; --term-fg: #d6e4ef; --term-dim: #7f95a8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 18px; line-height: 1.55; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--accent-soft); color: var(--ink); padding: 1px 6px; border-radius: 4px; }
+h1, h2, h3, h4 { text-wrap: balance; line-height: 1.15; margin: 0; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* Barra superior */
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1160px; margin: 0 auto; padding: 10px 20px; display: flex; gap: 16px; align-items: center; }
+.brand { font-weight: 700; letter-spacing: 0.01em; white-space: nowrap; font-size: 16px; }
+.brand span { color: var(--accent); }
+.nav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+.nav::-webkit-scrollbar { display: none; }
+.nav button { border: 1px solid transparent; background: transparent; padding: 5px 12px; border-radius: 999px; font-size: 14px; white-space: nowrap; color: var(--muted); }
+.nav button:hover { background: var(--accent-soft); color: var(--ink); }
+.nav button[aria-current="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .nav button[aria-current="true"] { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nav button[aria-current="true"] { color: #04202b; } }
+.hint { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.bar { height: 3px; background: var(--accent); width: 0; }
+@media (max-width: 820px) { .hint { display: none; } .brand { display: none; } }
+
+main { max-width: 1160px; margin: 0 auto; padding: 0 20px 40px; }
+section { padding: 72px 0 24px; scroll-margin-top: 52px; }
+section + section { border-top: 1px solid var(--line); }
+.eyebrow { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+h2 { font-size: clamp(30px, 4.2vw, 46px); font-weight: 700; letter-spacing: -0.015em; margin-bottom: 14px; max-width: 22ch; }
+.lead { font-size: 21px; color: var(--muted); max-width: 62ch; margin-bottom: 32px; }
+.lead b { color: var(--ink); font-weight: 600; }
+
+/* Capa */
+.hero { padding-top: 56px; }
+.hero h1 { font-size: clamp(38px, 6vw, 68px); font-weight: 700; letter-spacing: -0.025em; max-width: 17ch; margin-bottom: 20px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 8px 0 28px; max-width: 760px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.stat b { display: block; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 14px; }
+.callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 10px 10px 0; max-width: 70ch; }
+.callout.warn { background: var(--warn-soft); border-color: var(--warn); }
+.callout.good { background: var(--good-soft); border-color: var(--good); }
+
+/* Grades e cartões */
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) { .g3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .g2, .g3 { grid-template-columns: 1fr; } body { font-size: 17px; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.card h3 { font-size: 20px; margin-bottom: 8px; }
+.card .tag { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 4px; }
+.card .fix { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.card .fix .tag { color: var(--good); }
+.card details { margin-top: 10px; font-size: 16px; color: var(--muted); }
+.card summary { cursor: pointer; color: var(--accent); font-weight: 500; }
+.card ul { margin: 6px 0 0; padding-left: 20px; }
+.span2 { grid-column: span 2; }
+@media (max-width: 640px) { .span2 { grid-column: auto; } }
+
+/* Papéis */
+.role { position: relative; }
+.role .code { display: inline-block; font-family: var(--font-mono); font-weight: 600; background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 14px; margin-bottom: 8px; }
+:root[data-theme="dark"] .role .code { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .role .code { color: #04202b; } }
+.role p { font-size: 16px; color: var(--muted); }
+.role p b { color: var(--ink); font-weight: 600; }
+
+/* Mapa de documentos */
+.split { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.list { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.list .grp { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 8px 10px 4px; }
+.list button { text-align: left; border: 1px solid transparent; background: transparent; padding: 8px 10px; border-radius: 8px; font-family: var(--font-mono); font-size: 14px; }
+.list button:hover { background: var(--accent-soft); }
+.list button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .list button[aria-pressed="true"] { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .list button[aria-pressed="true"] { color: #04202b; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; min-height: 280px; }
+.panel h3 { font-family: var(--font-mono); font-size: 22px; color: var(--accent); margin-bottom: 14px; word-break: break-word; }
+.kv { display: grid; grid-template-columns: 130px 1fr; gap: 6px 16px; }
+.kv dt { font-weight: 600; color: var(--muted); font-size: 15px; }
+.kv dd { margin: 0; }
+@media (max-width: 560px) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: 8px; } }
+
+/* Semana */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.step { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 14px; text-align: left; min-width: 120px; flex: 1 1 120px; }
+.step b { display: block; font-family: var(--font-mono); color: var(--accent); font-size: 14px; }
+.step span { font-size: 15px; line-height: 1.25; display: block; }
+.step:hover { border-color: var(--accent); }
+.step[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step[aria-pressed="true"] b { color: #fff; }
+:root[data-theme="dark"] .step[aria-pressed="true"], :root[data-theme="dark"] .step[aria-pressed="true"] b { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .step[aria-pressed="true"], :root:not([data-theme="light"]) .step[aria-pressed="true"] b { color: #04202b; } }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.pill { font-size: 14px; padding: 3px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); }
+.pill b { font-weight: 600; }
+.checks { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.checks li { padding-left: 28px; position: relative; }
+.checks li::before { content: ""; position: absolute; left: 4px; top: 7px; width: 12px; height: 7px; border-left: 3px solid var(--good); border-bottom: 3px solid var(--good); transform: rotate(-45deg); }
+
+/* Simulador da feature */
+.sim { display: grid; grid-template-columns: 290px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .sim { grid-template-columns: 1fr; } }
+.sim-list { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.sim-list button { display: flex; gap: 10px; align-items: baseline; text-align: left; border: 1px solid transparent; background: transparent; padding: 8px 10px; border-radius: 8px; font-size: 16px; line-height: 1.3; }
+.sim-list button i { font-style: normal; font-family: var(--font-mono); font-size: 13px; color: var(--muted); min-width: 18px; }
+.sim-list button:hover { background: var(--accent-soft); }
+.sim-list button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+.sim-list button.done i { color: var(--good); }
+.lane { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.actor { font-size: 14px; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); display: inline-flex; gap: 7px; align-items: center; }
+.actor::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+.actor.on { color: var(--ink); font-weight: 600; border-color: currentColor; }
+.actor.on::before { opacity: 1; }
+.actor[data-a="dev"].on { color: var(--c-dev); }
+.actor[data-a="agente"].on { color: var(--c-agente); }
+.actor[data-a="script"].on { color: var(--c-script); }
+.actor[data-a="revisor"].on { color: var(--c-revisor); }
+.actor[data-a="ci"].on { color: var(--c-ci); }
+.actor[data-a="lider"].on { color: var(--c-lider); }
+.track { display: flex; align-items: center; gap: 0; margin: 4px 0 16px; flex-wrap: wrap; row-gap: 8px; }
+.node { font-family: var(--font-mono); font-size: 14px; padding: 5px 12px; border-radius: 8px; border: 1.5px solid var(--line); color: var(--muted); background: var(--surface); }
+.node.on { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+:root[data-theme="dark"] .node.on { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .node.on { color: #04202b; } }
+.node.on.ok { border-color: var(--good); background: var(--good); }
+.link { width: 28px; height: 2px; background: var(--line); }
+.side { font-size: 13px; color: var(--muted); margin-left: 14px; }
+.side code { font-size: 12px; }
+.term { background: var(--term-bg); color: var(--term-fg); border-radius: 10px; padding: 14px 16px; font-family: var(--font-mono); font-size: 14px; line-height: 1.6; overflow-x: auto; margin: 14px 0 8px; }
+.term div { white-space: pre; }
+.term .cmd::before { content: "$ "; color: var(--term-dim); }
+.term .cmd { color: #fff; font-weight: 500; }
+.term .ok { color: #6fe0a0; }
+.term .err { color: #ff9b8e; }
+.term .dim { color: var(--term-dim); }
+.caption { font-size: 15px; color: var(--muted); }
+.ctrl { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 18px; border-radius: 8px; font-weight: 500; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #04202b; } }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+
+.exp { display: grid; gap: 10px; margin: 14px 0 4px; }
+.exp-i { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
+.exp-i .c { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent); word-break: break-word; }
+.exp-i p { font-size: 16px; margin-top: 4px; }
+.exp-i p b { font-weight: 600; }
+.term-h { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-top: 14px; }
+.term-h + .term { margin-top: 6px; }
+
+/* Testes */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 18px; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 9px 20px; font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #04202b; } }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; margin-bottom: 14px; }
+.fbox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 16px; flex: 1 1 150px; position: relative; }
+.fbox small { display: block; font-family: var(--font-mono); color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.fbox.bad { border-color: var(--bad); background: var(--bad-soft); }
+.fbox.good { border-color: var(--good); background: var(--good-soft); }
+.layers { counter-reset: l; }
+.layers .card::before { counter-increment: l; content: "Camada " counter(l); font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); display: block; margin-bottom: 4px; }
+
+/* E se */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 16px; font-size: 16px; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .chip[aria-pressed="true"] { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip[aria-pressed="true"] { color: #04202b; } }
+.answer { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .answer { grid-template-columns: 1fr; } }
+.answer h3 { font-size: 24px; margin-bottom: 12px; }
+.big { font-size: 20px; }
+
+/* Cronograma */
+.weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+@media (max-width: 860px) { .weeks { grid-template-columns: repeat(2, 1fr); } }
+.week { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; position: relative; }
+.week:hover { border-color: var(--accent); }
+.week[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.week b { font-family: var(--font-mono); color: var(--accent); }
+.week .d { display: block; font-size: 14px; color: var(--muted); }
+.week .t { display: block; font-size: 19px; font-weight: 600; margin: 4px 0 10px; }
+.meter { height: 12px; background: var(--bg); border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.meter i { display: block; height: 100%; background: var(--accent); }
+.week .n { font-size: 14px; color: var(--muted); margin-top: 6px; display: block; font-variant-numeric: tabular-nums; }
+.now { position: absolute; top: 10px; right: 12px; font-size: 12px; font-family: var(--font-mono); background: var(--warn-soft); color: var(--warn); border-radius: 999px; padding: 1px 9px; }
+
+/* Hoje */
+.todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.todo li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.todo label { display: flex; gap: 14px; padding: 14px 18px; cursor: pointer; align-items: flex-start; }
+.todo input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.todo b { display: block; font-weight: 600; }
+.todo span { color: var(--muted); font-size: 16px; }
+.todo input:checked + div b { text-decoration: line-through; color: var(--muted); }
+.cmds { margin-top: 18px; }
+footer { max-width: 1160px; margin: 0 auto; padding: 24px 20px 56px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Lastro <span>/ harness</span></div>
+    <nav class="nav" id="nav" aria-label="Seções"></nav>
+    <div class="hint">use ← → para navegar</div>
+  </div>
+  <div class="bar" id="bar"></div>
+</header>
+
+<main>
+
+<!-- 00 Capa -->
+<section id="inicio" class="hero" data-label="Início">
+  <div class="eyebrow">Reunião do time · 10/11/2026</div>
+  <h1>Como vamos construir o Lastro <em>rápido e sem retrabalho</em></h1>
+  <p class="lead">Sete pessoas, quatro semanas, uma demo ao vivo. O <b>harness</b> é o conjunto de documentos, scripts e regras que mantém o time e os agentes de IA trabalhando na mesma direção, sem esperar uns pelos outros e sem quebrar o que já funciona.</p>
+  <div class="stats">
+    <div class="stat"><b>7</b><span>pessoas, todas codando</span></div>
+    <div class="stat"><b>4</b><span>semanas de sprint</span></div>
+    <div class="stat"><b>07/12</b><span>demo ao vivo na banca</span></div>
+    <div class="stat"><b>1</b><span>fonte da verdade: o repositório</span></div>
+  </div>
+  <div class="callout"><b>Como ler esta página.</b> Cada seção responde uma pergunta. Clique nos itens, avance com as setas do teclado. Os comandos e saídas mostrados são exemplos ilustrativos do fluxo proposto (v0.1), a ajustar na primeira semana.</div>
+</section>
+
+<!-- 01 Problemas -->
+<section id="problemas" data-label="Problemas">
+  <div class="eyebrow">01 · Por que isso existe</div>
+  <h2>Cinco coisas que costumam dar errado em projeto com agentes</h2>
+  <p class="lead">Sem método, quanto mais gente e mais IA, mais rápido o projeto <b>acumula erro e espera</b>. Cada problema abaixo tem um mecanismo que o evita.</p>
+  <div class="grid g2" id="problems"></div>
+</section>
+
+<!-- 02 Time -->
+<section id="time" data-label="Time">
+  <div class="eyebrow">02 · Quem faz o quê</div>
+  <h2>Seis papéis, sete pessoas, todo mundo escreve código</h2>
+  <p class="lead">Papel não é cargo nem tempo fora do código. É <b>dono de um tipo de decisão</b>, com uns 1,5 a 2 horas por semana além do desenvolvimento. Cada papel tem um suplente.</p>
+  <div class="grid g3" id="roles"></div>
+  <div class="callout warn" style="margin-top:16px"><b>Cuidado na escolha.</b> Quem tem só 5 h por semana não deve assumir A, B, G ou Líder: são os papéis que mais travam os outros quando atrasam.</div>
+</section>
+
+<!-- 03 Repositório -->
+<section id="repositorio" data-label="Repositório">
+  <div class="eyebrow">03 · A memória do time</div>
+  <h2>O repositório é a única fonte da verdade</h2>
+  <p class="lead">Se algo não está escrito aqui, o agente não sabe e a próxima pessoa também não. Cada documento tem um trabalho e um jeito de ser atualizado. <b>Clique em um arquivo.</b></p>
+  <div class="split">
+    <div class="list" id="doclist"></div>
+    <div class="panel" id="docpanel"></div>
+  </div>
+</section>
+
+<!-- 04 Semana -->
+<section id="semana" data-label="Semana">
+  <div class="eyebrow">04 · O ritmo</div>
+  <h2>A semana tem sete momentos e uma única reunião</h2>
+  <p class="lead">Planejamento na segunda (45 min) e o resto é assíncrono. Sexta sem reunião. <b>Clique em cada momento.</b></p>
+  <div class="steps" id="weeksteps"></div>
+  <div class="panel" id="weekpanel"></div>
+</section>
+
+<!-- 05 Feature -->
+<section id="feature" data-label="Feature">
+  <div class="eyebrow">05 · O ciclo de uma feature</div>
+  <h2>Da ficha ao merge, passo a passo</h2>
+  <p class="lead">Uma feature é um comportamento verificável que uma pessoa termina em 1 ou 2 sessões. Avance com <b>Próximo passo</b> e veja quem age, o estado da ficha e o que aparece no terminal.</p>
+  <div class="sim">
+    <div class="sim-list" id="simlist"></div>
+    <div class="panel" id="simpanel"></div>
+  </div>
+</section>
+
+<!-- 06 Testes -->
+<section id="testes" data-label="Testes">
+  <div class="eyebrow">06 · Qualidade sem gargalo</div>
+  <h2>Quem escreve os testes, se o agente também implementa?</h2>
+  <p class="lead">O risco é o agente <b>corrigir a própria prova</b>: escreve código e teste juntos, tudo passa e o erro continua. Não precisamos de QA separado, precisamos de <b>ordem e independência</b>. Alterne abaixo.</p>
+  <div class="seg" role="group" aria-label="Comparar">
+    <button type="button" id="segA" aria-pressed="false">Sem harness</button>
+    <button type="button" id="segB" aria-pressed="true">Com harness</button>
+  </div>
+  <div class="flow" id="testflow"></div>
+  <div class="callout" id="testnote" style="margin-bottom:28px"></div>
+  <div class="grid g3 layers">
+    <div class="card"><h3>Módulo</h3><p>Testes por feature, escritos antes do código a partir dos critérios da ficha. Rápidos: rodam a cada commit.</p></div>
+    <div class="card"><h3>Contratos e arquitetura</h3><p>Garantem que os módulos conversam como combinado e que só a pasta <code>ia/</code> fala com o LLM. Quebrou a regra, a CI avisa.</p></div>
+    <div class="card"><h3>Jornadas E2E</h3><p>Geramos um extrato falso a partir de um razão conhecido, então o <b>gabarito já nasce junto</b>. O Excel final é comparado com ele.</p></div>
+  </div>
+  <p class="caption" style="margin-top:12px">Para a IA: provedor falso nos testes (sem custo e sem rede) e um conjunto fixo de 40 a 60 casos, com cerca de 20% reservado como prova final.</p>
+</section>
+
+<!-- 07 E se -->
+<section id="ese" data-label="E se…">
+  <div class="eyebrow">07 · Quando algo trava</div>
+  <h2>E se isso acontecer comigo?</h2>
+  <p class="lead">Para cada situação comum existe uma resposta combinada, com dono e prazo. Escolha uma.</p>
+  <div class="chips" id="chips"></div>
+  <div class="answer" id="answer"></div>
+</section>
+
+<!-- 08 Cronograma -->
+<section id="cronograma" data-label="Cronograma">
+  <div class="eyebrow">08 · Quatro semanas</div>
+  <h2>Metas semanais e gatilho de corte</h2>
+  <p class="lead">Medimos progresso em <b>features que passam</b>, não em horas. Se no domingo estivermos abaixo da meta, rebaixamos itens da lista combinada. As quatro funcionalidades essenciais nunca saem.</p>
+  <div class="weeks" id="weeks"></div>
+  <div class="panel" id="weekdetail" style="min-height:0"></div>
+  <p class="caption" style="margin-top:12px">Metas e datas são proposta. O feriado de 20/11 precisa ser confirmado.</p>
+</section>
+
+<!-- 09 Hoje -->
+<section id="hoje" data-label="Hoje">
+  <div class="eyebrow">09 · Fechamento</div>
+  <h2>O que precisamos decidir hoje</h2>
+  <p class="lead">Marque conforme fecharmos na reunião. O primeiro gate é <b>amanhã, 11/11</b>: CI e ambiente rodando em pelo menos 5 das 7 máquinas.</p>
+  <ul class="todo" id="todo"></ul>
+  <div class="cmds">
+    <h3 style="font-size:20px;margin-bottom:6px">Sua primeira feature, em quatro comandos</h3>
+    <p class="caption">No PowerShell, com o Docker ligado. <code>hx</code> é o atalho para <code>docker compose run --rm dev python tools/harness.py</code>.</p>
+    <div class="term" aria-label="Comandos">
+<div class="cmd">git checkout main; git pull</div>
+<div class="cmd">hx init</div>
+<div class="cmd">hx feature start LEI-02 --owner seunome</div>
+<div class="cmd">hx feature verify LEI-02</div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>Fluxo de desenvolvimento do Lastro · proposta v0.1 para a reunião de 10/11/2026 · baseado no curso Learn Harness Engineering, adaptado ao projeto.</footer>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function el(tag, attrs, html) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  /* ---------- Navegação ---------- */
+  var sections = $$("main > section");
+  var nav = $("#nav");
+  sections.forEach(function (s) {
+    var b = el("button", { type: "button", "data-id": s.id }, s.getAttribute("data-label"));
+    b.addEventListener("click", function () { go(s.id); });
+    nav.appendChild(b);
+  });
+  function go(id) {
+    var s = document.getElementById(id);
+    if (!s) return;
+    s.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    try { history.replaceState(null, "", "#" + id); } catch (e) { /* sandbox */ }
+  }
+  var current = 0;
+  function setCurrent(i) {
+    current = i;
+    $$("button", nav).forEach(function (b, k) {
+      if (k === i) { b.setAttribute("aria-current", "true"); b.scrollIntoView({ block: "nearest", inline: "center" }); }
+      else b.removeAttribute("aria-current");
+    });
+  }
+  function onScroll() {
+    var y = window.scrollY + 120, idx = 0;
+    sections.forEach(function (s, i) { if (s.offsetTop <= y) idx = i; });
+    if (idx !== current || !$("button[aria-current]", nav)) setCurrent(idx);
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    $("#bar").style.width = (h > 0 ? Math.min(100, window.scrollY / h * 100) : 0) + "%";
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var t = e.target && e.target.tagName;
+    if (t === "INPUT" || t === "TEXTAREA") return;
+    if (e.key === "ArrowRight") { e.preventDefault(); go(sections[Math.min(sections.length - 1, current + 1)].id); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); go(sections[Math.max(0, current - 1)].id); }
+  });
+
+  /* ---------- 01 Problemas ---------- */
+  var problems = [
+    { t: "O agente não sabe o que o time decidiu", s: "Cada sessão recomeça do zero. Duas pessoas pedem a mesma coisa e recebem soluções diferentes.",
+      f: "<code>AGENTS.md</code> curto, <code>progress/</code> por feature e <code>DECISIONS.md</code>. Tudo o que importa está escrito.",
+      ex: "Ontem decidimos guardar dinheiro em centavos (inteiro). Hoje outro agente usou decimal e o saldo não fechou. Com a regra no <code>AGENTS.md</code>, o agente já começa sabendo." },
+    { t: "O agente corrige a própria prova", s: "Ele escreve o código e os testes juntos. Tudo passa, mas o comportamento está errado.",
+      f: "Testes antes do código, em sessão separada, com gabarito sintético independente e revisão por outra pessoa.",
+      ex: "O código ignora lançamentos duplicados e o teste, escrito depois, confirma isso. Com teste primeiro, o critério da ficha exige tratar duplicados e o teste falha até o código fazer." },
+    { t: "Ninguém sabe o que está pronto", s: "“Quase pronto” por dias. A demo chega e ninguém sabe o que funciona.",
+      f: "Estado só muda por script. <code>passing</code> significa comando verde. Rotina noturna reverifica tudo.",
+      ex: "A feature de leitura OFX estava “pronta”, mas uma mudança em outro módulo a quebrou. O noturno detecta de madrugada e a ficha volta para <code>regressed</code>." },
+    { t: "Esperas e conflitos entre pessoas", s: "PR parado, decisão em aberto, duas pessoas mexendo no mesmo arquivo.",
+      f: "Módulos com dono, WIP=1, issues com prazo de 24 h, feature <code>blocked</code> e troca de feature em vez de esperar.",
+      ex: "Falta o layout do Domínio. Em vez de parar, a feature de exportação fica <code>blocked</code> por D-05 e a pessoa pega outra. Ninguém decide sozinho." },
+    { t: "Dado sensível vazando", s: "O repositório é público e extratos reais têm dados de terceiros (LGPD).",
+      f: "Só dados sintéticos, <code>anonimizar()</code> antes de qualquer LLM e <code>check-clean</code> antes de cada PR.",
+      ex: "Alguém cola um trecho de extrato real no teste. O <code>check-clean</code> acusa no PR e o revisor bloqueia pela rubrica." , wide: true }
+  ];
+  var pg = $("#problems");
+  problems.forEach(function (p, i) {
+    var c = el("div", { "class": "card" + (p.wide ? " span2" : "") });
+    c.innerHTML = '<span class="tag">Problema ' + (i + 1) + '</span><h3>' + p.t + '</h3><p>' + p.s +
+      '</p><div class="fix"><span class="tag">O harness resolve com</span><p>' + p.f + '</p></div>' +
+      '<details><summary>Ver exemplo</summary><p style="margin-top:6px">' + p.ex + '</p></details>';
+    pg.appendChild(c);
+  });
+
+  /* ---------- 02 Papéis ---------- */
+  var roles = [
+    { c: "Líder", n: "Produto e pilotos", m: "Prioriza o que entra na demo e decide as perguntas de negócio (D-xx).", x: "Guardião de dados: nada real entra no repositório.", s: "F4b" },
+    { c: "A", n: "Processo", m: "Cuida do <code>harness.py</code>, da CI, do <code>AGENTS.md</code> e da rotina noturna.", x: "Decide: regras do processo.", s: "B" },
+    { c: "B", n: "Contratos", m: "Define e congela as entradas e saídas entre módulos (Pydantic e OpenAPI).", x: "Decide: formato dos dados que circulam.", s: "A" },
+    { c: "G", n: "Gabarito e E2E", m: "Gerador de extratos sintéticos, defeitos plantados e as jornadas J1 a J3.", x: "Decide: o que é a resposta certa nos testes.", s: "vaga 5" },
+    { c: "Front", n: "Interface", m: "React ou Vue: telas de revisão em três grupos e perguntas ao cliente.", x: "Decide: experiência do contador.", s: "a definir" },
+    { c: "F4b", n: "IA", m: "Classificação com LLM, justificativa e confiança, conjunto de avaliação e a pasta <code>ia/</code>.", x: "Decide: prompts, modelo e custo.", s: "Líder" }
+  ];
+  var rg = $("#roles");
+  roles.forEach(function (r) {
+    var c = el("div", { "class": "card role" });
+    c.innerHTML = '<span class="code">' + r.c + '</span><h3>' + r.n + '</h3><p>' + r.m + '</p><p style="margin-top:8px"><b>' + r.x + '</b></p><p class="caption" style="margin-top:8px">Suplente: ' + r.s + '</p>';
+    rg.appendChild(c);
+  });
+
+  /* ---------- 03 Documentos ---------- */
+  var docs = [
+    { g: "Todo dia", n: "AGENTS.md", w: "Manual curto (até 100 linhas) que todo agente lê ao abrir uma sessão: comandos, regras e onde achar o resto.", q: "Donos do harness, por PR.", u: "Você não precisa decorar. Se o agente errou por falta de regra, abra issue <code>harness:</code>." },
+    { g: "Todo dia", n: "features/<ID>.json", w: "Uma ficha por feature: o que entregar, critérios de aceite, comando de verificação, dependências e estado (not_started, in_progress, blocked, passing, regressed).", q: "Critérios: líder e dono do módulo. Estado: <b>só o script</b>.", u: "Leia antes de começar. Critério ambíguo? PR corrigindo a ficha antes de codar." },
+    { g: "Todo dia", n: "progress/<ID>.md", w: "Diário da feature: objetivo, o que foi feito, o que rodou, o que falhou, decisões e <b>próxima ação</b>. Permite que outra pessoa ou sessão continue de onde você parou.", q: "Quem está com a feature.", u: "Antes de parar o dia, deixe a próxima ação clara." },
+    { g: "Todo dia", n: "PR template + rubrica", w: "O template exige a tabela critério → teste. A rubrica tem 6 itens de 0 a 2 pontos.", q: "Template: donos do harness. Rubrica: quem revisa.", u: "Aceitar com 9 ou mais de 12 e nenhum 0 em correção, verificação e escopo. Bloquear se houver dado real ou segredo." },
+    { g: "Quando precisar", n: "DECISIONS.md", w: "Registro das decisões (D-01, D-02…) com contexto, escolha e quem decidiu. Decisão em aberto aparece como aberta.", q: "Quem tem autoridade sobre o tema, por PR.", u: "Depende de uma decisão aberta? Não decida sozinho: marque <code>blocked</code> e abra issue <code>decisao:</code>." },
+    { g: "Quando precisar", n: "docs/modulos/", w: "Uma página por módulo: responsabilidade, entradas e saídas, armadilhas conhecidas.", q: "Dono do módulo.", u: "Leia antes de mexer. Achou uma armadilha? Duas linhas no mesmo PR." },
+    { g: "Quando precisar", n: "docs/bancos/", w: "Como cada banco formata o extrato (colunas, datas, sinais, casos estranhos). Só estrutura, nunca dados reais.", q: "Quem trabalha na leitura.", u: "Formato novo? Documente o padrão e gere uma fixture sintética equivalente." },
+    { g: "Quando precisar", n: "SECURITY.md", w: "Regras de dados. O repositório é público: proibido extrato real, nome de escritório ou cliente, CPF/CNPJ e chaves.", q: "Guardião de dados.", u: "Só fixtures sintéticas. LLM só por <code>src/lastro/ia/</code>, depois de <code>anonimizar()</code>." },
+    { g: "Quando precisar", n: "layouts/dominio.yaml", w: "Colunas e regras do Excel de importação do Domínio. Hoje está marcado PROVISORIO, até termos o layout oficial (D-05).", q: "Módulo de exportação.", u: "Gere o Excel lendo este arquivo. Quando o layout real chegar, só o YAML muda." },
+    { g: "Automação", n: "tools/harness.py", w: "A mão do processo: um script comum (não é um agente) que cria fichas, roda verificações e atualiza estados. Mesmo resultado em qualquer máquina.", q: "Donos do harness.", u: "<code>init</code>, <code>state</code>, <code>verify</code>, <code>feature start</code>, <code>feature verify</code>, <code>fixtures build</code>, <code>check-clean</code>." },
+    { g: "Automação", n: "noturno.yml", w: "Rotina das 03:00 (Brasília): roda os E2E e reverifica as features <code>passing</code>. Se algo quebrou, abre uma issue.", q: "Donos do harness.", u: "Olhe as issues de manhã. Feature que voltou a falhar vira <code>regressed</code> e passa na frente de feature nova." }
+  ];
+  var dl = $("#doclist"), lastG = "";
+  var dbtns = [];
+  docs.forEach(function (d, i) {
+    if (d.g !== lastG) { dl.appendChild(el("div", { "class": "grp" }, d.g)); lastG = d.g; }
+    var b = el("button", { type: "button", "aria-pressed": "false" });
+    b.textContent = d.n;
+    b.addEventListener("click", function () { showDoc(i); });
+    dl.appendChild(b); dbtns.push(b);
+  });
+  function esc(s) { return s.replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function showDoc(i) {
+    dbtns.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    var d = docs[i];
+    $("#docpanel").innerHTML = '<h3>' + esc(d.n) + '</h3><dl class="kv"><dt>Para que serve</dt><dd>' + d.w + '</dd><dt>Quem mexe</dt><dd>' + d.q + '</dd><dt>Como usar</dt><dd>' + d.u + '</dd></dl>';
+  }
+  showDoc(0);
+
+  /* ---------- 04 Semana ---------- */
+  var week = [
+    { k: "A", n: "Preparar", who: "Donos do harness", t: "30 a 45 min", when: "Domingo à noite ou segunda cedo", out: "Features da semana prontas e decisões fechadas.",
+      l: ["Rodar <code>hx state</code> e olhar as issues do noturno. Feature <code>regressed</code> entra primeiro.", "Escolher as features pela meta de <code>passing</code> e pela ordem de dependência.", "Revisar os <code>features/*.json</code>: critérios verificáveis e <code>depende_de</code> preenchido.", "Atualizar o <code>DECISIONS.md</code>: decisão aberta que trava uma feature a deixa <code>blocked</code> e fora da sprint.", "Contratos novos congelados pelo dono B antes da segunda.", "Tudo em um PR de preparação, mesclado antes da reunião."] },
+    { k: "B", n: "Planejar", who: "Time todo", t: "45 min", when: "Segunda", out: "Cada pessoa com uma feature e um responsável gravado na ficha.",
+      l: ["0–5 min: painel do <code>hx state</code> projetado.", "5–15 min: só as decisões abertas que travam alguém hoje.", "15–35 min: cada pessoa escolhe uma feature e lê a ficha em voz alta. Critério errado? Fala agora.", "35–45 min: riscos e dependências cruzadas.", "WIP=1: ninguém com duas features em andamento.", "O líder faz um commit preenchendo <code>responsavel</code>. Sem isso, não dá para iniciar."] },
+    { k: "C", n: "Começar", who: "Quem pegou a feature", t: "5 min de setup", when: "Logo após o planejamento", out: "Branch criada, progress aberto, testes escritos e falhando.",
+      l: ["<code>hx feature start LEI-02 --owner voce</code> cria a branch, marca <code>in_progress</code> e cria o progress.", "Ler a ficha, a página do módulo e as decisões citadas (10 min).", "Escrever os testes primeiro a partir dos critérios. Eles devem falhar.", "Commitar os testes sozinhos, para provar que vieram antes do código.", "Abrir sessão nova do agente para implementar, sem editar os testes."] },
+    { k: "D", n: "Desenvolver", who: "Quem pegou a feature", t: "1 a 2 sessões", when: "Durante a semana", out: "Implementação passando e progress atualizado.",
+      l: ["Commits pequenos, só na pasta do seu módulo. <code>hx verify</code> com frequência.", "Ao parar o dia, escrever a próxima ação no progress.", "Precisa de contrato novo? Issue <code>contrato:</code>. Precisa de decisão? Issue <code>decisao:</code> e feature <code>blocked</code>.", "Falhou duas vezes pelo mesmo motivo? Pare, registre a causa e peça ajuda.", "Passou de 2 sessões? Avise: feature grande vira duas fichas."] },
+    { k: "E", n: "Entregar", who: "Quem pegou a feature", t: "15 a 20 min", when: "Quando os testes passam", out: "PR aberto com todas as evidências.",
+      l: ["<code>hx verify --e2e</code>, <code>hx feature verify LEI-02</code> e <code>hx check-clean</code>.", "Fechar o progress: feito, rodei, falhou, decisão, próxima ação.", "Abrir o PR com o template, incluindo a tabela critério → teste.", "Pedir revisão. Você não mescla o próprio PR.", "Só depois de abrir o PR, iniciar a próxima feature."] },
+    { k: "F", n: "Revisar", who: "Outra pessoa + CI", t: "15 a 25 min", when: "Em até 24 h", out: "Feature <code>passing</code> na main.",
+      l: ["Ler a ficha e conferir a tabela critério → teste.", "Rodar <code>hx feature verify</code> na branch, sem confiar só na CI.", "Preencher a rubrica: aceitar, pedir ajustes ou bloquear.", "Comentário que se repete em dois PRs vira check automático.", "Merge por squash, com CI verde e aprovação."] },
+    { k: "G", n: "Fechar", who: "Donos do harness", t: "30 min", when: "Domingo", out: "Painel da semana e lições viradas em regra.",
+      l: ["<code>hx state</code> comparado com a meta acumulada.", "Abaixo da meta: aplicar o rebaixamento combinado. As 4 essenciais não saem.", "Limpeza: branches mortas, progress concluídos, <code>qualidade.md</code>.", "Erro repetido da semana vira check, teste ou regra no <code>AGENTS.md</code>.", "Registrar decisões em <code>DECISIONS.md</code> e alimentar o próximo A."] }
+  ];
+  var wsb = [];
+  week.forEach(function (w, i) {
+    var b = el("button", { "class": "step", type: "button", "aria-pressed": "false" }, "<b>" + w.k + "</b><span>" + w.n + "</span>");
+    b.addEventListener("click", function () { showWeek(i); });
+    $("#weeksteps").appendChild(b); wsb.push(b);
+  });
+  function showWeek(i) {
+    wsb.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    var w = week[i];
+    $("#weekpanel").innerHTML = '<h3 style="font-family:var(--font-body);color:var(--ink);font-size:26px">' + w.k + ' · ' + w.n + '</h3>' +
+      '<div class="meta" style="margin-top:10px"><span class="pill"><b>Quem:</b> ' + w.who + '</span><span class="pill"><b>Quando:</b> ' + w.when + '</span><span class="pill"><b>Duração:</b> ' + w.t + '</span></div>' +
+      '<ul class="checks">' + w.l.map(function (x) { return "<li>" + x + "</li>"; }).join("") + '</ul>' +
+      '<div class="callout good" style="margin-top:16px"><b>Saída:</b> ' + w.out + '</div>';
+  }
+  showWeek(1);
+
+  /* ---------- 05 Simulador da feature ---------- */
+  var ACTORS = [["lider", "Líder"], ["dev", "Dev"], ["agente", "Agente"], ["script", "Script"], ["revisor", "Revisor"], ["ci", "CI"]];
+  var sim = [
+    { n: "Ficha com responsável", a: ["lider"], st: "not_started", d: "No planejamento, o líder grava o <code>responsavel</code> na ficha, em um commit na main. É isso que deixa o WIP=1 visível para todos.",
+      term: [["cmd", "hx state"], ["out", "LEI-02  not_started  responsavel: voce  depende_de: LEI-01 (passing)"]],
+      note: "Sem responsável, o comando de início recusa." },
+    { n: "Começar a feature", a: ["dev", "script"], st: "in_progress", d: "Um script cria a branch, muda o estado e abre o progress. <b>Não chama o agente</b>: só prepara os arquivos que ele vai ler.",
+      term: [["cmd", "hx feature start LEI-02 --owner voce"], ["ok", "OK  branch feat/LEI-02-leitura-ofx criada"], ["ok", "OK  estado: in_progress"], ["ok", "OK  progress/LEI-02.md criado"]],
+      note: "Estado local; a main só muda no merge." },
+    { n: "Testes primeiro", a: ["dev", "agente"], st: "in_progress", d: "Com a ficha e a página do módulo abertas, os testes são escritos a partir dos critérios. Eles <b>devem falhar</b>.",
+      term: [["cmd", "hx verify"], ["err", "FALHOU  test_ofx.py::test_saldo_confere"], ["err", "FALHOU  test_ofx.py::test_ignora_linha_vazia"], ["dim", "4 falharam, 0 passaram"]],
+      note: "Falhar agora é o certo: se o teste passasse sem código, não testaria nada." },
+    { n: "Implementar", a: ["agente"], st: "in_progress", d: "Sessão nova do agente, com uma regra fixa: implementar até passar, <b>sem editar os testes</b>. Se o teste parecer errado, vira PR na ficha.",
+      term: [["cmd", "hx verify"], ["ok", "OK  lint"], ["ok", "OK  arquitetura (só leitura/ importa o leitor de OFX)"], ["ok", "OK  4 testes passaram"]],
+      note: "Ao parar o dia: próxima ação escrita no progress." },
+    { n: "Verificar a feature", a: ["script"], st: "passing", st2: "passing (na branch)", d: "Quem marca <code>passing</code> é o script, rodando os comandos da ficha. Ninguém edita o estado à mão.",
+      term: [["cmd", "hx verify --e2e"], ["ok", "OK  J1 extrato simples → Excel (gabarito confere)"], ["cmd", "hx feature verify LEI-02"], ["ok", "OK  c1 saldo final confere"], ["ok", "OK  c2 linha vazia é ignorada"], ["ok", "estado: passing (gravado pelo script)"], ["cmd", "hx check-clean"], ["ok", "OK  nenhum dado real, nome proibido ou segredo"]],
+      note: "" },
+    { n: "Abrir o PR", a: ["dev"], st: "passing", st2: "passing (na branch)", d: "O template pede a tabela critério → teste, a saída da verificação e o checklist de segurança. Você não mescla o próprio PR.",
+      term: [["cmd", "git push -u origin feat/LEI-02-leitura-ofx"], ["dim", "PR aberto com o template:"], ["out", "Critério                      Teste"], ["out", "LEI-02-c1 saldo confere        test_saldo_confere"], ["out", "LEI-02-c2 linha vazia ignorada  test_ignora_linha_vazia"]],
+      note: "Agora pode iniciar a próxima feature (WIP continua 1)." },
+    { n: "Revisão pela rubrica", a: ["revisor"], st: "passing", st2: "passing (na branch)", d: "Outra pessoa roda a verificação na branch e preenche a rubrica. Aceita com 9 ou mais de 12 e nenhum 0 em correção, verificação e escopo.",
+      term: [["cmd", "hx feature verify LEI-02"], ["ok", "OK  passing confirmado pelo revisor"], ["out", "Rubrica: correção 2 · verificação 2 · escopo 2 · demais 5/6"], ["ok", "Total 11/12  →  ACEITAR"]],
+      note: "Um comentário que se repete em dois PRs vira check automático." },
+    { n: "CI e merge", a: ["ci", "revisor"], st: "passing", st2: "passing (na main)", ok: true, d: "A CI refaz a verificação e o PR entra por squash. Ficha, progress e código chegam juntos. De madrugada, o noturno reverifica tudo que está <code>passing</code>.",
+      term: [["ok", "pr.yml  verify OK · feature verify LEI-02 OK"], ["ok", "merge (squash) na main"], ["dim", "03:00  noturno: 7 features passing reverificadas, 0 falhas"]],
+      note: "Se o noturno falhar, a ficha vira regressed e entra na frente da fila." }
+  ];
+
+  var simExp = [
+    [["hx state", "Lê as fichas em <code>features/</code> e mostra o estado e o responsável de cada feature.", "Cada linha é uma feature. A LEI-02 está <code>not_started</code>, é sua e depende da LEI-01, que já está <code>passing</code>. Dá para começar."]],
+    [["hx feature start LEI-02 --owner voce", "Confere se você é o responsável e se não tem outra feature em andamento. Depois cria a branch, muda o estado para <code>in_progress</code> e cria o progress.", "Três linhas OK: branch criada, estado alterado e progress aberto. Se algo estiver errado, ele recusa e explica o motivo e a correção."]],
+    [["hx verify", "Roda a rodada rápida: lint, testes e regras de arquitetura.", "Uma linha FALHOU por teste, com o nome dele, e o total no fim. Aqui falhar é o esperado: prova que os testes novos exigem código."]],
+    [["hx verify", "O mesmo comando, agora com o código implementado.", "Tudo OK: lint, arquitetura e os 4 testes passando. Se algum falhar, a mensagem diz o erro, o motivo e como corrigir."]],
+    [["hx verify --e2e", "Roda a rodada rápida e as jornadas completas: gera um extrato sintético, processa até o Excel e compara com o gabarito.", "Uma linha por jornada. OK significa que o Excel final bateu com o gabarito."],
+     ["hx feature verify LEI-02", "Executa os comandos de verificação escritos na ficha, um por critério. Se todos passarem, grava <code>passing</code>. É o único jeito de marcar esse estado.", "Uma linha por critério e, no fim, o estado gravado. Se um critério falhar, o estado não muda e o comando mostra qual."],
+     ["hx check-clean", "Varre os arquivos atrás de dado real, nomes proibidos e segredos.", "OK quer dizer que nada foi encontrado. Se achar algo, o comando falha e aponta o arquivo e a linha."]],
+    [["git push -u origin feat/LEI-02-leitura-ofx", "Não é um comando do harness: envia sua branch ao GitHub, o que permite abrir o PR.", "O PR é aberto com o template, e a tabela critério → teste mostra qual teste prova cada critério da ficha."]],
+    [["hx feature verify LEI-02 (pelo revisor)", "O revisor repete a verificação na branch dele, sem confiar só no que o autor relatou.", "OK significa que o resultado se reproduz em outra máquina."],
+     ["Rubrica (preenchida pelo revisor)", "Não é um comando: o revisor dá nota de 0 a 2 em seis itens.", "11 de 12 aceita, pois a regra é 9 ou mais e nenhum 0 em correção, verificação e escopo."]],
+    [["pr.yml (automático, da CI)", "A CI refaz o <code>verify</code> e o <code>feature verify</code> no PR. Com tudo verde e aprovação, o PR entra por squash.", "Duas linhas OK e o merge. Se algo falhar, o merge fica bloqueado."],
+     ["noturno.yml (automático, 03:00)", "Roda <code>verify-all</code>: reverifica todas as features <code>passing</code>.", "Quantas features foram reverificadas e quantas falharam. Se alguma falhar, ela vira <code>regressed</code> e abre uma issue."]]
+  ];
+  var cur = 0, simBtns = [];
+  var sl = $("#simlist");
+  sim.forEach(function (s, i) {
+    var b = el("button", { type: "button", "aria-pressed": "false" }, "<i>" + (i + 1) + "</i><span>" + s.n + "</span>");
+    b.addEventListener("click", function () { showSim(i); });
+    sl.appendChild(b); simBtns.push(b);
+  });
+  function showSim(i) {
+    cur = i;
+    simBtns.forEach(function (b, k) {
+      b.setAttribute("aria-pressed", k === i ? "true" : "false");
+      b.classList.toggle("done", k < i);
+    });
+    var s = sim[i];
+    var lane = ACTORS.map(function (a) { return '<span class="actor' + (s.a.indexOf(a[0]) >= 0 ? " on" : "") + '" data-a="' + a[0] + '">' + a[1] + '</span>'; }).join("");
+    var nodes = ["not_started", "in_progress", "passing"].map(function (n, k) {
+      return (k ? '<span class="link"></span>' : "") + '<span class="node' + (s.st === n ? " on" + (s.ok ? " ok" : "") : "") + '">' + n + '</span>';
+    }).join("");
+    var term = s.term.map(function (r) { return '<div class="' + (r[0] === "out" ? "" : r[0]) + '">' + esc(r[1]) + '</div>'; }).join("");
+    $("#simpanel").innerHTML =
+      '<div class="caption" style="font-family:var(--font-mono)">Passo ' + (i + 1) + ' de ' + sim.length + '</div>' +
+      '<h3 style="font-family:var(--font-body);color:var(--ink);font-size:26px;margin:4px 0 12px">' + s.n + '</h3>' +
+      '<div class="lane" aria-label="Quem age">' + lane + '</div>' +
+      '<div class="track" aria-label="Estado da ficha">' + nodes + '<span class="side">' + (s.st2 ? esc(s.st2) + " · " : "") + 'desvios: <code>blocked</code>, <code>regressed</code></span></div>' +
+      '<p>' + s.d + '</p>' +
+      '<div class="exp">' + simExp[i].map(function (x) { return '<div class="exp-i"><div class="c">' + esc(x[0]) + '</div><p><b>O que faz:</b> ' + x[1] + '</p><p><b>Como ler o retorno:</b> ' + x[2] + '</p></div>'; }).join("") + '</div>' +
+      '<div class="term-h">Exemplo de retorno</div>' +
+      '<div class="term" role="img" aria-label="Exemplo de terminal">' + term + '</div>' +
+      '<p class="caption">' + (s.note ? s.note + " " : "") + 'Saída ilustrativa.</p>' +
+      '<div class="ctrl"><button type="button" class="btn" id="simPrev"' + (i === 0 ? " disabled" : "") + '>Voltar</button>' +
+      '<button type="button" class="btn primary" id="simNext"' + (i === sim.length - 1 ? " disabled" : "") + '>Próximo passo</button>' +
+      '<button type="button" class="btn" id="simReset">Reiniciar</button></div>';
+    $("#simPrev").addEventListener("click", function () { showSim(cur - 1); });
+    $("#simNext").addEventListener("click", function () { showSim(cur + 1); });
+    $("#simReset").addEventListener("click", function () { showSim(0); });
+  }
+  showSim(0);
+
+  /* ---------- 06 Testes ---------- */
+  var tests = {
+    A: { flow: [["1", "O agente escreve o código", ""], ["2", "O mesmo agente escreve os testes do que acabou de escrever", ""], ["3", "Tudo fica verde", ""], ["4", "O erro chega na demo", "bad"]],
+         note: "<b>Resultado:</b> o teste só confirma o que o código já faz. Se o agente entendeu errado o requisito, os dois estão errados juntos e nada acusa." },
+    B: { flow: [["1", "Testes escritos a partir dos critérios da ficha", "good"], ["2", "Eles falham, como esperado", "good"], ["3", "Sessão nova implementa, sem editar os testes", "good"], ["4", "Gabarito sintético e E2E conferem o resultado", "good"], ["5", "Outra pessoa revisa pela rubrica", "good"]],
+         note: "<b>Resultado:</b> o teste nasce do requisito, não do código. O gabarito vem de fora do agente. Cada PR traz a tabela critério → teste, e quem revisa confere." }
+  };
+  function showTests(k) {
+    $("#segA").setAttribute("aria-pressed", k === "A" ? "true" : "false");
+    $("#segB").setAttribute("aria-pressed", k === "B" ? "true" : "false");
+    $("#testflow").innerHTML = tests[k].flow.map(function (f) { return '<div class="fbox ' + f[2] + '"><small>passo ' + f[0] + '</small>' + f[1] + '</div>'; }).join("");
+    var n = $("#testnote"); n.innerHTML = tests[k].note;
+    n.className = "callout " + (k === "A" ? "warn" : "good");
+  }
+  $("#segA").addEventListener("click", function () { showTests("A"); });
+  $("#segB").addEventListener("click", function () { showTests("B"); });
+  showTests("B");
+
+  /* ---------- 07 E se ---------- */
+  var cases = [
+    { c: "O critério está ambíguo", a: "Pare antes de codar e abra um PR corrigindo a ficha. O dono do módulo aprova.", w: "Você e o dono do módulo", t: "No mesmo dia", y: "Evita testar e construir a coisa errada." },
+    { c: "Falta uma decisão", a: "Abra uma issue <code>decisao:</code>, marque a feature como <code>blocked</code> (bloqueada_por: D-xx) e peça outra feature ao líder.", w: "Quem tem autoridade sobre o tema", t: "Resposta em 24 h", y: "Ninguém fica parado e ninguém decide sozinho." },
+    { c: "O noturno falhou", a: "A feature vira <code>regressed</code>. Quem a escreveu conserta antes de começar feature nova.", w: "Autor da feature", t: "Antes da próxima feature", y: "A main continua confiável." },
+    { c: "Meu PR está sem review", a: "Depois de 24 h, avise no canal. O líder reatribui o revisor.", w: "Líder", t: "24 h", y: "A fila de revisão não vira gargalo." },
+    { c: "O agente falhou 2 vezes igual", a: "Pare. Registre a causa no progress e peça ajuda antes de tentar a terceira.", w: "Você, com apoio do dono do módulo", t: "Assim que notar", y: "Evita horas girando em círculo e gastando tokens." },
+    { c: "Preciso mudar um contrato", a: "Abra uma issue <code>contrato:</code>. O dono B decide e versiona. Enquanto isso, siga com outra parte da feature.", w: "Dono B (contratos)", t: "24 h", y: "Mudar entrada ou saída não quebra os outros módulos." },
+    { c: "A feature está grande demais", a: "Passou de 2 sessões? Avise e divida em duas fichas, cada uma com seus critérios.", w: "Você e o dono do módulo", t: "Ao perceber", y: "Feature pequena gera PR pequeno e revisão rápida." },
+    { c: "Quero pegar a feature de outra pessoa", a: "O responsável é único. A troca é um PR na ficha, com aviso ao dono atual.", w: "Os dois, com o líder", t: "Mesmo dia", y: "Evita duas pessoas fazendo a mesma coisa." },
+    { c: "Meu Docker não sobe", a: "Abra uma issue <code>harness:</code> no mesmo dia e peça para parear com quem já roda.", w: "Dono A (processo)", t: "Mesmo dia", y: "Ambiente igual para todos é o que sustenta o resto." },
+    { c: "Recebi um extrato real", a: "Ele não entra no repositório, que é público. Descreva só a estrutura em <code>docs/bancos/</code> e gere uma fixture sintética equivalente.", w: "Guardião de dados", t: "Antes de qualquer commit", y: "Protege os dados de terceiros (LGPD)." }
+  ];
+  var chips = [];
+  cases.forEach(function (c, i) {
+    var b = el("button", { type: "button", "class": "chip", "aria-pressed": "false" }, c.c);
+    b.addEventListener("click", function () { showCase(i); });
+    $("#chips").appendChild(b); chips.push(b);
+  });
+  function showCase(i) {
+    chips.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    var c = cases[i];
+    $("#answer").innerHTML =
+      '<div class="card"><span class="tag">Situação</span><h3>' + c.c + '</h3><p class="big">' + c.a + '</p></div>' +
+      '<div class="card"><dl class="kv" style="grid-template-columns:1fr">' +
+      '<dt>Quem resolve</dt><dd>' + c.w + '</dd><dt>Em quanto tempo</dt><dd>' + c.t + '</dd><dt>Por que evita gargalo</dt><dd>' + c.y + '</dd></dl></div>';
+  }
+  showCase(1);
+
+  /* ---------- 08 Cronograma ---------- */
+  var weeks = [
+    { k: "S1", d: "09/11 a 15/11", n: "Fundação", goal: 6, start: new Date(2026, 10, 9), end: new Date(2026, 10, 15, 23, 59),
+      g: ["11/11: CI e <code>init</code> rodando em pelo menos 5 das 7 máquinas.", "13/11: contratos congelados, <code>AGENTS.md</code> e features revisados, primeiro PR mesclado.", "15/11: gerador de fixtures pronto e a jornada J1 em versão inicial."] },
+    { k: "S2", d: "16/11 a 22/11", n: "Ritmo", goal: 18, start: new Date(2026, 10, 16), end: new Date(2026, 10, 22, 23, 59),
+      g: ["Meta acumulada: 18 features <code>passing</code>.", "20/11 é feriado: confirmar se o time trabalha.", "Primeiro uso do gatilho de corte no domingo, se necessário."] },
+    { k: "S3", d: "23/11 a 29/11", n: "Integração", goal: 32, start: new Date(2026, 10, 23), end: new Date(2026, 10, 29, 23, 59),
+      g: ["Meta acumulada: 32 features <code>passing</code>.", "Jornadas E2E completas rodando no noturno.", "Revisão da lista de itens rebaixados com o time."] },
+    { k: "S4", d: "30/11 a 06/12", n: "Congelamento", goal: 39, start: new Date(2026, 10, 30), end: new Date(2026, 11, 6, 23, 59),
+      g: ["Meta acumulada: 39 features <code>passing</code>.", "03/12: congelamento. Depois disso, só correção.", "04/12: ensaio da demo. 05 e 06/12: reserva.", "07/12: demo ao vivo para a banca e o AILab."] }
+  ];
+  var wb = [], nowIdx = -1, today = new Date();
+  weeks.forEach(function (w, i) {
+    if (today >= w.start && today <= w.end) nowIdx = i;
+    var b = el("button", { type: "button", "class": "week", "aria-pressed": "false" },
+      (i === nowIdx ? '<span class="now">semana atual</span>' : "") +
+      '<b>' + w.k + '</b><span class="d">' + w.d + '</span><span class="t">' + w.n + '</span>' +
+      '<div class="meter" aria-hidden="true"><i style="width:' + Math.round(w.goal / 39 * 100) + '%"></i></div>' +
+      '<span class="n">meta acumulada: ' + w.goal + ' de 39</span>');
+    b.addEventListener("click", function () { showWk(i); });
+    $("#weeks").appendChild(b); wb.push(b);
+  });
+  function showWk(i) {
+    wb.forEach(function (b, k) { b.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    var w = weeks[i];
+    $("#weekdetail").innerHTML = '<h3 style="font-family:var(--font-body);color:var(--ink);font-size:22px;margin-bottom:10px">' + w.k + ' · ' + w.n + '</h3><ul class="checks">' + w.g.map(function (x) { return "<li>" + x + "</li>"; }).join("") + '</ul>';
+  }
+  showWk(nowIdx >= 0 ? nowIdx : 0);
+
+  /* ---------- 09 Hoje ---------- */
+  var todo = [
+    ["Quem assume cada papel", "Líder, A, B, G, Front e F4b, com os suplentes. Considere as horas de cada pessoa antes de decidir."],
+    ["React ou Vue", "Decidir em até 48 horas. Critério: pelo menos 3 pessoas conseguem revisar o código."],
+    ["Horários dos rituais", "Planejamento na segunda (45 min), fechamento no domingo (30 min), sexta sem reunião."],
+    ["Feriado de 20/11", "Trabalhamos ou não? Isso muda a meta da S2."],
+    ["Regra do repositório público", "Concordar que nenhum dado real, nome de escritório ou segredo entra, nem em teste."],
+    ["Dados para teste", "Quem pede ao escritório um ou dois extratos anonimizados, só para estudar a estrutura, fora do repositório."]
+  ];
+  var tl = $("#todo");
+  todo.forEach(function (t, i) {
+    var li = el("li");
+    li.innerHTML = '<label for="todo' + i + '"><input type="checkbox" id="todo' + i + '"><div><b>' + t[0] + '</b><span>' + t[1] + '</span></div></label>';
+    tl.appendChild(li);
+  });
+
+  /* ---------- Início ---------- */
+  setCurrent(0);
+  onScroll();
+  var h = (location.hash || "").replace("#", "");
+  if (h && document.getElementById(h)) setTimeout(function () { go(h); }, 60);
+})();
+</script>
+</body>
+</html>
