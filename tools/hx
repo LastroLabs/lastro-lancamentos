@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Atalho do harness do Lastro (Linux/macOS): ./tools/hx <comando>
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+elif command -v python >/dev/null 2>&1; then
+  PY=python
+else
+  echo "Python não encontrado. Instale o Python 3.10 ou superior (ex.: sudo apt install python3)." >&2
+  exit 1
+fi
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$PY" "$DIR/harness.py" "$@"

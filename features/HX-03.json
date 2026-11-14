@@ -1,0 +1,117 @@
+{
+  "id": "HX-03",
+  "titulo": "Listar o estado das features e recusar fichas inválidas",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "hx state lista as fichas válidas com resumo por estado",
+      "exemplo": {
+        "entrada": "3 fichas válidas: 1 passing, 1 in_progress, 1 not_started",
+        "saida": "tabela com os 3 IDs e a linha 'Resumo: 1 passing · 1 in_progress · 1 not_started · 0 blocked · 0 regressed'"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Referências inconsistentes entre campos são recusadas",
+      "exemplo": {
+        "entrada": "id diferente do nome do arquivo; critério sem verificação; verificação de critério inexistente; depende_de inexistente; ciclo A->B->A e auto-dependência",
+        "saida": "um problema listado para cada caso"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Estado incoerente com os demais campos é recusado",
+      "exemplo": {
+        "entrada": "estado 'feito'; blocked sem bloqueada_por; in_progress sem responsavel; passing sem evidencia; not_started com evidencia; campo obrigatório ausente",
+        "saida": "um problema listado para cada caso"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Entrada inválida não lista nada, aponta todos os problemas juntos e sai com código 2",
+      "exemplo": {
+        "entrada": "pasta features vazia; ficha com vírgula sobrando; duas fichas, cada uma com um problema diferente",
+        "saida": "stdout vazio e código 2; o motivo cita o arquivo quebrado e traz os dois problemas"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_a.py::test_lista_fichas_validas -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_id_diferente_do_nome_do_arquivo -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_criterio_sem_verificacao -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_verificacao_para_criterio_inexistente -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_depende_de_inexistente -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_ciclo_de_dependencia -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_estado_invalido -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_blocked_sem_bloqueada_por -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_in_progress_sem_responsavel -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_passing_sem_evidencia -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_not_started_com_evidencia -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_campo_obrigatorio_ausente -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_a.py::test_sem_fichas_erra -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_a.py::test_json_quebrado_aponta_arquivo -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_a.py::test_ficha_invalida_nao_imprime_tabela -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_a.py::test_acumula_varios_problemas -q"
+    }
+  ],
+  "evidencia": null
+}

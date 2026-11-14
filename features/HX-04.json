@@ -1,0 +1,97 @@
+{
+  "id": "HX-04",
+  "titulo": "Detectar CPF, CNPJ, segredos e nomes proibidos em um texto",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "CPF e CNPJ só são acusados quando o dígito verificador é válido",
+      "exemplo": {
+        "entrada": "número com DV válido montado no teste; 111.222.333-00; 11111111111",
+        "saida": "o de DV válido é acusado; o de DV inválido e o de dígitos repetidos são ignorados; vale para CPF e CNPJ"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Chaves de API, chave privada e atribuição de segredo são acusadas; placeholders não",
+      "exemplo": {
+        "entrada": "valores de chave montados no teste; API_KEY=changeme; TOKEN=<seu-token>",
+        "saida": "os valores reais são acusados; os dois placeholders passam limpos"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Nomes proibidos são acusados sem diferença de acento ou caixa; sem a variável a checagem é pulada com aviso",
+      "exemplo": {
+        "entrada": "LASTRO_NOMES_PROIBIDOS com um nome fictício; arquivo com o nome em maiúsculas e sem acento; execução sem a variável",
+        "saida": "o arquivo é acusado; sem a variável, aviso em stderr e código 0"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_cpf_valido_detectado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_cpf_dv_invalido_ignorado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_cpf_digitos_repetidos_ignorado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_cnpj_valido_detectado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_cnpj_dv_invalido_ignorado -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_chave_sk_detectada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_chave_aws_detectada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_token_github_detectado -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_chave_privada_detectada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_atribuicao_de_segredo_detectada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_atribuicao_placeholder_ignorada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_b.py::test_nome_proibido_detectado_sem_acento_e_caixa -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_b.py::test_sem_env_de_nomes_avisa_e_continua -q"
+    }
+  ],
+  "evidencia": null
+}

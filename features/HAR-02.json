@@ -1,0 +1,85 @@
+{
+  "id": "HAR-02",
+  "titulo": "Filtrar hx state por estado e resumir só o que pede atenção",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "should",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-09"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "hx state aceita um ou mais estados e lista só as fichas desses estados",
+      "exemplo": {
+        "entrada": "3 fichas: HX-01 passing, HX-02 in_progress, HX-03 blocked; 'hx state in_progress' e 'hx state in_progress blocked'",
+        "saida": "a primeira lista só HX-02; a segunda lista HX-02 e HX-03"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A linha de resumo continua contando todas as fichas e filtro sem resultado não é erro",
+      "exemplo": {
+        "entrada": "'hx state regressed' com as 3 fichas acima",
+        "saida": "mensagem 'Nenhuma ficha em regressed', resumo com 1 passing · 1 in_progress · 1 blocked, código 0"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Filtro inválido ou ficha inválida dá código 2 e o filtro nunca esconde ficha inválida",
+      "exemplo": {
+        "entrada": "'hx state feito'; 'hx state passing' com uma ficha de JSON quebrado",
+        "saida": "o primeiro lista os cinco estados válidos na CORREÇÃO; o segundo recusa e não lista nada; ambos com código 2"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "hx state --resumo mostra só in_progress, blocked e regressed e conta as demais",
+      "exemplo": {
+        "entrada": "6 fichas: 2 passing, 1 in_progress, 1 blocked, 1 regressed, 1 not_started",
+        "saida": "3 linhas de fichas (as de atenção) e a linha 'Demais: 2 passing · 1 not_started'"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_um_estado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_varios_estados -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_resumo_conta_todas -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_sem_resultado_exit_0 -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_estado_invalido_exit_2 -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtro_nao_esconde_ficha_invalida -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_resumo_mostra_so_atencao -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_resumo_conta_demais -q"
+    }
+  ],
+  "evidencia": null
+}

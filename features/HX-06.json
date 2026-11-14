@@ -1,0 +1,93 @@
+{
+  "id": "HX-06",
+  "titulo": "Rodar ruff e pytest no container com hx verify",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O comando do container é montado conforme o sistema",
+      "exemplo": {
+        "entrada": "posix com uid 1000 e gid 1000; Windows",
+        "saida": "docker compose run --rm -T --user 1000:1000 dev ...; no Windows sem --user"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "ruff roda antes do pytest e os dois rodam mesmo quando o primeiro falha",
+      "exemplo": {
+        "entrada": "ruff com falha e pytest ok; pytest com falha; pytest com código 5 (nenhum teste coletado)",
+        "saida": "duas chamadas na ordem ruff e pytest; código 1; o código 5 conta como falha com mensagem própria"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Docker ausente ou desligado é erro de ambiente com código 2",
+      "exemplo": {
+        "entrada": "docker fora do PATH; docker info com código diferente de 0",
+        "saida": "ERRO/MOTIVO/CORREÇÃO e código 2 nos dois casos"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "O resumo mostra itens pulados e, na falha, só as últimas 40 linhas",
+      "exemplo": {
+        "entrada": "tudo ok; pytest falhando com 100 linhas de saída",
+        "saida": "linhas 'Arquitetura: PULADO' e 'E2E: PULADO' com código 0; na falha, 40 linhas"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_c.py::test_montar_comando_posix_com_user -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_c.py::test_montar_comando_windows_sem_user -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_c.py::test_ordem_ruff_antes_de_pytest -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_c.py::test_ruff_falha_ainda_roda_pytest -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_c.py::test_pytest_falha_exit_1 -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_c.py::test_pytest_nenhum_teste_coletado_e_falha -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_c.py::test_docker_ausente_exit_2 -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_c.py::test_docker_daemon_desligado_exit_2 -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_c.py::test_tudo_ok_exit_0_e_mostra_pulados -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_c.py::test_falha_mostra_cauda_da_saida -q"
+    }
+  ],
+  "evidencia": null
+}

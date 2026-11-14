@@ -1,0 +1,106 @@
+{
+  "id": "HX-07",
+  "titulo": "Verificar uma feature e gravar estado e evidência",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-03",
+    "HX-06"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Pré-condições impedem a verificação",
+      "exemplo": {
+        "entrada": "ID inexistente; ficha not_started; ficha blocked; árvore com arquivo modificado; outra ficha inválida; docker indisponível",
+        "saida": "cada caso recusa com mensagem própria; a ficha não muda"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Quando todas as verificações passam a ficha vira passing com evidência",
+      "exemplo": {
+        "entrada": "ficha in_progress com 2 verificações que passam; relógio fixo",
+        "saida": "estado passing; evidencia com data, commit e resultados; só estado e evidencia mudaram; comandos executados na ordem da ficha"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Quando uma verificação falha, in_progress não muda e passing vira regressed",
+      "exemplo": {
+        "entrada": "ficha in_progress com 1 verificação falhando; ficha passing com 1 verificação falhando",
+        "saida": "a primeira fica com os mesmos bytes e código 1; a segunda vira regressed com a evidência antiga mantida"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Reverificar uma ficha passing atualiza a evidência e comando fora da lista é recusado",
+      "exemplo": {
+        "entrada": "ficha passing verificada de novo com outro commit; comando 'python x.py' na ficha",
+        "saida": "data e commit novos na evidência; o comando é recusado antes de executar"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_id_inexistente -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_not_started_manda_rodar_start -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_blocked_mostra_bloqueio -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_arvore_suja_recusa -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_ficha_invalida_em_outra_feature_recusa -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_d.py::test_docker_indisponivel_exit_2 -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_d.py::test_todas_ok_marca_passing_e_grava_evidencia -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_d.py::test_executa_cada_verificacao_na_ordem -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_d.py::test_so_estado_e_evidencia_mudam -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_d.py::test_falha_em_in_progress_nao_altera_ficha -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_d.py::test_falha_em_passing_vira_regressed -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_d.py::test_reverifica_passing_atualiza_evidencia -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_d.py::test_comando_fora_da_allowlist_recusado -q"
+    }
+  ],
+  "evidencia": null
+}

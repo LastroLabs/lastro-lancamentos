@@ -1,0 +1,81 @@
+{
+  "id": "HX-05",
+  "titulo": "Varrer o repositório e relatar achados sem vazar o valor",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-04"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Só os arquivos certos são lidos",
+      "exemplo": {
+        "entrada": "git ls-files devolvendo 2 arquivos; sem git; arquivo binário; arquivo maior que 1 MB; pasta .git e node_modules",
+        "saida": "lê só a lista do git quando existe; sem git percorre a árvore; binário, arquivo grande e pastas ignoradas não são lidos"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O relatório mostra arquivo, linha e tipo, e nunca o valor encontrado",
+      "exemplo": {
+        "entrada": "um achado de cada tipo em arquivos de tmp_path",
+        "saida": "linha 'arquivo:linha  tipo'; nem o valor nem pedaço dele (4+ caracteres) aparece em stdout ou stderr"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O código de saída é 0 para repo limpo e 1 quando há achado",
+      "exemplo": {
+        "entrada": "repo sem achados; repo com um achado",
+        "saida": "0 e 1"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_usa_git_ls_files_quando_disponivel -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_fallback_sem_git -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_binario_ignorado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_arquivo_grande_ignorado -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_b.py::test_pasta_ignorada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_saida_nunca_contem_o_valor -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_b.py::test_saida_informa_arquivo_linha_tipo -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_b.py::test_repo_limpo_exit_0 -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_b.py::test_achado_exit_1 -q"
+    }
+  ],
+  "evidencia": null
+}

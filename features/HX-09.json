@@ -1,0 +1,81 @@
+{
+  "id": "HX-09",
+  "titulo": "Abrir a feature com branch, progress e estado in_progress",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-08"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O nome da branch vem do ID e do título em forma de slug",
+      "exemplo": {
+        "entrada": "títulos com acento, espaços, símbolos, mais de 40 caracteres e hífen no fim",
+        "saida": "slug em minúsculas, sem acento, só letras, números e hífen, no máximo 40 caracteres"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A branch sai de origin/main e o progress nasce do template sem sobrescrever o existente",
+      "exemplo": {
+        "entrada": "feature HAR-02 em dia 13/11/2026; progress/HAR-02.md já existente em outro teste",
+        "saida": "git switch -c feat/HAR-02-... origin/main; progress sem nenhum {{ restante; arquivo existente fica como estava"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "A ficha vira in_progress e a mudança é commitada e enviada na ordem add, commit e push",
+      "exemplo": {
+        "entrada": "ficha not_started aberta com sucesso",
+        "saida": "só o campo estado muda; chamadas git add, git commit e git push -u nessa ordem"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Falha no push mantém a branch local e orienta o que rodar",
+      "exemplo": {
+        "entrada": "git push falhando por rede",
+        "saida": "código 2; a CORREÇÃO traz o comando git push -u origin <branch>; a branch local continua"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_e.py::test_slug -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_cria_branch_a_partir_de_origin_main -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_cria_progress_com_substituicoes -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_nao_sobrescreve_progress_existente -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_e.py::test_ficha_vira_in_progress -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_e.py::test_commit_e_push_na_ordem -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_e.py::test_falha_no_push_mantem_branch_e_orienta -q"
+    }
+  ],
+  "evidencia": null
+}

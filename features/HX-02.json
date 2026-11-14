@@ -1,0 +1,69 @@
+{
+  "id": "HX-02",
+  "titulo": "Aceitar só comandos permitidos nas fichas e gravar fichas sem alterar o formato",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Comandos pytest e ruff com caminhos relativos passam na lista de permitidos",
+      "exemplo": {
+        "entrada": "'pytest tests/x.py::test_a -q'; 'ruff check src'; 'pytest -k \"cpf and dv\"'",
+        "saida": "validar_comando devolve None nos três"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Qualquer outro comando é recusado com o motivo",
+      "exemplo": {
+        "entrada": "'pytest; rm -rf /'; 'python x.py'; 'pytest ../x'; 'pytest /abs'; 'ruff format .'; 'pytest $(id)'",
+        "saida": "validar_comando devolve um texto de motivo em cada um"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "A ficha gravada mantém a ordem das chaves e os acentos",
+      "exemplo": {
+        "entrada": "ficha com título 'Descrição' e chaves em ordem não alfabética",
+        "saida": "arquivo relido tem as mesmas chaves na mesma ordem e 'Descrição' intacta"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A ficha é gravada com quebra de linha LF",
+      "exemplo": {
+        "entrada": "salvar_ficha no Windows ou Linux",
+        "saida": "nenhum byte \\r\\n no arquivo"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_a.py::test_comando_aceito -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_a.py::test_comando_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_a.py::test_salvar_preserva_ordem_e_utf8 -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_a.py::test_salvar_usa_lf -q"
+    }
+  ],
+  "evidencia": null
+}

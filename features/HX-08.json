@@ -1,0 +1,101 @@
+{
+  "id": "HX-08",
+  "titulo": "Recusar a abertura de feature quando as pré-condições não valem",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-03"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Ficha inexistente ou de outro responsável é recusada sem tocar a rede",
+      "exemplo": {
+        "entrada": "ID inexistente; ficha de outro responsável",
+        "saida": "erro com mensagem própria; nenhum fetch nem ls-remote foi chamado"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Só not_started e regressed abrem, e as dependências precisam estar passing",
+      "exemplo": {
+        "entrada": "fichas blocked, in_progress e passing; dependência em in_progress; ficha regressed",
+        "saida": "as três primeiras e a dependência pendente são recusadas listando o motivo; regressed é aceita"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Uma feature por vez por pessoa e uma branch por feature no remoto",
+      "exemplo": {
+        "entrada": "branch local feat/ não mesclada; ls-remote com refs/heads/feat/ do mesmo ID",
+        "saida": "os dois casos são recusados citando a branch; a filtragem do ls-remote é feita em Python, sem padrão com asterisco"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Árvore suja é recusada e as checagens sem rede vêm antes das de rede",
+      "exemplo": {
+        "entrada": "git status com uma linha; ficha inválida",
+        "saida": "recusa por árvore suja; com falha anterior nenhum fetch ou ls-remote é chamado"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_e.py::test_ficha_inexistente -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase_e.py::test_responsavel_diferente_recusa -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_blocked_recusa -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_in_progress_recusa -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_passing_recusa -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_dependencia_nao_passing_recusa -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase_e.py::test_regressed_pode_reiniciar -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_e.py::test_wip_recusa_com_branch_aberta -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_e.py::test_branch_remota_existente_recusa -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase_e.py::test_ls_remote_filtra_em_python -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_e.py::test_arvore_suja_recusa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fase_e.py::test_ordem_das_verificacoes_sem_rede_primeiro -q"
+    }
+  ],
+  "evidencia": null
+}

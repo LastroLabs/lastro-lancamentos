@@ -1,0 +1,9 @@
+[tool.ruff.lint]
+# EXE002: no Docker Desktop (Windows) o bind mount mostra todo arquivo como executável (755),
+# então o ruff do container acusa "executável sem shebang" em arquivos que não são.
+ignore = ["EXE002"]
+
+[tool.ruff.lint.per-file-ignores]
+# Estilo do teste da fase E (dict(...), `# fmt: skip` em expressão, dict mutável na classe do
+# git falso). O teste é a prova e não se edita ao implementar (AGENTS.md, regra 3).
+"tests/harness/test_fase_e.py" = ["C408", "RUF012", "RUF028"]

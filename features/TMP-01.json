@@ -1,0 +1,83 @@
+{
+  "id": "TMP-01",
+  "titulo": "Ter o esqueleto do hx com erros padronizados e códigos de saída",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "in_progress",
+  "responsavel": "caio-nascime",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Erro de negócio sai em stderr nas linhas ERRO, MOTIVO e CORREÇÃO, nessa ordem, e o código é 2",
+      "exemplo": {
+        "entrada": "main(['state']) com um comando que levanta HarnessErro('x','y','z')",
+        "saida": "stderr com 'ERRO: x', 'MOTIVO: y' e 'CORREÇÃO: z' nessa ordem; retorno 2"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Comando ausente ou desconhecido encerra com código 2",
+      "exemplo": {
+        "entrada": "hx sem subcomando; hx zzz",
+        "saida": "SystemExit com code 2 nos dois casos"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "main devolve o código em vez de chamar sys.exit, e _executar devolve código e saída de um comando",
+      "exemplo": {
+        "entrada": "main(['state'], raiz=tmp_path); _executar([python, '-c', 'print(1)'], tmp_path)",
+        "saida": "main retorna int sem levantar SystemExit; _executar devolve (0, '1\\n'); comando inexistente levanta FileNotFoundError"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "O arquivo do harness passa no lint",
+      "exemplo": {
+        "entrada": "ruff check tools/harness.py",
+        "saida": "nenhum aviso, código de saída 0"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase0.py::test_formato_do_erro -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fase0.py::test_harness_erro_vira_codigo_2 -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase0.py::test_sem_subcomando_sai_com_2 -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fase0.py::test_subcomando_desconhecido_sai_com_2 -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase0.py::test_main_nao_chama_sys_exit -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase0.py::test_executar_devolve_codigo_e_saida -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fase0.py::test_executar_comando_inexistente_levanta -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "ruff check tools/harness.py"
+    }
+  ],
+  "evidencia": null
+}
