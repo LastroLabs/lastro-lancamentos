@@ -36,7 +36,7 @@ Cada regra traz `[origem]`. Sem `vale` ou `expira`, ela vale sempre e não expir
 9. **Escopo é o de `docs/produto/requisitos_funcionais_v0.2.md`.** Não implemente o que é Won't. Mudou o escopo? Primeiro em `docs/` e na ficha, depois no código. [regra do time · expira: ao virar v1.0]
 10. **Uma feature por pessoa e por sessão.** Termine (testes verdes, `progress/<ID>.md` atualizado) antes de abrir outra. [WIP=1 · expira: se o time mudar o fluxo]
 11. **Contratos entre módulos estão em versão 0.** Mudou? Abra issue `contrato:` e avise o dono do módulo. [contratos não congelados · expira: após o esqueleto de ponta a ponta]
-12. **Algo indefinido? Pare e pergunte.** Não invente requisito, número ou regra (use `[definir]`) e não escolha stack, banco, provedor ou biblioteca nova por conta própria: registre em `DECISIONS.md`. [sessões anteriores inventando detalhes]
+12. **Algo indefinido? Pare e pergunte.** Não invente requisito, número ou regra (use `[definir]`) e não escolha stack, banco ou provedor por conta própria: registre em `DECISIONS.md`. **Biblioteca nova pode ser escolhida** quando a tarefa exigir: compare 2 a 3 opções (licença, manutenção, Python 3.12), prefira a mais simples e já comum no ecossistema, registre a escolha e o motivo no `plan.md` (ou em `DECISIONS.md`, se afetar mais de uma feature) e adicione a dependência ao arquivo de requisitos. [sessões anteriores inventando detalhes · biblioteca liberada em 17/11/2026]
 
 ## 4. Onde achar o resto (leia só quando a tarefa pedir)
 
