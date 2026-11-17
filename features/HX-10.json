@@ -1,0 +1,91 @@
+{
+  "id": "HX-10",
+  "titulo": "Rodar verify e check-clean na CI a cada push e pull request",
+  "modulo": "ci",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O workflow dispara em todo push e em toda abertura ou atualização de pull_request, em qualquer branch, e nunca usa pull_request_target",
+      "exemplo": {
+        "entrada": "ler .github/workflows/pr.yml",
+        "saida": "on tem push e pull_request sem filtro de branches; pull_request_target não aparece em nenhum lugar do arquivo"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O workflow tem permissão somente de leitura e cada job tem tempo limite",
+      "exemplo": {
+        "entrada": "ler .github/workflows/pr.yml",
+        "saida": "permissions: contents: read no nível do workflow; todo job com timeout-minutes"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Os jobs verify e check-clean existem e rodam hx verify e hx check-clean",
+      "exemplo": {
+        "entrada": "ler .github/workflows/pr.yml",
+        "saida": "job verify executa hx verify; job check-clean executa hx check-clean; os nomes dos jobs não mudam"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Nenhuma chave de LLM nem segredo além de LASTRO_NOMES_PROIBIDOS é usado, e toda action é fixada por SHA de commit",
+      "exemplo": {
+        "entrada": "ler .github/workflows/pr.yml",
+        "saida": "único secrets.* é LASTRO_NOMES_PROIBIDOS; todo uses: termina em @ seguido de 40 caracteres hexadecimais"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Sem o segredo de nomes proibidos, o check-clean avisa de forma visível em vez de passar em silêncio",
+      "exemplo": {
+        "entrada": "execução sem LASTRO_NOMES_PROIBIDOS (ex.: PR de fork)",
+        "saida": "o job emite ::warning:: dizendo que a varredura de nomes foi pulada [definir: falhar ou só avisar]"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_dispara_em_push_e_pull_request_sem_filtro -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_nao_usa_pull_request_target -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_permissoes_somente_leitura -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_todo_job_tem_timeout -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_jobs_verify_e_check_clean -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_unico_segredo_e_nomes_proibidos -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_actions_fixadas_por_sha -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/ci/test_pr_workflow.py::test_avisa_quando_falta_o_segredo_de_nomes -q"
+    }
+  ],
+  "evidencia": null
+}
