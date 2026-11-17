@@ -24,10 +24,10 @@
     },
     {
       "id": "c2",
-      "descricao": "A branch sai de origin/main e o progress nasce do template sem sobrescrever o existente",
+      "descricao": "A branch sai de origin/developer e o progress nasce do template sem sobrescrever o existente",
       "exemplo": {
         "entrada": "feature HAR-02 em dia 13/11/2026; progress/HAR-02.md já existente em outro teste",
-        "saida": "git switch -c feat/HAR-02-... origin/main; progress sem nenhum {{ restante; arquivo existente fica como estava"
+        "saida": "git switch -c feat/HAR-02-... origin/developer; progress sem nenhum {{ restante; arquivo existente fica como estava"
       }
     },
     {
@@ -45,6 +45,14 @@
         "entrada": "git push falhando por rede",
         "saida": "código 2; a CORREÇÃO traz o comando git push -u origin <branch>; a branch local continua"
       }
+    },
+    {
+      "id": "c5",
+      "descricao": "O dev confirma a criação da branch; ao recusar (ou com --sem-branch) a feature inicia só localmente, sem branch, commit nem push",
+      "exemplo": {
+        "entrada": "terminal interativo: resposta s, resposta n ou vazia; flag --sem-branch; execução fora de terminal",
+        "saida": "s cria a branch a partir de origin/developer; n, vazia e --sem-branch não chamam switch, add, commit nem push, mas a ficha vira in_progress e o progress é criado; fora de terminal assume s"
+      }
     }
   ],
   "verificacao": [
@@ -54,7 +62,7 @@
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/harness/test_fase_e.py::test_cria_branch_a_partir_de_origin_main -q"
+      "comando": "pytest tests/harness/test_fase_e.py::test_cria_branch_a_partir_de_origin_developer -q"
     },
     {
       "criterio": "c2",
@@ -75,6 +83,22 @@
     {
       "criterio": "c4",
       "comando": "pytest tests/harness/test_fase_e.py::test_falha_no_push_mantem_branch_e_orienta -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fase_e.py::test_confirmando_cria_a_branch_a_partir_de_developer -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fase_e.py::test_recusando_inicia_so_localmente -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fase_e.py::test_sem_branch_pula_a_pergunta -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fase_e.py::test_fora_de_terminal_assume_sim -q"
     }
   ],
   "evidencia": null
