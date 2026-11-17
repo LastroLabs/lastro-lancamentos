@@ -6,7 +6,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -87,5 +87,50 @@
       "comando": "pytest tests/ci/test_pr_workflow.py::test_avisa_quando_falta_o_segredo_de_nomes -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-17T21:57:11Z",
+    "commit": "a1e66ba5f2a6",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_dispara_em_push_e_pull_request_sem_filtro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_nao_usa_pull_request_target -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_permissoes_somente_leitura -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_todo_job_tem_timeout -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_jobs_verify_e_check_clean -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_unico_segredo_e_nomes_proibidos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_actions_fixadas_por_sha -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/ci/test_pr_workflow.py::test_avisa_quando_falta_o_segredo_de_nomes -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
