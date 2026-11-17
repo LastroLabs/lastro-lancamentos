@@ -12,8 +12,13 @@ Contrato assumido (plano, fase e):
 - a data do progress (DD/MM/AAAA) vem de `harness._agora()`.
 - ordem das checagens: fichas válidas → ID existe → responsável → estado → dependências →
   WIP (`git branch`) → `git fetch` → `git ls-remote` → `git status`. Só então escreve.
-- execução: `git switch -c <branch> origin/main` → progress → ficha → `git add` →
+- execução: `git switch -c <branch> origin/developer` → progress → ficha → `git add` →
   `git commit -m "chore(<ID>): inicia feature"` → `git push -u origin <branch>`.
+- confirmação (HX-09 c5): depois de todas as checagens, em terminal interativo, o comando pergunta
+  se deve criar a branch. `s` segue o fluxo acima; `n`, resposta vazia ou `--sem-branch` só mudam a
+  ficha e criam o progress, sem `switch`, `add`, `commit` nem `push`. Fora de terminal assume `s`.
+  O terminal e a leitura da resposta passam por `harness._terminal_interativo` e
+  `harness._ler_resposta`, que os testes trocam.
 - falha de HarnessErro vira exit 2 com ERRO / MOTIVO / CORREÇÃO em stderr.
 """
 
@@ -323,7 +328,7 @@ def test_wip_recusa_com_branch_aberta(tmp_path, capsys, preparar):
     assert "feat/HAR-03-x" in err  # cita a branch aberta
     consulta = git.chamada("branch")
     assert "--list" in consulta and "feat/*" in consulta
-    assert "--no-merged" in consulta and "origin/main" in consulta
+    assert "--no-merged" in consulta and "origin/developer" in consulta
     assert not (set(git.verbos) & {"fetch", "ls-remote"})  # a checagem é local
 
 
@@ -429,13 +434,13 @@ def test_ordem_das_verificacoes_no_caminho_feliz(tmp_path, capsys, preparar):
 # ---------------------------------------------------------------------------
 
 
-def test_cria_branch_a_partir_de_origin_main(tmp_path, capsys, preparar):
+def test_cria_branch_a_partir_de_origin_developer(tmp_path, capsys, preparar):
     git = preparar()
 
     codigo, out, err = _iniciar(tmp_path, capsys)
 
     assert codigo == 0, err
-    assert git.chamada("switch") == ["switch", "-c", BRANCH, "origin/main"]
+    assert git.chamada("switch") == ["switch", "-c", BRANCH, "origin/developer"]
     # mensagem final: branch, caminho do progress e próximo passo
     assert BRANCH in out
     assert "progress/HAR-02.md" in out
@@ -540,3 +545,130 @@ def test_falha_no_push_mantem_branch_e_orienta(tmp_path, capsys, preparar):
     # o trabalho local ficou: ficha in_progress e progress criado
     assert _ler(tmp_path / "features" / f"{ID}.json")["estado"] == "in_progress"
     assert (tmp_path / "progress" / f"{ID}.md").exists()
+
+
+# ---------------------------------------------------------------------------
+# HX-09 c5: confirmação da criação da branch (base origin/developer)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def terminal(monkeypatch):
+    """Simula um terminal interativo. `terminal(respostas)` devolve a lista das perguntas feitas."""
+
+    def _terminal(respostas):
+        perguntas = []
+        fila = iter(respostas)
+
+        def ler(pergunta):
+            perguntas.append(pergunta)
+            return next(fila)
+
+        monkeypatch.setattr(harness, "_terminal_interativo", lambda: True)
+        monkeypatch.setattr(harness, "_ler_resposta", ler)
+        return perguntas
+
+    return _terminal
+
+
+def _sem_pergunta(monkeypatch, interativo):
+    def nao_deve_perguntar(pergunta):
+        raise AssertionError(f"não devia perguntar nada: {pergunta!r}")
+
+    monkeypatch.setattr(harness, "_terminal_interativo", lambda: interativo)
+    monkeypatch.setattr(harness, "_ler_resposta", nao_deve_perguntar)
+
+
+@pytest.mark.parametrize("resposta", ["s", "S", "sim", " Sim "])
+def test_confirmando_cria_a_branch_a_partir_de_developer(tmp_path, capsys, preparar, terminal, resposta):
+    git = preparar()
+    perguntas = terminal([resposta])
+
+    codigo, _, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 0, err
+    assert len(perguntas) == 1
+    assert BRANCH in perguntas[0] and "origin/developer" in perguntas[0]
+    assert git.chamada("switch") == ["switch", "-c", BRANCH, "origin/developer"]
+    assert git.chamada("push") == ["push", "-u", "origin", BRANCH]
+    assert _ler(tmp_path / "features" / f"{ID}.json")["estado"] == "in_progress"
+
+
+@pytest.mark.parametrize("resposta", ["n", "N", "não", "nao", ""])
+def test_recusando_inicia_so_localmente(tmp_path, capsys, preparar, terminal, resposta):
+    git = preparar()
+    terminal([resposta])
+
+    codigo, out, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 0, err
+    assert not (set(git.verbos) & ESCRITA), f"escreveu no git sem branch: {git.verbos}"
+    # as checagens (inclusive de rede) rodaram antes da pergunta
+    assert git.ordem[-1] == "status"
+    # a feature iniciou: ficha in_progress e progress criado, só no disco
+    assert _ler(tmp_path / "features" / f"{ID}.json")["estado"] == "in_progress"
+    texto = (tmp_path / "progress" / f"{ID}.md").read_text(encoding="utf-8")
+    assert "{{" not in texto and "Responsável: caio" in texto
+    assert "progress/HAR-02.md" in out
+    assert "sem branch" in out.lower()
+    assert "teste" in out.lower()
+
+
+def test_resposta_invalida_pergunta_de_novo(tmp_path, capsys, preparar, terminal):
+    git = preparar()
+    perguntas = terminal(["talvez", "s"])
+
+    codigo, _, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 0, err
+    assert len(perguntas) == 2
+    assert "switch" in git.verbos
+
+
+def test_sem_branch_pula_a_pergunta(tmp_path, capsys, preparar, monkeypatch):
+    git = preparar()
+    _sem_pergunta(monkeypatch, interativo=True)
+
+    codigo = harness.main(["feature", "start", ID, "--sem-branch"], raiz=tmp_path)
+    err = capsys.readouterr().err
+
+    assert codigo == 0, err
+    assert not (set(git.verbos) & ESCRITA)
+    assert _ler(tmp_path / "features" / f"{ID}.json")["estado"] == "in_progress"
+    assert (tmp_path / "progress" / f"{ID}.md").exists()
+
+
+def test_fora_de_terminal_assume_sim(tmp_path, capsys, preparar, monkeypatch):
+    git = preparar()
+    _sem_pergunta(monkeypatch, interativo=False)
+
+    codigo, _, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 0, err
+    assert git.chamada("switch") == ["switch", "-c", BRANCH, "origin/developer"]
+    assert "push" in git.verbos
+
+
+def test_pergunta_so_depois_das_checagens(tmp_path, capsys, preparar, terminal):
+    git = preparar(respostas={("status",): (0, " M README.md\n")})  # árvore suja
+    perguntas = terminal(["s"])
+
+    codigo, _, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 2
+    _confere_erro(err)
+    assert perguntas == []  # recusou antes de perguntar
+    assert not (set(git.verbos) & ESCRITA)
+
+
+def test_recusando_nao_sobrescreve_progress_existente(tmp_path, capsys, preparar, terminal):
+    preparar([_ficha(estado="regressed", evidencia=copy.deepcopy(EVIDENCIA))])
+    terminal(["n"])
+    progress = tmp_path / "progress" / f"{ID}.md"
+    progress.write_text("# anotações da sessão anterior\n", encoding="utf-8")
+    antes = progress.read_bytes()
+
+    codigo, _, err = _iniciar(tmp_path, capsys)
+
+    assert codigo == 0, err
+    assert progress.read_bytes() == antes
