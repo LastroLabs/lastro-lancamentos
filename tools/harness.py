@@ -1026,6 +1026,15 @@ def _git_ou_erro(args: list[str], raiz: Path, erro: str, correcao: str) -> None:
         )
 
 
+def _desfazer_branch(branch: str, raiz: Path) -> bool:
+    """Volta para a branch anterior e apaga `branch` (que ainda não tem commits). True se deu certo."""
+    codigo, _ = _git(["switch", "-"], raiz)
+    if codigo != 0:
+        return False
+    codigo, _ = _git(["branch", "-d", branch], raiz)
+    return codigo == 0
+
+
 def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
     """Valida (barato → caro, rede por último), cria a branch, o progress e a ficha in_progress."""
     id_ = args.id
@@ -1058,7 +1067,25 @@ def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
         correcao="confira se a branch já existe localmente (git branch) e se origin/main está atualizada.",
     )
 
+    if not ficha.arquivo.is_file():
+        # A ficha só existia na árvore anterior: origin/main ainda não a tem.
+        desfeito = _desfazer_branch(branch, raiz)
+        raise HarnessErro(
+            erro=f"a ficha {id_} não existe na origin/main.",
+            motivo=f"depois de criar {branch} a partir de origin/main, features/{ficha.arquivo.name} sumiu: "
+            "a ficha (e o harness) ainda não foram mergeados na main.",
+            correcao=(
+                "faça o merge da ficha na main (PR) e rode o comando de novo. "
+                + (
+                    "A branch criada foi desfeita."
+                    if desfeito
+                    else f"Volte para a sua branch com git switch - e apague {branch} com git branch -d {branch}."
+                )
+            ),
+        )
+
     if template is not None:
+        progress.parent.mkdir(parents=True, exist_ok=True)
         valores = {
             "ID": id_,
             "TITULO": ficha["titulo"],
