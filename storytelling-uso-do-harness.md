@@ -113,7 +113,11 @@ O `hx` faz, nesta ordem (sem rede primeiro):
 4. confere que você não tem outra feature aberta (uma por pessoa);
 5. busca o remoto, vê que ninguém abriu branch `feat/HAR-02-*`, e confere árvore limpa.
 
-Depois executa: cria a branch a partir de `origin/main`, cria `progress/HAR-02.md` a partir do template, muda o estado para `in_progress`, commita e dá push.
+Depois **pergunta** se você quer criar a branch a partir de `origin/developer` (`[s/N]`).
+
+- **Sim:** cria a branch a partir de `origin/developer`, cria `progress/HAR-02.md` a partir do template, muda o estado para `in_progress`, commita e dá push.
+- **Não** (ou `--sem-branch`): não cria branch, não commita e não dá push. Só muda a ficha para `in_progress` e cria o `progress/HAR-02.md` no seu disco. Você cria a sua branch (por exemplo, a partir da de um colega) e faz o primeiro commit com esses dois arquivos.
+- Fora de um terminal (CI, scripts), assume sim.
 
 Saída (ilustrativa):
 
