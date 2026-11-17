@@ -12,6 +12,7 @@ Lastro (nome provisório) lê o extrato bancário de clientes pequenos de escrit
 
 - `hx state`: painel de features e quem está com cada uma (responde "qual o progresso?")
 - `hx feature start <ID> --owner <nome>`: pega a feature (branch, progress, estado)
+- `/planejar <ID>`: (comando do Claude Code, em sessão nova) avalia a feature e gera `planos/<ID>/plan.md` e `tasks.md`. Rode depois do `start`; um humano aprova antes dos testes.
 - `hx verify`: lint e testes · `hx feature verify <ID>`: prova pela ficha e grava `passing`
 - `hx check-clean`: procura dado real e segredo; rode antes de todo PR
 
@@ -41,6 +42,7 @@ Cada regra traz `[origem]`. Sem `vale` ou `expira`, ela vale sempre e não expir
 
 - `features/<ID>.json`: o que entregar e como provar. Leia ao começar uma feature.
 - `progress/<ID>.md`: de onde parou. Leia ao retomar; atualize ao terminar.
+- `planos/<ID>/plan.md` e `tasks.md`: o que decidir e o que fazer. Leia ao implementar ou escrever testes; as tasks mandam. Só um humano marca o plan como aprovado.
 - `docs/produto/requisitos_funcionais_v0.2.md`: requisitos RF-xxx e decisões D-01 a D-09. Leia antes de qualquer feature.
 - `docs/produto/proposta_v2.md`: visão, pilotos e plano até 07/12. Leia se faltar contexto de produto.
 - `docs/produto/simulacao_fluxo_usuarios.md`: fluxo tela a tela dos 3 papéis e dúvidas Q-xx. Leia ao mexer em telas ou fluxo.
