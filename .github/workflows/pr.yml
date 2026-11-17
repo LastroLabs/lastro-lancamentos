@@ -1,0 +1,49 @@
+# Confere cada push e cada pull request: `hx verify` (lint e testes) e `hx check-clean` (dado real e segredo).
+# Ficha: features/HX-10.json · Plano: planos/HX-10/plan.md
+name: PR
+
+# Sem filtro de branch ou de caminho: vale para qualquer branch.
+# Nunca usar pull_request_target aqui: ele daria segredos a código de fork.
+on:
+  push:
+  pull_request:
+
+# Só leitura: nenhum passo consegue alterar o repositório.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    # Tempo limite: nenhum job fica rodando para sempre.
+    timeout-minutes: 15
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Lint e testes
+        run: sh tools/hx verify
+
+  check-clean:
+    name: check-clean
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A lista de nomes proibidos fica num segredo: no Git ela revelaria os nomes.
+    # É o único segredo usado. Nenhuma chave de LLM entra na CI.
+    env:
+      LASTRO_NOMES_PROIBIDOS: ${{ secrets.LASTRO_NOMES_PROIBIDOS }}
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # PR de fork não recebe segredos. Em vez de passar calado, mostra um aviso.
+      # Só testa se a variável está vazia; nunca imprime o valor.
+      - name: Avisar se faltar o segredo de nomes
+        run: |
+          if [ -z "$LASTRO_NOMES_PROIBIDOS" ]; then
+            echo "::warning::Varredura de nomes pulada: o segredo não está disponível (PR de fork?). A revisão humana deve conferir os nomes."
+          fi
+
+      - name: Procurar dado real e segredo
+        run: sh tools/hx check-clean
