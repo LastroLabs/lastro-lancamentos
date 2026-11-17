@@ -5,7 +5,8 @@ Fase A (HX-02, HX-03): allowlist de comandos, gravação atômica de fichas e `h
 Fase B (HX-04, HX-05): `hx check-clean` (CPF/CNPJ, segredos e nomes proibidos; nunca imprime o valor).
 Fase C (HX-06): `hx verify` (ruff e pytest no container Docker).
 Fase D (HX-07): `hx feature verify <ID>` (roda a ficha no container e grava estado e evidência).
-Fase E (HX-08, HX-09): `hx feature start <ID>` (valida, cria branch e progress, commita e dá push).
+Fase E (HX-08, HX-09): `hx feature start <ID>` (valida, pergunta se cria a branch a partir de
+origin/developer, cria progress, muda a ficha e, se criou a branch, commita e dá push).
 
 Códigos de saída: 0 = ok · 1 = falha esperada (ex.: teste vermelho) · 2 = erro de uso ou de ambiente.
 `main` nunca chama sys.exit: só o bloco `if __name__ == "__main__"` faz isso.
@@ -864,6 +865,7 @@ def cmd_feature_verify(args: argparse.Namespace, raiz: Path) -> int:
 # ---------------------------------------------------------------------------
 
 LIMITE_DO_SLUG = 40
+BASE_REMOTA = "origin/developer"  # base das branches de feature (entrega da sprint)
 VARIAVEL_USUARIO = "HX_USUARIO"
 _MARCADORES_DO_PROGRESS = re.compile(r"\{\{(ID|TITULO|RESPONSAVEL|BRANCH|DATA)\}\}")
 
@@ -954,19 +956,19 @@ def _exigir_dependencias_prontas(ficha: dict, id_: str, fichas: list[dict]) -> N
 
 
 def _exigir_sem_wip(raiz: Path) -> None:
-    """WIP=1: o dev não pode ter outra branch feat/* ainda fora da main. Checagem local."""
-    codigo, saida = _git(["branch", "--list", "feat/*", "--no-merged", "origin/main"], raiz)
+    """WIP=1: o dev não pode ter outra branch feat/* ainda fora da developer. Checagem local."""
+    codigo, saida = _git(["branch", "--list", "feat/*", "--no-merged", BASE_REMOTA], raiz)
     if codigo != 0:
         raise HarnessErro(
             erro="não consegui conferir se você tem outra feature aberta.",
-            motivo=f"'git branch --no-merged origin/main' falhou: {saida.strip() or 'sem saída'}",
-            correcao="rode git fetch origin (para existir origin/main) e tente de novo.",
+            motivo=f"'git branch --no-merged {BASE_REMOTA}' falhou: {saida.strip() or 'sem saída'}",
+            correcao=f"rode git fetch origin (para existir {BASE_REMOTA}) e tente de novo.",
         )
     abertas = [linha.strip().lstrip("*+").strip() for linha in saida.splitlines() if linha.strip()]
     if abertas:
         raise HarnessErro(
             erro="você já tem uma feature aberta (uma por pessoa e por sessão).",
-            motivo="branch ainda fora da main: " + ", ".join(abertas) + ".",
+            motivo=f"branch ainda fora da {BASE_REMOTA.split('/')[-1]}: " + ", ".join(abertas) + ".",
             correcao="termine essa feature (PR aprovado e mergeado) ou apague a branch, e rode de novo.",
         )
 
@@ -1026,6 +1028,37 @@ def _git_ou_erro(args: list[str], raiz: Path, erro: str, correcao: str) -> None:
         )
 
 
+def _terminal_interativo() -> bool:
+    """True se há um terminal para perguntar. Função à parte para os testes a trocarem."""
+    entrada = sys.stdin
+    return entrada is not None and entrada.isatty()
+
+
+def _ler_resposta(pergunta: str) -> str:
+    """Mostra a pergunta e lê a resposta. Função à parte para os testes a trocarem."""
+    return input(pergunta)
+
+
+def _confirmar_criacao_da_branch(branch: str) -> bool:
+    """Pergunta se deve criar `branch` a partir da base. Fora de terminal assume sim.
+
+    Vazio e EOF contam como não (o padrão é [s/N]); resposta que não é sim nem não repete a pergunta.
+    """
+    if not _terminal_interativo():
+        return True
+    pergunta = f"Criar a branch {branch} a partir de {BASE_REMOTA}? [s/N] "
+    while True:
+        try:
+            resposta = _normalizar(_ler_resposta(pergunta))
+        except EOFError:
+            return False
+        if resposta in ("s", "sim", "y", "yes"):
+            return True
+        if resposta in ("", "n", "nao", "no"):
+            return False
+        print("Responda s (sim) ou n (não).")
+
+
 def _desfazer_branch(branch: str, raiz: Path) -> bool:
     """Volta para a branch anterior e apaga `branch` (que ainda não tem commits). True se deu certo."""
     codigo, _ = _git(["switch", "-"], raiz)
@@ -1036,7 +1069,7 @@ def _desfazer_branch(branch: str, raiz: Path) -> bool:
 
 
 def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
-    """Valida (barato → caro, rede por último), cria a branch, o progress e a ficha in_progress."""
+    """Valida (barato → caro, rede por último), confirma a branch, cria o progress e a ficha in_progress."""
     id_ = args.id
     fichas = _carregar_fichas_validas(
         raiz,
@@ -1060,29 +1093,31 @@ def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
 
     # Escrita.
     branch = f"feat/{id_}-{slug(ficha['titulo'])}"
-    _git_ou_erro(
-        ["switch", "-c", branch, "origin/main"],
-        raiz,
-        erro=f"não consegui criar a branch {branch}.",
-        correcao="confira se a branch já existe localmente (git branch) e se origin/main está atualizada.",
-    )
+    criar_branch = not args.sem_branch and _confirmar_criacao_da_branch(branch)
 
-    if not ficha.arquivo.is_file():
-        # A ficha só existia na árvore anterior: origin/main ainda não a tem.
-        desfeito = _desfazer_branch(branch, raiz)
-        raise HarnessErro(
-            erro=f"a ficha {id_} não existe na origin/main.",
-            motivo=f"depois de criar {branch} a partir de origin/main, features/{ficha.arquivo.name} sumiu: "
-            "a ficha (e o harness) ainda não foram mergeados na main.",
-            correcao=(
-                "faça o merge da ficha na main (PR) e rode o comando de novo. "
-                + (
-                    "A branch criada foi desfeita."
-                    if desfeito
-                    else f"Volte para a sua branch com git switch - e apague {branch} com git branch -d {branch}."
-                )
-            ),
+    if criar_branch:
+        _git_ou_erro(
+            ["switch", "-c", branch, BASE_REMOTA],
+            raiz,
+            erro=f"não consegui criar a branch {branch}.",
+            correcao=f"confira se a branch já existe localmente (git branch) e se {BASE_REMOTA} está atualizada.",
         )
+        if not ficha.arquivo.is_file():
+            # A ficha só existia na árvore anterior: a base ainda não a tem.
+            desfeito = _desfazer_branch(branch, raiz)
+            raise HarnessErro(
+                erro=f"a ficha {id_} não existe na {BASE_REMOTA}.",
+                motivo=f"depois de criar {branch} a partir de {BASE_REMOTA}, features/{ficha.arquivo.name} "
+                "sumiu: a ficha (e o harness) ainda não foram mergeados nessa branch.",
+                correcao=(
+                    f"faça o merge da ficha na {BASE_REMOTA.split('/')[-1]} (PR) e rode o comando de novo. "
+                    + (
+                        "A branch criada foi desfeita."
+                        if desfeito
+                        else f"Volte para a sua branch com git switch - e apague {branch} com git branch -d {branch}."
+                    )
+                ),
+            )
 
     if template is not None:
         progress.parent.mkdir(parents=True, exist_ok=True)
@@ -1101,6 +1136,13 @@ def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
     salvar_ficha(ficha.arquivo, ficha)
 
     nome_da_ficha = f"features/{ficha.arquivo.name}"
+    if not criar_branch:
+        print(f"Feature {id_} iniciada sem branch: nada foi commitado nem enviado.")
+        print(f"Progress: progress/{id_}.md · Ficha: {nome_da_ficha} (in_progress, só no seu disco)")
+        print(f"Próximo passo: crie a sua branch (sugestão de nome: {branch}) e faça o primeiro commit")
+        print("com esses dois arquivos; depois escreva os testes primeiro (regra 3 do AGENTS.md).")
+        return 0
+
     _git_ou_erro(
         ["add", f"progress/{id_}.md", nome_da_ficha],
         raiz,
@@ -1147,9 +1189,15 @@ def _criar_parser() -> argparse.ArgumentParser:
     p_fverify.add_argument("id", help="ID da feature (ex.: HX-07)")
     p_fverify.set_defaults(func=cmd_feature_verify)
     p_fstart = sub_feature.add_parser(
-        "start", help="abre a feature: valida, cria branch e progress, commita e dá push"
+        "start",
+        help=f"abre a feature: valida, pergunta se cria a branch a partir de {BASE_REMOTA}, cria o progress",
     )
     p_fstart.add_argument("id", help="ID da feature (ex.: HX-08)")
+    p_fstart.add_argument(
+        "--sem-branch",
+        action="store_true",
+        help="não cria branch nem commita: só muda a ficha e cria o progress (você cria a sua branch)",
+    )
     p_fstart.set_defaults(func=cmd_feature_start)
     return parser
 
