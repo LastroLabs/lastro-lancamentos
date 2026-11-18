@@ -1,0 +1,57 @@
+{
+  "id": "HAR-02",
+  "titulo": "Filtrar hx state por estado e resumir só o que pede atenção",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "should",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "hx state --estado aceita um ou mais estados e lista só as fichas desses estados",
+      "exemplo": {
+        "entrada": "fichas A (passing), B (in_progress), C (not_started); hx state --estado in_progress --estado not_started",
+        "saida": "linhas de B e C; A não aparece"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Estado que não existe é recusado com ERRO, MOTIVO e CORREÇÃO, sem listar nada",
+      "exemplo": {
+        "entrada": "hx state --estado pronto",
+        "saida": "ERRO citando 'pronto'; CORREÇÃO listando os 5 estados válidos; código de saída diferente de 0"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "hx state --atencao lista só as fichas blocked e regressed, e diz quando não há nenhuma",
+      "exemplo": {
+        "entrada": "fichas A (passing), B (blocked), C (regressed); depois só A (passing)",
+        "saida": "primeiro: linhas de B e C; depois: 'Nada pede atenção.'"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A linha Resumo continua contando todas as fichas, mesmo com filtro, e sem filtro a saída não muda",
+      "exemplo": {
+        "entrada": "fichas A (passing), B (in_progress); hx state --estado in_progress; depois hx state",
+        "saida": "com filtro: só a linha de B e 'Resumo: 1 passing · 1 in_progress · ...'; sem filtro: saída idêntica à atual"
+      }
+    }
+  ],
+  "verificacao": [
+    { "criterio": "c1", "comando": "pytest tests/harness/test_state_filtro.py::test_filtra_por_um_ou_mais_estados -q" },
+    { "criterio": "c2", "comando": "pytest tests/harness/test_state_filtro.py::test_estado_invalido_e_recusado -q" },
+    { "criterio": "c3", "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_lista_blocked_e_regressed -q" },
+    { "criterio": "c3", "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_sem_nada_avisa -q" },
+    { "criterio": "c4", "comando": "pytest tests/harness/test_state_filtro.py::test_resumo_conta_todas_as_fichas -q" },
+    { "criterio": "c4", "comando": "pytest tests/harness/test_state_filtro.py::test_sem_filtro_saida_inalterada -q" }
+  ],
+  "evidencia": null
+}
