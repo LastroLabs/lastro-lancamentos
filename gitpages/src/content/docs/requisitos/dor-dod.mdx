@@ -16,24 +16,24 @@ O DoR tem dois níveis. Um **requisito** fica pronto para virar feature. Uma **f
 | R1 | Descreve o que o sistema deve fazer, sem misturar o como | Time, na avaliação dos requisitos | Pergunta "Coerência" |
 | R2 | Tem critério de aceitação verificável por alguém que não programou o item | Time, na avaliação dos requisitos | Pergunta "Testabilidade" |
 | R3 | Tem prioridade MoSCoW e origem registradas | Time, na avaliação dos requisitos | Formato dos requisitos v0.2 |
-| R4 | Não depende de decisão D-xx em aberto, ou a decisão já foi registrada | Líder, que decide as D-xx | Índice de decisões; Fluxo de desenvolvimento |
+| R4 | Não depende de decisão D-xx pendente, ou a decisão já foi registrada no `DECISIONS.md` | Líder, que decide as D-xx | Índice de decisões; Fluxo de desenvolvimento |
 | R5 | Tem uma estimativa de esforço | Time, na avaliação dos requisitos | Pergunta "Prazo" |
 
-Requisito com **[definir]** só fica pronto quando o valor for definido, ou quando a feature puder avançar com o valor em configuração. Exemplo: o prazo de validade do link fica em configuração (RF-SEG-01).
+Requisito com **[definir]** só fica pronto quando o valor for definido, ou quando a feature puder avançar com o valor em configuração. Exemplo: o prazo de validade do link fica em configuração, com padrão provisório de 7 dias (RF-SEG-01, D-06 de 18/11).
 
 ### Nível 2: ficha da feature
 
 | Item | A ficha `features/<ID>.json` está pronta quando… | Quem confere | Quando |
 |---|---|---|---|
-| F1 | Os critérios de aceite são verificáveis | Donos do harness | Preparar (A) |
-| F2 | `depende_de` está preenchido | Donos do harness | Preparar (A) |
-| F3 | Tem o comando de verificação de cada critério | Líder de produto e dono do módulo | Preparar (A) |
-| F4 | Nenhuma decisão aberta a trava; se travar, ela fica `blocked` e fora da sprint | Donos do harness | Preparar (A) |
-| F5 | Os contratos de que ela precisa estão congelados | Dono B (contratos) | Antes da segunda |
-| F6 | O `responsavel` está gravado na ficha, por commit na main | Líder | Planejar (B) |
+| F1 | Os critérios de aceite são verificáveis e cada um tem exemplo de entrada e saída | Líder e dono do módulo | Preparar (A) |
+| F2 | `depende_de` está preenchido, só com fichas que existem, sem ciclo | Donos do harness; o `hx state` confere | Preparar (A) |
+| F3 | `verificacao` lista 100% dos testes da ficha, e todo critério tem ao menos um (PROC-04) | Líder e dono do módulo; o `hx state` confere que todo critério tem verificação | Preparar (A) |
+| F4 | Nenhuma decisão pendente a trava; se travar, ela fica `blocked` e fora da sprint | Líder | Preparar (A) |
+| F5 | Os contratos de que ela precisa estão definidos (contratos em versão 0, AGENTS.md regra 11) | Dono do módulo | Antes da segunda |
+| F6 | O `responsavel` (handle do GitHub) está gravado na ficha, que está mesclada na `developer` | Líder | Planejar (B) |
 | F7 | Foi lida em voz alta no planejamento e ninguém apontou critério errado | Time todo | Planejar (B) |
 
-Sem o item F6, o `harness.py feature start` recusa a ficha.
+Sem o item F6, o `hx feature start` recusa a ficha: ele compara `HX_USUARIO` com o `responsavel`. Também recusa se alguma ficha de `depende_de` não estiver `passing`.
 
 ## DoD: feito
 
@@ -41,22 +41,22 @@ Sem o item F6, o `harness.py feature start` recusa a ficha.
 |---|---|---|
 | D1 | Os testes foram escritos antes do código, a partir dos critérios da ficha | Commit só com os testes, antes do código |
 | D2 | A implementação não editou os testes | Revisão do PR; sessão de implementação separada |
-| D3 | Lint, testes e regras de arquitetura passam | `hx verify` |
-| D4 | As jornadas completas passam | `hx verify --e2e` |
+| D3 | Lint e testes passam | `hx verify` (`ruff check .` e `pytest -q` no contêiner `dev`) |
+| D4 | As regras de arquitetura e as jornadas completas passam | **Planejado:** o `hx verify` mostra "Arquitetura: PULADO" e "E2E: PULADO"; até lá, D4 não é exigido |
 | D5 | Todos os critérios da ficha passam e o estado foi gravado como `passing` | `hx feature verify <ID>` (só o script grava) |
 | D6 | Não há dado real, nome proibido nem segredo | `hx check-clean` |
 | D7 | O progress está fechado: feito, rodei, falhou, decisão, próxima ação | `progress/<ID>.md` |
 | D8 | O PR traz a tabela critério → teste e outra pessoa aceitou pela rubrica | Template do PR e rubrica preenchida |
-| D9 | A CI refez a verificação e o PR entrou por squash na main | `pr.yml` verde; o noturno reverifica de madrugada |
+| D9 | A CI passou e o PR entrou na `developer` | `pr.yml` verde (`hx verify` e `hx check-clean`) |
 
 ## Resultado da rubrica
 
-A rubrica de PR tem 6 itens de 0 a 2 pontos (total 12). Só três itens estão descritos nas fontes: correção, verificação e escopo. Os outros três estão pendentes.
+A rubrica de PR (`docs/rubrica-revisao.md`) tem 6 itens de 0 a 2 pontos (total 12): Correção, Verificação, Escopo, Clareza, Segurança e Documentação.
 
 | Resultado | Quando |
 |---|---|
 | Aceitar | 9 ou mais de 12 e nenhum 0 em correção, verificação e escopo |
-| Bloquear | 0 em correção ou verificação, ou dado real ou segredo no código |
+| Bloquear | 0 em correção ou verificação, ou qualquer dado real ou segredo, mesmo com total alto |
 | Pedir ajustes | Nos demais casos |
 
 Detalhes em [Regras e revisão de PR](/lastro-lancamentos/harness/regras/#rubrica).
@@ -65,18 +65,21 @@ Detalhes em [Regras e revisão de PR](/lastro-lancamentos/harness/regras/#rubric
 
 | Estado | O que libera a próxima etapa | Próximo estado |
 |---|---|---|
-| `not_started` | DoR da ficha (F1 a F7) → `hx feature start <ID> --owner <você>` | `in_progress` |
+| `not_started` | DoR da ficha (F1 a F7) → `hx feature start <ID>` | `in_progress` |
 | `in_progress` | D1 a D6 → `hx feature verify <ID>` grava `passing` na branch | `passing` |
-| `in_progress` | Falta uma decisão → issue `decisao:` | `blocked` |
-| `blocked` | Decisão registrada (R4) | `in_progress` |
-| `passing` (na branch) | D7 a D9 → PR aceito e merge na main | `passing` (na main) |
-| `passing` (na main) | O noturno das 03:00 reverifica; se falhar, abre issue | `regressed` |
-| `regressed` | Quem escreveu conserta antes de feature nova e passa de novo por D3 a D5 | `passing` |
+| `in_progress` | Falta uma decisão → issue `decisao:` e PR na ficha (planejado: nenhum comando grava `blocked`) | `blocked` |
+| `blocked` | Decisão registrada no `DECISIONS.md` (R4) e PR na ficha (planejado) | `not_started` |
+| `passing` (na branch) | D7 a D9 → PR aceito e merge na `developer` | `passing` (na `developer`) |
+| `passing` | Um novo `hx feature verify <ID>` falhou | `regressed` |
+| `regressed` | Quem escreveu conserta antes de feature nova (`hx feature start` aceita `regressed`) e passa de novo por D3 a D5 | `passing` |
 
-Fontes: Requisitos funcionais v0.2; Fluxo de desenvolvimento do Lastro ([semana](/lastro-lancamentos/fluxo/semana/) e [ciclo da feature](/lastro-lancamentos/fluxo/ciclo-da-feature/)); Lastro: guia do harness v0.1.
+Os gatilhos de cada transição, em diagrama, estão em [Orquestração](/lastro-lancamentos/fluxo/orquestracao/#máquina-de-estados).
+
+Fontes: Requisitos funcionais v0.2; Fluxo de desenvolvimento do Lastro ([semana](/lastro-lancamentos/fluxo/semana/) e [ciclo da feature](/lastro-lancamentos/fluxo/ciclo-da-feature/)); `tools/harness.py` e `docs/rubrica-revisao.md` (branch `developer`); `docs/decisoes/DECISIONS.md` (18/11/2026).
 
 ## Histórico de versão
 
 | Data | Versão da página | O que mudou |
 |---|---|---|
 | 12/11/2026 | 1.0 | Página criada: DoR em dois níveis (requisito e ficha), DoD, resultados da rubrica e estados da ficha |
+| 18/11/2026 | 1.1 | Alinhada ao `hx` real e às decisões de 18/11: merge na `developer`, sem `--owner`, D4 planejado, rubrica com 6 itens, `regressed` gravado pelo `hx feature verify` |

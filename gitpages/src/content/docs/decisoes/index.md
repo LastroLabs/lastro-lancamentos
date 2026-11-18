@@ -14,7 +14,7 @@ Legenda de status, como no `DECISIONS.md`:
 - **assumida:** recomendação da revisão aplicada sem mudar o escopo de nenhum RF (a líder pode reverter);
 - **pendente:** ainda sem decisão.
 
-**Como usar no dia a dia.** Sua feature depende de uma decisão pendente? Não decida sozinho. Abra uma issue `decisao:` (resposta em 24 h) e pegue outra feature. Uma ficha bloqueada fica com `estado: blocked` e `bloqueada_por: "D-xx"`. Ver [Ciclo de uma feature](/lastro-lancamentos/fluxo/ciclo-da-feature/).
+**Como usar no dia a dia.** Sua feature depende de uma decisão pendente? Não decida sozinho. Abra uma issue `decisao:` (resposta em 24 h) e pegue outra feature. Uma ficha bloqueada fica com `estado: blocked` e `bloqueada_por: "D-xx"`. Ver [Orquestração](/lastro-lancamentos/fluxo/orquestracao/#máquina-de-estados).
 
 ## Estudos
 

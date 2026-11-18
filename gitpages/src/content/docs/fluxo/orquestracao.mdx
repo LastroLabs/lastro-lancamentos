@@ -1,0 +1,145 @@
+---
+title: Orquestração
+description: Quem faz o quê e quando, do hx feature start ao merge na developer. O ponto de entrada do processo.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+Esta página é o mapa do processo, como ele funciona hoje (18/11/2026). Ela diz quem age em cada passo, qual comando roda e onde fica cada artefato. Os detalhes ficam nas páginas linkadas.
+
+Tudo o que aparece aqui foi conferido em duas fontes:
+
+- o código da branch `developer`: `tools/harness.py`, `AGENTS.md` e `.claude/commands/planejar.md`;
+- o `docs/decisoes/DECISIONS.md` de 18/11.
+
+O que ainda não existe está marcado como **Planejado**.
+
+## Os quatro papéis
+
+| Papel | Quem é | O que faz | O que não faz |
+|---|---|---|---|
+| **Dev** | Uma pessoa da equipe, identificada por `HX_USUARIO` = handle do GitHub | Abre a feature, conduz as sessões do agente, revisa os testes, abre o PR | Não edita `estado` nem `evidencia` da ficha |
+| **Agente** | Claude Code (ou outro agente), em sessões separadas | Planeja (`/planejar`), escreve os testes, implementa sem editar `tests/`, atualiza o progress | Não decide requisito, stack nem D-xx; não marca `passing` |
+| **hx** | O script `tools/harness.py`, roda no host | Valida fichas, cria a branch e o progress, roda ruff e pytest no contêiner, grava `in_progress`, `passing` e `regressed` | Não chama o agente; não decide nada |
+| **Revisor** | Outra pessoa da equipe, mais a CI (`pr.yml`) | Roda `hx feature verify` na própria máquina, dá a nota pela rubrica e aprova ou bloqueia | Não aprova o próprio PR |
+
+### A equipe por frente
+
+Definida pela líder em 18/11/2026. Todos trabalham onde for preciso.
+
+| Frente | Quem |
+|---|---|
+| Liderança | Júlia (líder) |
+| Harness e CI | Caio (vice-líder) |
+| Banco de dados | Guilherme (líder de banco), com apoio da Raissa |
+| Segurança | Arthur |
+| Documentação | Thomaz |
+| Front | João Sauma, hoje dedicado à prototipação das telas |
+
+Handles e cartões em [Equipe](/lastro-lancamentos/home/equipe/).
+
+## O ciclo de uma feature
+
+| # | Quem | Comando ou ação | Resultado |
+|---|---|---|---|
+| 0 | Líder | PR na `developer` com a ficha `features/<ID>.json` e o `responsavel` preenchido | Ficha `not_started` na base |
+| 1 | Dev | `export HX_USUARIO=<seu-handle>` e `hx state` | Você vê a ficha e se as dependências estão `passing` |
+| 2 | Dev e hx | `hx feature start <ID>` | Branch `feat/<ID>-<slug>` criada a partir de `origin/developer`, `progress/<ID>.md` criado, ficha `in_progress`, commit `chore(<ID>): inicia feature` e push |
+| 3 | Agente | Em sessão nova do Claude Code: `/planejar <ID>` | `planos/<ID>/plan.md` e `planos/<ID>/tasks.md` |
+| 4 | Dev | Lê o plan, responde o que está em "A decidir" e marca o plan como aprovado | Só um humano aprova |
+| 5 | Agente | Sessão de testes (task T1): escreve os testes com os nomes que a ficha cita | Testes falhando; commit só de testes (anote o hash) |
+| 6 | Agente | Sessão nova de implementação: segue as tasks sem editar `tests/` (AGENTS.md, regra 3). `hx verify` com frequência | Código passando |
+| 7 | Dev e hx | `hx verify`, depois `hx feature verify <ID>`, depois `git commit features/<ID>.json` | Ficha `passing` com evidência (data, commit e resultado por critério) |
+| 8 | Dev | `hx check-clean` e, ao encerrar a sessão, o agente atualiza o `progress/<ID>.md` | Nenhum dado real; progress em dia |
+| 9 | Dev | PR da `feat/<ID>-...` para a **`developer`**, com o template | A CI (`pr.yml`) roda `hx verify` e `hx check-clean` |
+| 10 | Revisor | `git diff <hash> -- tests/`, `hx feature verify <ID>` na própria máquina e a rubrica | Aceitar (≥ 9/12 e nenhum 0 em Correção, Verificação ou Escopo), pedir ajustes ou bloquear |
+| 11 | Revisor | Merge na `developer` | A feature entra na branch da verdade (PROC-01) |
+
+Depois do merge, a dev pode abrir a próxima feature: o `hx feature start` recusa enquanto existir outra branch `feat/*` dela fora da `developer` (WIP = 1).
+
+A `main` recebe só a release e o site. Não há comando do `hx` para a release; ela é um PR da `developer` para a `main`.
+
+Detalhes:
+
+- [Ciclo de uma feature](/lastro-lancamentos/fluxo/ciclo-da-feature/): estratégia de testes;
+- [Documentos e comandos](/lastro-lancamentos/harness/documentos-e-comandos/): tudo o que cada comando confere;
+- [Regras e revisão de PR](/lastro-lancamentos/harness/regras/): a rubrica completa.
+
+## Máquina de estados
+
+Os cinco estados são os do validador (`ESTADOS` em `tools/harness.py`). Cada seta traz o gatilho real.
+
+<Mermaid code={`stateDiagram-v2
+  [*] --> not_started: ficha mesclada na developer
+  not_started --> in_progress: hx feature start
+  regressed --> in_progress: hx feature start
+  in_progress --> passing: hx feature verify (tudo verde)
+  in_progress --> in_progress: hx feature verify falhou
+  regressed --> passing: hx feature verify (tudo verde)
+  passing --> passing: hx feature verify (tudo verde)
+  passing --> regressed: hx feature verify falhou
+  not_started --> blocked: Planejado (hoje, PR do dono do harness)
+  blocked --> not_started: Planejado (decisão registrada no DECISIONS.md)
+`}/>
+
+| De | Para | Gatilho | Status |
+|---|---|---|---|
+| — | `not_started` | Ficha nova mesclada na `developer` | Por PR |
+| `not_started` ou `regressed` | `in_progress` | `hx feature start <ID>` | Implementado |
+| `in_progress` ou `regressed` | `passing` | `hx feature verify <ID>`, com todos os comandos verdes | Implementado |
+| `in_progress` | `in_progress` | `hx feature verify <ID>` com falha: a ficha não muda | Implementado |
+| `passing` | `regressed` | `hx feature verify <ID>` com falha; a evidência antiga fica para auditoria | Implementado |
+| qualquer | `blocked` | Depende de decisão pendente; exige `bloqueada_por` (ex.: `"D-08"`) | **Planejado**: nenhum comando grava `blocked` |
+| `blocked` | `not_started` | Decisão registrada no `DECISIONS.md` | **Planejado**: nenhum comando tira de `blocked` |
+
+O `hx` recusa iniciar ou verificar uma ficha `blocked` e aponta o `DECISIONS.md` na correção.
+
+:::note[Planejado]
+- O guia v0.1 previa um `noturno.yml` que reverificaria as fichas `passing` de madrugada e gravaria `regressed`. Ele não existe. Hoje **só o `hx feature verify` grava `regressed`**, quando alguém o roda numa ficha `passing`. Sem ficha.
+- A entrada e a saída de `blocked` por comando não têm ficha.
+:::
+
+## Onde fica cada artefato
+
+| Artefato | Caminho | Quem cria | Quem muda |
+|---|---|---|---|
+| Ficha da feature | `features/<ID>.json` | Líder, por PR | Critérios: PR revisado. `estado` e `evidencia`: só o `hx` |
+| Diário da feature | `progress/<ID>.md` | `hx feature start`, a partir de `docs/templates/progress.md` | O agente, ao encerrar a sessão; a dev confere |
+| Plano e tasks | `planos/<ID>/plan.md` e `planos/<ID>/tasks.md` | `/planejar <ID>` (`.claude/commands/planejar.md`) | O agente gera; só um humano marca o plan como aprovado |
+| Decisões | `docs/decisoes/DECISIONS.md` | A líder decide; registro por PR | Por PR. O conteúdo de 18/11 está na branch `fichas/onda-s1`, ainda não mesclada na `developer` |
+| Requisitos como dados | `docs/requisitos/requisitos_lastro.json` | Líder | Por PR. Hoje só na branch `fichas/onda-s1` |
+| Regras para o agente | `AGENTS.md` (o `CLAUDE.md` aponta para ele) | Donos do harness | Por PR |
+
+### Formato das fichas
+
+As regras de ficha vêm das decisões de 18/11 (ver [Decisão: processo e fichas](/lastro-lancamentos/decisoes/processo/)):
+
+- o arquivo é `features/<ID>.json`, com `id` igual ao nome do arquivo;
+- o ID é a sigla do módulo + `-nn` (`ACE-01`, `CAD-03`, `NUC-01`), com `HAR-nn` para o harness e `CI-nn` para a CI;
+- `modulo` é um dos 14 módulos de `src/lastro/`, `harness` ou `ci`;
+- `onda` vai de 1 a 4;
+- `verificacao` lista 100% dos testes, com `pytest` ou `ruff check`.
+
+:::note[Planejado]
+O `hx` hoje confere o `id` contra o nome do arquivo, os campos obrigatórios, o estado, a verificação de cada critério, os comandos permitidos e o grafo de dependências. A regex do ID, a lista de módulos, a faixa de `onda` e a `prioridade` serão conferidas pela ficha **HAR-04** (em revisão).
+:::
+
+## Ondas e metas
+
+Onda = semana do cronograma (PROC-03). A meta conta fichas `passing`, acumuladas.
+
+| Onda | Semana | Período | Foco | Meta acumulada |
+|---|---|---|---|---|
+| 1 | S1 | 09/11 a 15/11 | Fundação | 6 |
+| 2 | S2 | 16/11 a 22/11 | Ritmo | 18 |
+| 3 | S3 | 23/11 a 29/11 | Integração | 32 |
+| 4 | S4 | 30/11 a 06/12 | Congelamento | 39 |
+
+- Na onda 1 contam só as fichas novas; HAR-02 e HX-10, que já estavam `passing`, ficam fora da conta (P-07).
+- Na distribuição, cada pessoa tem uma feature em andamento por vez, e ninguém recebe na mesma onda duas fichas ligadas por dependência direta (P-03).
+
+O primeiro lote, da onda S1, tem 19 fichas **em revisão** na branch `fichas/onda-s1`: 6 na onda 1 e 13 na onda 2. Elas ainda não estão na `developer`, então o `hx state` da `developer` não as mostra. A relação RF → ficha está em [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha).
+
+Datas e marcos em [Cronograma](/lastro-lancamentos/visao/cronograma/).
+
+Fontes: `tools/harness.py`, `AGENTS.md`, `.claude/commands/planejar.md`, `.github/workflows/pr.yml`, `.github/pull_request_template.md`, `docs/rubrica-revisao.md` e `docs/templates/` (branch `developer`, 18/11/2026); `docs/decisoes/DECISIONS.md` e `features/*.json` (branch `fichas/onda-s1`, em revisão).

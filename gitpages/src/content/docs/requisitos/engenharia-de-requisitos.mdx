@@ -80,19 +80,22 @@ Alguns pontos dependem dos pilotos, por exemplo:
 
 ## 5. Decisões em aberto
 
-- As perguntas de negócio são as D-01 a D-09. Pelo Fluxo de desenvolvimento, quem as decide é o **Líder**.
-- Cada uma tem os requisitos que afeta, uma recomendação e o próximo passo, no [índice de decisões](/lastro-lancamentos/decisoes/).
-- Uma decisão aberta que trava uma feature deixa a feature `blocked` e fora da sprint.
-- Os IDs oficiais nascem no `docs/decisoes/DECISIONS.md` quando o grupo aprova.
+- As perguntas de negócio são as D-01 a D-09. Quem as decide é a **líder**.
+- Em 18/11/2026, D-02 a D-07 e D-09 ganharam padrão provisório e configurável; D-01 e D-08 seguem pendentes. Ver o [índice de decisões](/lastro-lancamentos/decisoes/).
+- Uma decisão pendente que trava uma feature deixa a feature `blocked` e fora da sprint.
+- O registro oficial é o `docs/decisoes/DECISIONS.md`, com ID, data, status, motivo e fichas afetadas.
 
 ## 6. Do requisito à verificação
 
-O próximo passo registrado nos requisitos é transformar os Must em histórias de usuário para o `feature_list.json` do harness. No harness, cada feature tem uma ficha `features/<ID>.json`:
+Os Must viram fichas de feature, uma por arquivo, em `features/<ID>.json` (não existe um arquivo único com todas). O primeiro lote, da onda S1, está em revisão (ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha)).
 
-1. A ficha traz o que entregar, os critérios de aceite, o comando de verificação, as dependências e o estado.
-2. Os testes são escritos antes do código, a partir dos critérios da ficha.
-3. Só o script marca `passing`, com `harness.py feature verify <ID>`.
-4. O PR traz a tabela critério → teste, e outra pessoa revisa pela rubrica.
+1. O ID da ficha é a sigla do módulo + `-nn`: `ACE-01` (acesso), `CAD-03` (cadastro), `NUC-01` (núcleo), `IA-01` (IA); `HAR-nn` para o harness e `CI-nn` para a CI.
+2. A ficha traz o módulo, os RFs atendidos, a prioridade (a MoSCoW do RF), a onda (1 a 4), o responsável, as dependências, os critérios com exemplo de entrada e saída, os comandos de verificação (100% dos testes) e o estado.
+3. Os testes são escritos antes do código, a partir dos critérios da ficha.
+4. Só o script marca `passing`, com `hx feature verify <ID>`.
+5. O PR traz a tabela critério → teste, e outra pessoa revisa pela rubrica.
+
+As regras de ID e de módulo são decisões de 18/11 ([processo e fichas](/lastro-lancamentos/decisoes/processo/)). O validador ainda não as confere: isso vem da ficha HAR-04 (planejado).
 
 Ver [Backlog](/lastro-lancamentos/requisitos/backlog/), [DoR e DoD](/lastro-lancamentos/requisitos/dor-dod/) e [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/).
 
@@ -103,7 +106,7 @@ Ver [Backlog](/lastro-lancamentos/requisitos/backlog/), [DoR e DoD](/lastro-lanc
   T -- "Critério ambíguo ou errado na ficha" --> P1["PR corrigindo a ficha antes de codar<br/>o dono do módulo aprova"]
   T -- "Falta uma decisão de negócio" --> P2["Issue decisao:<br/>feature fica blocked (bloqueada_por: D-xx)"]
   P2 --> P3["Quem tem autoridade decide em até 24 h<br/>registro no DECISIONS.md, por PR"]
-  T -- "Entrada ou saída entre módulos" --> P4["Issue contrato:<br/>o dono B decide e versiona"]
+  T -- "Entrada ou saída entre módulos" --> P4["Issue contrato:<br/>o dono do módulo decide e versiona"]
   T -- "Requisito novo ou alterado" --> P5["Nova versão do documento de requisitos<br/>esta página e o JSON são regerados"]
   T -- "Feature grande demais" --> P6["Dividir em duas fichas,<br/>cada uma com seus critérios"]
 `}/>
@@ -112,7 +115,7 @@ Ver [Backlog](/lastro-lancamentos/requisitos/backlog/), [DoR e DoD](/lastro-lanc
 |---|---|---|
 | Critério ambíguo ou errado na ficha | PR corrigindo a ficha antes de codar; o dono do módulo aprova | No mesmo dia |
 | Falta uma decisão | Issue `decisao:`, feature `blocked`, registro no `DECISIONS.md` | Resposta em 24 h |
-| Contrato entre módulos | Issue `contrato:`; o dono B decide e versiona | 24 h |
+| Contrato entre módulos | Issue `contrato:`; o dono do módulo decide e versiona (AGENTS.md, regra 11) | 24 h |
 | Feature maior que 2 sessões | Dividir em duas fichas | Ao perceber |
 | Requisito novo ou alterado | Nova versão do documento de requisitos; o site é atualizado a partir dele | — |
 
@@ -127,10 +130,11 @@ Os prazos vêm do [Fluxo de desenvolvimento](/lastro-lancamentos/fluxo/quando-tr
 | GitHub: issues e PRs | Issues `decisao:`, `contrato:`, `fixture:` e `harness:`; PRs com a tabela critério → teste |
 | `docs/decisoes/DECISIONS.md` | Registro das decisões, com contexto, escolha e quem decidiu |
 | `features/<ID>.json` e `progress/<ID>.md` | Ficha e diário de cada feature |
-| `tools/harness.py` | `feature start`, `feature verify`, `verify --e2e`, `state`, `check-clean` |
+| `tools/harness.py` (atalho `hx`) | `state`, `check-clean`, `verify`, `feature start` e `feature verify`. Ver [Documentos e comandos](/lastro-lancamentos/harness/documentos-e-comandos/#comandos-do-hx) |
 
 ## Histórico de versão
 
 | Data | Versão da página | O que mudou |
 |---|---|---|
 | 12/11/2026 | 1.0 | Página criada a partir dos requisitos v0.2, do cenário, das decisões e do fluxo de desenvolvimento |
+| 18/11/2026 | 1.1 | Fichas em `features/<ID>.json` com formato de ID; decisões de 18/11; comandos reais do `hx` |

@@ -94,7 +94,7 @@ export const ancora = (id: string) => id.toLowerCase();
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 export const linkRequisito = (id: string) => `${BASE}visao/requisitos/#${ancora(id)}`;
-export const linkDecisoes = () => `${BASE}decisoes/#decisões-em-aberto-dos-requisitos-d-01-a-d-09`;
+export const linkDecisoes = () => `${BASE}decisoes/#decisões-dos-requisitos-d-01-a-d-09`;
 export const link = (caminho: string) => `${BASE}${caminho.replace(/^\//, '')}`;
 
 export function contagem() {

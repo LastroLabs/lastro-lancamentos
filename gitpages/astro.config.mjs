@@ -62,6 +62,7 @@ export default defineConfig({
 				{
 					label: "Fluxo de desenvolvimento",
 					items: [
+						{ label: "Orquestração", slug: "fluxo/orquestracao", badge: { text: "comece aqui", variant: "tip" } },
 						{ label: "Por que um harness", slug: "fluxo/visao-geral" },
 						{ label: "O ritmo da semana", slug: "fluxo/semana" },
 						{ label: "Ciclo de uma feature", slug: "fluxo/ciclo-da-feature" },
