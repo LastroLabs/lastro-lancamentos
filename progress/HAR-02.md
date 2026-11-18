@@ -13,25 +13,32 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+`hx state` passa a aceitar `--estado` (um ou mais) e `--atencao` (blocked e regressed), com erro padronizado para estado inválido e `Resumo` sempre contando todas as fichas.
+
 
 ## Próxima ação
-(a primeira coisa a fazer ao retomar; de preferência um comando ou um arquivo)
+Rodar `/planejar HAR-02` em sessão nova, revisar `planos/HAR-02/plan.md` (humano aprova) e só então gerar os testes de `tests/harness/test_state_filtro.py`.
+
 
 ## Bloqueios e perguntas
 - (nenhum)
 
 ## Feito
-- DD/MM · S1 ·
+
+- 18/11 · S1 · ficha `features/HAR-02.json` criada (rascunho de 4 critérios, revisado pelo dev), mesclada na `developer`; feature aberta com `hx feature start`.
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
+
+- 18/11 · S1 · `py tools/harness.py state` → ficha válida, HAR-02 `not_started` e HX-10 `passing` (antes do start)
+- 18/11 · S1 · `hx verify` → não rodou: Docker indisponível (daemon desligado)
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
+
+- 18/11 · S1 · `hx verify` recusado: Docker Desktop desligado. Nenhum código foi escrito nesta sessão, então não há regressão conhecida.
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+
+- 18/11 · S1 · prioridade `should` e dependências vazias na ficha (HX-09 do storytelling não existe no repo); critérios c2 a c4 definidos como rascunho e aprovados pelo dev.
 
 ## Fim de sessão
 - [ ] `hx verify` verde, ou a falha está descrita em "Falhou"
