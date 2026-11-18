@@ -2,13 +2,17 @@
   "id": "CAD-06",
   "titulo": "Indicar a conta transitória do cliente dentre as do plano",
   "modulo": "cadastro",
-  "requisitos": ["RF-CAD-04"],
+  "requisitos": [
+    "RF-CAD-04"
+  ],
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "guin409",
-  "depende_de": ["CAD-05"],
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [
+    "CAD-05"
+  ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
@@ -25,7 +29,7 @@
       "descricao": "Conta que não existe no plano do cliente é recusada e a transitória anterior não muda",
       "exemplo": {
         "entrada": "estado final de c1 (transitória 9.9.99); contador_a indica 8.8.88, que não está no plano de EMP-1",
-        "saida": "recusado com a mensagem 'A conta 8.8.88 não existe no plano de contas deste cliente.'; EMP-1 continua com a transitória 9.9.99"
+        "saida": "status de dado inválido [definir P-13], mensagem 'A conta 8.8.88 não existe no plano de contas deste cliente.'; EMP-1 continua com a transitória 9.9.99"
       }
     },
     {
@@ -33,24 +37,51 @@
       "descricao": "Cliente sem plano carregado não aceita conta transitória",
       "exemplo": {
         "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem plano carregado; contador_a indica 9.9.99 como transitória de EMP-3",
-        "saida": "recusado com a mensagem 'A conta 9.9.99 não existe no plano de contas deste cliente.'; EMP-3 continua sem conta transitória"
+        "saida": "status de dado inválido [definir P-13], mensagem 'A conta 9.9.99 não existe no plano de contas deste cliente.'; EMP-3 continua sem conta transitória"
       }
     },
     {
       "id": "c4",
       "descricao": "Conta de outro cliente não serve, e outra carteira ou outro escritório não altera a transitória",
       "exemplo": {
-        "entrada": "estado final de c1; EMP-2 atribuída a contador_b (sessão aberta), com plano que contém 7.7.77 Transitória B; ESC-2 com chefe_2 (sessão aberta); (a) contador_a indica 7.7.77 para EMP-1; (b) contador_b e chefe_2 tentam, cada um, indicar 1.1.01 como transitória de EMP-1",
-        "saida": "(a) recusado com a mensagem 'A conta 7.7.77 não existe no plano de contas deste cliente.'; (b) nos 2 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.' e nenhum dado de EMP-1 na resposta; EMP-1 continua com a transitória 9.9.99"
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, com plano que contém 7.7.77 Transitória B; ESC-2 com chefe_2 (sessão aberta); (a) contador_a indica 7.7.77 para EMP-1; (b) contador_b e chefe_2 tentam, cada um, indicar 1.1.01 como transitória de EMP-1; (c) contador_b tenta indicar 1.1.01 em um identificador de cliente que não existe",
+        "saida": "(a) status de dado inválido [definir P-13], mensagem 'A conta 7.7.77 não existe no plano de contas deste cliente.'; (b) e (c), nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 3, e nenhum dado de EMP-1 na resposta; EMP-1 continua com a transitória 9.9.99"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Se uma nova carga do plano não traz a conta transitória, o cliente fica sem transitória (P-11)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com a transitória 9.9.99); contador_a carrega para EMP-1 um plano novo só com 1.1.01 Caixa e 2.1.05 Fornecedores; depois consulta EMP-1",
+        "saida": "carga aceita com 2 contas; EMP-1 sem conta transitória"
       }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_contador_indica_transitoria_do_plano -q"},
-    {"criterio": "c2", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_fora_do_plano_recusada -q"},
-    {"criterio": "c3", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_cliente_sem_plano_recusa_transitoria -q"},
-    {"criterio": "c4", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_de_outro_cliente_recusada -q"},
-    {"criterio": "c4", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_outra_carteira_e_outro_escritorio_negados -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_contador_indica_transitoria_do_plano -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_fora_do_plano_recusada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_cliente_sem_plano_recusa_transitoria -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_de_outro_cliente_recusada -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_transitoria_negada_a_outra_carteira_e_escritorio -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_nova_carga_sem_a_conta_limpa_transitoria -q"
+    }
   ],
   "evidencia": null
 }

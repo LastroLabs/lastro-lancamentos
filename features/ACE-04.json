@@ -2,13 +2,18 @@
   "id": "ACE-04",
   "titulo": "Revogar acesso do contador anterior ao reatribuir cliente",
   "modulo": "acesso",
-  "requisitos": ["RF-AUT-04"],
+  "requisitos": [
+    "RF-AUT-04"
+  ],
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
   "responsavel": "arthurlleite",
-  "depende_de": ["ACE-02", "ACE-03"],
+  "depende_de": [
+    "ACE-02",
+    "ACE-03"
+  ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
@@ -17,7 +22,7 @@
       "descricao": "Após a reatribuição, o contador anterior perde o acesso imediatamente, mesmo com sessão aberta",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 atribuída a contador_a; chefe_1 reatribui EMP-1 para contador_b; contador_a, na mesma sessão, pede EMP-1 pelo endereço direto e depois a lista de clientes",
-        "saida": "EMP-1: acesso negado com a mensagem 'Você não tem acesso a este cliente.' e nenhum dado de EMP-1 na resposta; lista de contador_a com 0 clientes"
+        "saida": "EMP-1: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, e nenhum dado de EMP-1 na resposta; lista de contador_a com 0 clientes"
       }
     },
     {
@@ -33,14 +38,14 @@
       "descricao": "A troca cruzada entre dois clientes vale para os dois lados",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 com contador_a e EMP-2 com contador_b; chefe_1 reatribui EMP-1 para contador_b e EMP-2 para contador_a; cada contador pede a lista de clientes e abre EMP-1 e EMP-2 pelo endereço direto",
-        "saida": "contador_a: lista só com EMP-2, abre EMP-2 e é negado em EMP-1; contador_b: lista só com EMP-1, abre EMP-1 e é negado em EMP-2; nenhuma negação traz dado do cliente"
+        "saida": "contador_a: lista só com EMP-2, abre EMP-2 e recebe em EMP-1 status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente; contador_b: lista só com EMP-1, abre EMP-1 e recebe em EMP-2 a mesma recusa; nenhuma recusa traz dado do cliente"
       }
     },
     {
       "id": "c4",
       "descricao": "Os dados cadastrais ficam com o cliente após a troca",
       "exemplo": {
-        "entrada": "EMP-1 em ESC-1 com nome 'EMPRESA TESTE 1' e CNPJ de teste gerado na hora, atribuída a contador_a; chefe_1 reatribui para contador_b; contador_b abre EMP-1",
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 em ESC-1 com nome 'EMPRESA TESTE 1' e CNPJ de teste gerado na hora, atribuída a contador_a; chefe_1 reatribui EMP-1 para contador_b; contador_b abre EMP-1",
         "saida": "contador_b vê o mesmo nome e o mesmo CNPJ de antes da troca"
       }
     },
@@ -48,17 +53,32 @@
       "id": "c5",
       "descricao": "O chefe de outro escritório não reatribui cliente que não é dele",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1, contador_a e EMP-1 atribuída a contador_a; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta reatribuir EMP-1 para contador_x",
-        "saida": "acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum dado de EMP-1 na resposta; EMP-1 continua com contador_a"
+        "entrada": "ESC-1 com chefe_1, contador_a e EMP-1 atribuída a contador_a; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta reatribuir para contador_x (a) EMP-1 e (b) um identificador de cliente que não existe",
+        "saida": "nos 2 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos dois; nenhum dado de EMP-1 na resposta; EMP-1 continua com contador_a"
       }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_revoga_sessao_aberta -q"},
-    {"criterio": "c2", "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_novo_responsavel_sem_login -q"},
-    {"criterio": "c3", "comando": "pytest tests/acesso/test_reatribuicao.py::test_troca_cruzada_aplica_aos_dois -q"},
-    {"criterio": "c4", "comando": "pytest tests/acesso/test_reatribuicao.py::test_dados_cadastrais_permanecem_com_cliente -q"},
-    {"criterio": "c5", "comando": "pytest tests/acesso/test_reatribuicao.py::test_chefe_de_outro_escritorio_nao_reatribui -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_revoga_sessao_aberta -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_novo_responsavel_sem_login -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/acesso/test_reatribuicao.py::test_troca_cruzada_aplica_aos_dois -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/acesso/test_reatribuicao.py::test_dados_cadastrais_permanecem_com_cliente -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/acesso/test_reatribuicao.py::test_chefe_de_outro_escritorio_nao_reatribui -q"
+    }
   ],
   "evidencia": null
 }

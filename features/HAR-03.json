@@ -2,13 +2,17 @@
   "id": "HAR-03",
   "titulo": "Gerar fixtures e gabarito sintéticos por semente fixa",
   "modulo": "harness",
-  "requisitos": ["BD-07"],
+  "requisitos": [
+    "BD-07"
+  ],
   "prioridade": "must",
-  "onda": 1,
+  "onda": 2,
   "essencial": false,
   "estado": "not_started",
   "responsavel": "caio-nascime",
-  "depende_de": [],
+  "depende_de": [
+    "HAR-04"
+  ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
@@ -49,24 +53,75 @@
       "descricao": "Nenhum arquivo gerado contém CPF ou CNPJ válido; os CNPJs válidos dos clientes só existem em tempo de execução",
       "exemplo": {
         "entrada": "fixtures/ gerada com a semente padrão; roda hx check-clean; um teste pede ao gerador, duas vezes, os CNPJs dos clientes da semente padrão",
-        "saida": "hx check-clean sem nenhum achado em fixtures/; os CNPJs devolvidos têm dígito verificador válido, são distintos entre si, as duas consultas devolvem os mesmos valores e ao menos um é alfanumérico (padrão de julho/2026); nenhum desses CNPJs aparece em arquivo de fixtures/"
+        "saida": "hx check-clean (que detecta CNPJ numérico e alfanumérico, HAR-04) sem nenhum achado em fixtures/; os CNPJs devolvidos têm dígito verificador válido, são distintos entre si, as duas consultas devolvem os mesmos valores e ao menos um é alfanumérico (padrão de julho/2026); nenhum desses CNPJs aparece em arquivo de fixtures/"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "O cadastro e o gabarito saem num formato fixo, que outros módulos (CAD-05, IA-02) leem sem depender do gerador",
+      "exemplo": {
+        "entrada": "fixtures/ gerada com a semente padrão; lê fixtures/cadastro.json e, para cada conta bancária, o gabarito indicado nele",
+        "saida": "fixtures/cadastro.json é JSON UTF-8 com as chaves semente (inteiro) e escritorios; cada escritório tem id (ex.: 'ESC-1'), usuarios (lista de {handle, papel}, papel 'chefe' ou 'contador') e clientes; cada cliente tem id (ex.: 'EMP-1'), nome, responsavel (um handle de usuarios do mesmo escritório), socios (lista de {nome}), plano (lista de {codigo, nome, transitoria}, com exatamente 1 transitoria = true), plano_planilha (caminho relativo do .xlsx) e contas_bancarias (lista de {banco com 3 dígitos, apelido, ofx, gabarito}, caminhos relativos a fixtures/); nenhum campo de CNPJ; cada gabarito é JSON UTF-8 com cliente, banco, apelido, saldo_inicial_centavos e saldo_final_centavos (inteiros) e movimentacoes (lista de {data no formato AAAA-MM-DD, valor_centavos inteiro com sinal, descricao, id_transacao igual ao FITID do OFX, conta_correta igual a um codigo do plano do cliente}); todo caminho citado existe"
       }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q"},
-    {"criterio": "c1", "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q"},
-    {"criterio": "c2", "comando": "pytest tests/harness/test_fixtures.py::test_ofx_e_gabarito_tem_mesmas_movimentacoes -q"},
-    {"criterio": "c2", "comando": "pytest tests/harness/test_fixtures.py::test_saldo_do_ofx_fecha_em_centavos -q"},
-    {"criterio": "c2", "comando": "pytest tests/harness/test_fixtures.py::test_conta_correta_existe_no_plano_do_cliente -q"},
-    {"criterio": "c2", "comando": "pytest tests/harness/test_fixtures.py::test_descricoes_trazem_documentos_de_teste -q"},
-    {"criterio": "c3", "comando": "pytest tests/harness/test_fixtures.py::test_mesma_semente_gera_saida_identica -q"},
-    {"criterio": "c3", "comando": "pytest tests/harness/test_fixtures.py::test_outra_semente_gera_saida_diferente -q"},
-    {"criterio": "c4", "comando": "pytest tests/harness/test_fixtures.py::test_check_sem_divergencia_passa -q"},
-    {"criterio": "c4", "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_alterado_falha_sem_regravar -q"},
-    {"criterio": "c4", "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q"},
-    {"criterio": "c5", "comando": "pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean -q"},
-    {"criterio": "c5", "comando": "pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fixtures.py::test_ofx_e_gabarito_tem_mesmas_movimentacoes -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fixtures.py::test_saldo_do_ofx_fecha_em_centavos -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fixtures.py::test_conta_correta_existe_no_plano_do_cliente -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fixtures.py::test_descricoes_trazem_documentos_de_teste -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fixtures.py::test_mesma_semente_gera_saida_identica -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fixtures.py::test_outra_semente_gera_saida_diferente -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fixtures.py::test_check_sem_divergencia_passa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_alterado_falha_sem_regravar -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/harness/test_fixtures.py::test_formato_do_cadastro_e_do_gabarito -q"
+    }
   ],
   "evidencia": null
 }

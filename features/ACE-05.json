@@ -2,13 +2,18 @@
   "id": "ACE-05",
   "titulo": "Gerar link do cliente com validade e permitir invalidar",
   "modulo": "acesso",
-  "requisitos": ["RF-SEG-01"],
+  "requisitos": [
+    "RF-SEG-01"
+  ],
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
   "responsavel": "arthurlleite",
-  "depende_de": ["ACE-03"],
+  "depende_de": [
+    "ACE-02",
+    "NUC-02"
+  ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
@@ -16,32 +21,32 @@
       "id": "c1",
       "descricao": "O contador gera o link de um cliente seu para uma competência, com código imprevisível",
       "exemplo": {
-        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-1 atribuída a contador_a; contador_a gera 1000 links seguidos para EMP-1, competência 10/2026",
-        "saida": "sucesso nas 1000 gerações; os 1000 códigos são todos diferentes; nenhum código contém o identificador de EMP-1, de ESC-1 nem a competência"
+        "entrada": "ESC-1 com chefe_1 e contador_a (sessão aberta); EMP-1 atribuída a contador_a; contador_a gera 1000 links seguidos para EMP-1, competência 10/2026",
+        "saida": "sucesso nas 1000 gerações; os 1000 códigos são todos diferentes; cada código tem ao menos 43 caracteres (32 bytes aleatórios, ARQ aprovada); nenhum par de códigos tem os mesmos 8 primeiros caracteres; nenhum código contém o identificador de EMP-1, de ESC-1 nem a competência"
       }
     },
     {
       "id": "c2",
-      "descricao": "O link vale até o fim do prazo padrão configurável (D-06), de 7 dias, e expira 1 segundo depois",
+      "descricao": "O link vale até o fim do prazo configurado (D-06, padrão de 7 dias) e expira 1 segundo depois",
       "exemplo": {
-        "entrada": "link de EMP-1, competência 10/2026, gerado por contador_a com o prazo padrão de 7 dias; o link é aberto, sem login, (a) exatamente 7 dias após a geração e (b) 7 dias e 1 segundo após a geração",
-        "saida": "(a) aceito, e a resposta mostra a competência 10/2026; (b) recusado com a mensagem 'Este link não vale mais. Peça um novo ao seu contador.' e nenhum dado de EMP-1 na resposta, nem o nome"
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-1 atribuída a ele; (1) com a validade padrão de 7 dias, contador_a gera um link de EMP-1, competência 10/2026, aberto sem login (a) exatamente 7 dias após a geração e (b) 7 dias e 1 segundo após; (2) com a validade configurada para 1 dia, contador_a gera outro link, aberto sem login (c) exatamente 1 dia após e (d) 1 dia e 1 segundo após",
+        "saida": "(a) e (c) aceitos, e a resposta mostra a competência 10/2026; (b) e (d): status 404, mensagem 'Este link não vale mais. Peça um novo ao seu contador.', e nenhum dado de EMP-1 na resposta, nem o nome"
       }
     },
     {
       "id": "c3",
-      "descricao": "Link invalidado pelo contador ou código inexistente recebem a mesma recusa, sem dado",
+      "descricao": "Link invalidado, link expirado e código inexistente recebem a mesma recusa, sem dado",
       "exemplo": {
-        "entrada": "link de EMP-1, competência 10/2026, dentro do prazo; contador_a invalida o link; abre-se, sem login, (a) esse link e (b) um código que nunca foi gerado",
-        "saida": "nos 2 casos: mensagem 'Este link não vale mais. Peça um novo ao seu contador.', mesmo status e mesmo corpo; nenhum dado de EMP-1 na resposta"
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-1 atribuída a ele; link L1 de EMP-1, competência 10/2026, dentro do prazo, que contador_a invalida; link L2 de EMP-1 com 7 dias e 1 segundo de idade; abre-se, sem login, (a) L1, (b) L2 e (c) um código que nunca foi gerado",
+        "saida": "nos 3 casos: status 404, mensagem 'Este link não vale mais. Peça um novo ao seu contador.', corpo idêntico nos 3; nenhum dado de EMP-1 na resposta"
       }
     },
     {
       "id": "c4",
       "descricao": "Contador de outra carteira não gera nem invalida link do cliente",
       "exemplo": {
-        "entrada": "ESC-1 com contador_a e contador_b (sessão aberta); EMP-1 atribuída a contador_a, com um link válido de 10/2026; contador_b tenta (a) gerar link para EMP-1 e (b) invalidar o link existente",
-        "saida": "nos 2 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum dado de EMP-1 na resposta; nenhum link novo gerado e o link existente continua válido"
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b (sessão aberta); EMP-1 atribuída a contador_a, com um link válido de 10/2026; contador_b tenta (a) gerar link para EMP-1, (b) invalidar o link existente e (c) gerar link para um identificador de cliente que não existe",
+        "saida": "nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 3; nenhum dado de EMP-1 na resposta; nenhum link novo gerado e o link existente continua válido"
       }
     },
     {
@@ -49,17 +54,39 @@
       "descricao": "Usuário de outro escritório não gera nem invalida link do cliente",
       "exemplo": {
         "entrada": "mesmo estado de c4 mais ESC-2 com chefe_2 (sessão aberta); chefe_2 tenta (a) gerar link para EMP-1 e (b) invalidar o link existente",
-        "saida": "nos 2 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum dado de EMP-1 na resposta; o link existente continua válido"
+        "saida": "nos 2 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente; nenhum dado de EMP-1 na resposta; o link existente continua válido"
       }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/acesso/test_link_cliente.py::test_link_gerado_tem_codigo_imprevisivel -q"},
-    {"criterio": "c2", "comando": "pytest tests/acesso/test_link_cliente.py::test_link_vale_ate_sete_dias_exatos -q"},
-    {"criterio": "c2", "comando": "pytest tests/acesso/test_link_cliente.py::test_link_expira_um_segundo_depois -q"},
-    {"criterio": "c3", "comando": "pytest tests/acesso/test_link_cliente.py::test_link_invalidado_e_inexistente_mesma_recusa -q"},
-    {"criterio": "c4", "comando": "pytest tests/acesso/test_link_cliente.py::test_contador_de_outra_carteira_nao_gera_nem_invalida -q"},
-    {"criterio": "c5", "comando": "pytest tests/acesso/test_link_cliente.py::test_outro_escritorio_nao_gera_nem_invalida -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_gerado_tem_codigo_imprevisivel -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_vale_ate_sete_dias_exatos -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_expira_um_segundo_depois -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_respeita_validade_configurada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_invalidado_e_inexistente_mesma_recusa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_contador_de_outra_carteira_nao_gera_nem_invalida -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/acesso/test_link_cliente.py::test_outro_escritorio_nao_gera_nem_invalida -q"
+    }
   ],
   "evidencia": null
 }

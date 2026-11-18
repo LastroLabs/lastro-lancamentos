@@ -2,13 +2,19 @@
   "id": "ACE-03",
   "titulo": "Mostrar a cada contador só os clientes da sua carteira",
   "modulo": "acesso",
-  "requisitos": ["RF-AUT-02", "RF-SEG-02"],
+  "requisitos": [
+    "RF-AUT-02",
+    "RF-SEG-02"
+  ],
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
   "responsavel": "RaissaOliveira19",
-  "depende_de": ["ACE-02", "NUC-02"],
+  "depende_de": [
+    "ACE-02",
+    "NUC-02"
+  ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
@@ -25,7 +31,7 @@
       "descricao": "O contador não abre, nem pelo endereço direto, cliente de outra carteira ou de outro escritório, e a recusa é igual à de cliente inexistente",
       "exemplo": {
         "entrada": "mesmo estado de c1; contador_a pede pelo endereço direto (a) EMP-2, (b) EMP-9 e (c) um identificador de cliente que não existe",
-        "saida": "nos 3 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.', mesmo status e mesmo corpo; nenhum dado de EMP-2 nem de EMP-9 na resposta"
+        "saida": "nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.', corpo idêntico nos 3; nenhum dado de EMP-2 nem de EMP-9 na resposta"
       }
     },
     {
@@ -40,8 +46,8 @@
       "id": "c4",
       "descricao": "O chefe não abre pelo endereço direto cliente de outro escritório",
       "exemplo": {
-        "entrada": "mesmo estado de c1; chefe_1 pede EMP-9 pelo endereço direto; chefe_2 pede EMP-1 pelo endereço direto",
-        "saida": "nos 2 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum dado de EMP-9 nem de EMP-1 na resposta"
+        "entrada": "mesmo estado de c1; (a) chefe_1 pede EMP-9 pelo endereço direto; (b) chefe_2 pede EMP-1 pelo endereço direto; (c) chefe_1 pede um identificador de cliente que não existe",
+        "saida": "nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.', corpo idêntico nos 3; nenhum dado de EMP-9 nem de EMP-1 na resposta"
       }
     },
     {
@@ -54,11 +60,26 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/acesso/test_carteira.py::test_contador_lista_so_clientes_atribuidos -q"},
-    {"criterio": "c2", "comando": "pytest tests/acesso/test_carteira.py::test_contador_endereco_direto_negado_igual_inexistente -q"},
-    {"criterio": "c3", "comando": "pytest tests/acesso/test_carteira.py::test_chefe_lista_todo_o_escritorio -q"},
-    {"criterio": "c4", "comando": "pytest tests/acesso/test_carteira.py::test_chefe_nao_abre_cliente_de_outro_escritorio -q"},
-    {"criterio": "c5", "comando": "pytest tests/acesso/test_carteira.py::test_contador_sem_clientes_recebe_lista_vazia -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/acesso/test_carteira.py::test_contador_lista_so_clientes_atribuidos -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/acesso/test_carteira.py::test_contador_endereco_direto_negado_igual_inexistente -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/acesso/test_carteira.py::test_chefe_lista_todo_o_escritorio -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/acesso/test_carteira.py::test_chefe_nao_abre_cliente_de_outro_escritorio -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/acesso/test_carteira.py::test_contador_sem_clientes_recebe_lista_vazia -q"
+    }
   ],
   "evidencia": null
 }

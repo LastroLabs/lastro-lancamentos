@@ -1,8 +1,10 @@
 {
   "id": "IA-01",
-  "titulo": "Remover CPF, CNPJ, agência e conta de descrições",
+  "titulo": "Remover CPF, CNPJ, agência, conta e nomes de descrições",
   "modulo": "ia",
-  "requisitos": ["RF-SEG-03"],
+  "requisitos": [
+    "RF-SEG-03"
+  ],
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
@@ -14,22 +16,14 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "CPF e CNPJ numéricos saem da descrição, com ou sem máscara, com dígito verificador certo ou errado",
+      "descricao": "CPF e CNPJ, numéricos ou alfanuméricos (padrão de julho/2026), saem da descrição, com ou sem máscara, com dígito verificador certo ou errado",
       "exemplo": {
-        "entrada": "descrições montadas pelo teste com CPF e CNPJ gerados na hora: 'PIX ENVIADO <CPF com máscara>', 'TED RECEBIDA <CNPJ só dígitos>', 'BOLETO <CNPJ com máscara>' e 'PIX <CPF com dígito verificador errado>'",
-        "saida": "em cada descrição anonimizada: nenhuma sequência dos dígitos originais do documento; no lugar dele, um marcador que diz o tipo (CPF ou CNPJ); o resto do texto ('PIX ENVIADO', 'TED RECEBIDA', 'BOLETO', 'PIX') igual ao original"
+        "entrada": "descrições montadas pelo teste com documentos gerados na hora: 'PIX ENVIADO <CPF com máscara>', 'TED RECEBIDA <CNPJ só dígitos>', 'BOLETO <CNPJ com máscara>', 'PIX <CPF com dígito verificador errado>', 'PAGAMENTO <CNPJ alfanumérico com máscara>' e 'pagamento <mesmo CNPJ alfanumérico em minúsculas, sem máscara>'",
+        "saida": "em cada descrição anonimizada: nenhuma sequência dos caracteres originais do documento; no lugar dele, um marcador que diz o tipo (CPF ou CNPJ); o resto do texto ('PIX ENVIADO', 'TED RECEBIDA', 'BOLETO', 'PIX', 'PAGAMENTO', 'pagamento') igual ao original"
       }
     },
     {
       "id": "c2",
-      "descricao": "CNPJ alfanumérico (padrão de julho/2026) sai da descrição, em maiúsculas ou minúsculas",
-      "exemplo": {
-        "entrada": "descrições 'PAGAMENTO <CNPJ alfanumérico com máscara>' e 'pagamento <mesmo CNPJ em minúsculas, sem máscara>', com o CNPJ gerado na hora",
-        "saida": "nas 2 descrições: nenhum dos 14 caracteres do CNPJ em sequência; marcador de CNPJ no lugar; 'PAGAMENTO' e 'pagamento' preservados"
-      }
-    },
-    {
-      "id": "c3",
       "descricao": "Números de agência e conta saem da descrição",
       "exemplo": {
         "entrada": "descrições 'TED AG 1234 C/C 56789-0', 'TRANSF AGENCIA 0001 CONTA 9876543-2' e 'DOC AG:4321 CC:11223-4'",
@@ -37,11 +31,19 @@
       }
     },
     {
-      "id": "c4",
-      "descricao": "Nomes conhecidos de contraparte viram pseudônimos estáveis no formato PESSOA_nnn (D-03)",
+      "id": "c3",
+      "descricao": "Todo nome de contraparte, pessoa ou empresa, conste ou não do cadastro, vira pseudônimo estável PESSOA_nnn ou EMPRESA_nnn (D-03)",
       "exemplo": {
-        "entrada": "lista de nomes conhecidos do cliente: 'CONTRAPARTE TESTE A' e 'CONTRAPARTE TESTE B'; anonimiza juntas as descrições 'PIX CONTRAPARTE TESTE A', 'PIX CONTRAPARTE TESTE B' e 'TED CONTRAPARTE TESTE A'",
-        "saida": "nenhuma descrição contém os nomes; 'CONTRAPARTE TESTE A' vira o mesmo pseudônimo nas 2 descrições em que aparece; 'CONTRAPARTE TESTE B' vira outro pseudônimo; os dois seguem o formato PESSOA_ e 3 dígitos"
+        "entrada": "configuração padrão; sócio cadastrado do cliente: 'SOCIO TESTE A'; anonimiza juntas as descrições 'PIX SOCIO TESTE A', 'PIX RECEBIDO MARIA TESTE SOUZA', 'TED MARIA TESTE SOUZA' e 'BOLETO PADARIA TESTE LTDA'",
+        "saida": "nenhuma descrição contém 'SOCIO TESTE A', 'MARIA TESTE SOUZA' nem 'PADARIA TESTE LTDA'; 'SOCIO TESTE A' e 'MARIA TESTE SOUZA' viram pseudônimos diferentes no formato PESSOA_ e 3 dígitos; 'MARIA TESTE SOUZA' tem o mesmo pseudônimo nas 2 descrições; 'PADARIA TESTE LTDA' vira EMPRESA_ e 3 dígitos; 'PIX', 'PIX RECEBIDO', 'TED' e 'BOLETO' preservados"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A pseudonimização de nomes é ligada por padrão e pode ser desligada por configuração, sem afetar CPF, CNPJ, agência e conta (D-03)",
+      "exemplo": {
+        "entrada": "a descrição 'PIX MARIA TESTE SOUZA <CPF gerado na hora> AG 1234 C/C 56789-0' anonimizada (a) com a configuração padrão e (b) com a pseudonimização de nomes desligada na configuração",
+        "saida": "(a) sem o nome, com um pseudônimo PESSOA_ e 3 dígitos, e com marcadores de CPF, agência e conta; (b) o nome 'MARIA TESTE SOUZA' aparece igual ao original, e CPF, agência e conta continuam trocados por marcadores"
       }
     },
     {
@@ -54,11 +56,34 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/ia/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q"},
-    {"criterio": "c2", "comando": "pytest tests/ia/test_anonimizar.py::test_cnpj_alfanumerico_removido -q"},
-    {"criterio": "c3", "comando": "pytest tests/ia/test_anonimizar.py::test_agencia_e_conta_removidas -q"},
-    {"criterio": "c4", "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_viram_pseudonimos_estaveis -q"},
-    {"criterio": "c5", "comando": "pytest tests/ia/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_cnpj_alfanumerico_removido -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_agencia_e_conta_removidas -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_de_pessoas_viram_pseudonimos_estaveis -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_de_empresas_viram_pseudonimo_de_empresa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_pseudonimizacao_de_nomes_configuravel -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/ia/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q"
+    }
   ],
   "evidencia": null
 }

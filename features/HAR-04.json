@@ -1,0 +1,131 @@
+{
+  "id": "HAR-04",
+  "titulo": "Alinhar validação de fichas e check-clean às decisões de 18/11",
+  "modulo": "harness",
+  "requisitos": [],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "A ficha precisa ter exatamente os campos obrigatórios: campo a mais também é recusado",
+      "exemplo": {
+        "entrada": "(a) as fichas atuais do repositório; (b) cópia temporária com uma ficha válida que ganhou o campo 'notas'",
+        "saida": "(a) hx state com código 0; (b) hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('notas')"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O ID segue ^[A-Z]{2,4}-\\d{2}$ e começa pela sigla do módulo; HX-10 é a única exceção (P-08)",
+      "exemplo": {
+        "entrada": "cópias temporárias com: (a) ficha 'ACE-1' em ACE-1.json; (b) ficha 'CAD-08' com modulo 'acesso'; (c) ficha 'CI-01' com modulo 'ci'; (d) HX-10 como está. Siglas: nucleo NUC, acesso ACE, cadastro CAD, ia IA, harness HAR, ci CI; demais módulos [definir], só com o regex",
+        "saida": "(a) e (b): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('id'); (c) e (d) aceitas"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O módulo é um dos 14 da arquitetura, harness ou ci",
+      "exemplo": {
+        "entrada": "cópia temporária com uma ficha válida cujo modulo é 'financeiro'",
+        "saida": "hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('modulo'), e a CORREÇÃO lista os 16 módulos aceitos"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A prioridade é must, should ou could e igual à MoSCoW de algum RF citado (docs/requisitos/requisitos_lastro.json); a onda vai de 1 a 4",
+      "exemplo": {
+        "entrada": "cópias temporárias com: (a) prioridade 'should' e requisitos ['RF-AUT-01'] (Must); (b) prioridade 'urgente'; (c) onda 5; (d) ficha HAR sem RF com prioridade 'should'",
+        "saida": "(a) e (b): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('prioridade'); (c): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('onda'); (d) aceita"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Campos fixos: essencial é false, tipo_verificacao é 'comando' e bloqueada_por só é preenchido quando o estado é blocked",
+      "exemplo": {
+        "entrada": "cópias temporárias com: (a) essencial true; (b) tipo_verificacao 'manual'; (c) estado not_started com bloqueada_por 'D-05'",
+        "saida": "nos 3 casos: hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha (o campo correspondente)"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "O responsável é um handle da equipe (gitpages/src/data/equipe.ts)",
+      "exemplo": {
+        "entrada": "cópias temporárias com responsavel (a) 'fulano-inexistente' e (b) 'caio-nascime'",
+        "saida": "(a) hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('responsavel'); (b) aceita"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "Cada verificação segue 'pytest tests/<modulo>/test_<alvo>.py::test_<nome> -q', na pasta do módulo, com um único arquivo por ficha e nome de teste que não se repete entre fichas",
+      "exemplo": {
+        "entrada": "cópias temporárias com: (a) comando 'ruff check src'; (b) ficha de modulo cadastro com teste em tests/acesso/; (c) ficha com testes em dois arquivos; (d) duas fichas com o mesmo nome de teste",
+        "saida": "nos 4 casos: hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('verificacao'); em (d) as duas fichas são citadas"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "Uma ficha não depende diretamente de outra do mesmo responsável na mesma onda (P-03: só dependência direta)",
+      "exemplo": {
+        "entrada": "cópias temporárias com: (a) X e Y de caio-nascime, onda 2, X depende de Y; (b) X de caio-nascime depende de Z de guin409, que depende de Y de caio-nascime, as 3 na onda 2",
+        "saida": "(a) hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('depende_de'), citando X e Y; (b) aceita"
+      }
+    },
+    {
+      "id": "c9",
+      "descricao": "hx check-clean detecta CNPJ alfanumérico com dígito verificador válido e reporta só arquivo, linha e tipo",
+      "exemplo": {
+        "entrada": "repositório temporário com 3 arquivos gerados pelo teste: (a) um CNPJ alfanumérico válido sem máscara na linha 2; (b) o mesmo com máscara e em minúsculas na linha 5; (c) um CNPJ alfanumérico com dígito verificador errado",
+        "saida": "código 1; 2 achados: arquivo de (a) na linha 2 e de (b) na linha 5, ambos com o tipo de CNPJ com dígito verificador válido; nenhum achado para (c); o valor do CNPJ não aparece na saída"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_campo_extra_recusado -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_id_fora_do_padrao_ou_da_sigla_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_modulo_desconhecido_recusado -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_prioridade_e_onda_validadas -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_campos_fixos_validados -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_responsavel_fora_da_equipe_recusado -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_formato_dos_comandos_de_verificacao -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_nome_de_teste_repetido_entre_fichas_recusado -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_dependencia_direta_na_mesma_onda_recusada -q"
+    },
+    {
+      "criterio": "c9",
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_check_clean_detecta_cnpj_alfanumerico -q"
+    }
+  ],
+  "evidencia": null
+}
