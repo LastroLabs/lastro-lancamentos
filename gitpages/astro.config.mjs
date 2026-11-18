@@ -74,6 +74,8 @@ export default defineConfig({
 						{ label: "Índice de decisões", slug: "decisoes" },
 						{ label: "Arquitetura do sistema", slug: "decisoes/arquitetura" },
 						{ label: "Banco de dados", slug: "decisoes/banco-de-dados" },
+						{ label: "Processo e fichas", slug: "decisoes/processo" },
+						{ label: "Acesso e cadastro", slug: "decisoes/acesso-e-cadastro" },
 						{ label: "Avaliação com LLM e modelos", slug: "decisoes/avaliacao-llm" },
 						{ label: "UX/UI", slug: "decisoes/ux-ui" },
 					],

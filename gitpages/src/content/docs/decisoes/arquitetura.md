@@ -5,7 +5,9 @@ description: Monólito modular em Python, SPA React, sessão no servidor, fila n
 
 | Status | Data | Fonte |
 |---|---|---|
-| Recomendada, aguardando aprovação | 10/11/2026 | Lastro — Arquitetura do Sistema |
+| Aprovada (ARQ-01 a ARQ-08) | Estudo de 10/11/2026; aprovação em 18/11/2026 | Lastro — Arquitetura do Sistema; `docs/decisoes/DECISIONS.md`, seção 1 |
+
+A aprovação acrescenta um detalhe que o estudo já trazia na página de visão geral: a API fica em `/api/v1`. O `Dockerfile` ainda usa `python:3.12-slim`; a troca para Python 3.14 entra pela ficha NUC-01 (conforme `DECISIONS.md`).
 
 ## Contexto
 
@@ -48,7 +50,7 @@ Os 56 Must da v0.2 precisam caber em pouco tempo, com um time pequeno e sem infr
 **Destrava:**
 
 - a estrutura do repositório (`src/lastro/<modulo>/`), com um dono por módulo, como o harness pede;
-- contratos imutáveis entre módulos, conferidos pelo `harness.py verify` com `import-linter`;
+- contratos imutáveis entre módulos, conferidos pelo `hx verify` com `import-linter` (planejado: hoje o `hx verify` mostra "Arquitetura: PULADO (ainda não implementado)", em `tools/harness.py`);
 - a ordem de construção semana a semana, com uma jornada E2E demonstrável ao fim de cada semana;
 - tipos do frontend gerados do backend: mudou o contrato, o front deixa de compilar no PR.
 
@@ -63,12 +65,12 @@ Os 56 Must da v0.2 precisam caber em pouco tempo, com um time pequeno e sem infr
 | Pendência | Como afeta a arquitetura |
 |---|---|
 | D-05 layout do Domínio | Bloqueia a exportação final; pedir exemplo aos dois escritórios na semana 1 |
-| D-03 nomes para a IA | Define se `anonimizar()` pseudonimiza nomes; até lá, pseudonimiza |
-| D-06 arquivo e link | Proposta: 20 MiB e 7 dias |
-| D-09 chefe e vários contadores | O esquema já aceita vários vínculos; a regra fica em configuração |
+| D-03 nomes para a IA | Aprovada em 18/11: `anonimizar()` pseudonimiza todo nome de contraparte (`PESSOA_nnn` / `EMPRESA_nnn`), ligado por padrão e configurável |
+| D-06 arquivo e link | Aprovada (provisória) em 18/11: 20 MiB e 7 dias, configuráveis |
+| D-09 chefe e vários contadores | Aprovada (provisória) em 18/11: o esquema aceita vários vínculos, com um responsável ativo por cliente; o chefe vê o escritório inteiro |
 | Provedor do piloto (sem ID) | Supabase ou Fly Managed Postgres, ambos em São Paulo |
 | Modelo da tarefa e do juiz (sem ID) | Ver [Avaliação com LLM](/lastro-lancamentos/decisoes/avaliacao-llm/) |
-| React ou Vue (sem ID) | A Arquitetura recomenda React; aguardando confirmação do time |
+| React ou Vue (sem ID) | Resolvida: SPA React, aprovada com a ARQ-02 em 18/11 |
 
 Detalhes técnicos em [Arquitetura](/lastro-lancamentos/arquitetura/visao-geral/) e [Stack](/lastro-lancamentos/arquitetura/stack/).
 

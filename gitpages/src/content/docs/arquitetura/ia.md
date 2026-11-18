@@ -4,7 +4,7 @@ description: Gateway único, anonimização e o lugar da IA na classificação.
 ---
 
 :::note[Status]
-Recomendada, aguardando aprovação. A escolha de modelos está em aberto. Ver [Decisão: avaliação com LLM](/lastro-lancamentos/decisoes/avaliacao-llm/).
+Gateway único em `src/lastro/ia/` aprovado em 18/11/2026 (ARQ-06). A escolha de provedor e de modelos continua em aberto. Ver [Decisão: avaliação com LLM](/lastro-lancamentos/decisoes/avaliacao-llm/).
 :::
 
 A IA **sugere classificações e interpreta descrições**. Ela não calcula saldos nem decide a integridade financeira de um extrato: essas verificações são feitas por código determinístico. O contador sempre revisa.
@@ -22,15 +22,15 @@ Os provedores ficam atrás de uma interface (`ClassificadorLLM`), para trocar de
 
 | Regra | Como é garantida |
 |---|---|
-| Só `ia/` importa SDK de provedor de LLM | Regra de dependência conferida pelo `harness.py verify` com `import-linter` |
+| Só `ia/` importa SDK de provedor de LLM | Regra de dependência a conferir pelo `hx verify` com `import-linter` (planejado: hoje o passo "Arquitetura" aparece como PULADO) |
 | `validacao/` não importa `ia/` | Idem: a conferência de saldo nunca depende de modelo |
 | Nada de CPF, CNPJ, agência ou conta na requisição | `anonimizar()` e um teste que falha se algum desses padrões sair (RF-SEG-03) |
 | Saída fora do esquema ou conta inexistente | Rejeitada pelo gateway |
 
 ## O que é anonimizado
 
-- **Sempre removido:** CPF, CNPJ, números de agência e de conta (RF-SEG-03).
-- **Nomes de contrapartes:** dependem de D-03. Até a decisão, são trocados por pseudônimos, por exemplo `PESSOA_017`.
+- **Sempre removido:** CPF, CNPJ (numérico e alfanumérico, padrão de julho/2026), números de agência e de conta (RF-SEG-03).
+- **Nomes de contrapartes:** pela D-03, aprovada em 18/11, **todo** nome de contraparte, pessoa ou empresa, vira pseudônimo (`PESSOA_nnn` ou `EMPRESA_nnn`). Ligado por padrão e configurável. Fichas IA-01 e IA-02 (em revisão).
 - **O que vai ao LLM:** só a descrição anonimizada, o valor e as contas candidatas.
 
 A tabela de equivalências fica restrita. Se houver reversão, não se presume anonimato absoluto.

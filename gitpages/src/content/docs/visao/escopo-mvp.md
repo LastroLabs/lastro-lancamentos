@@ -15,8 +15,8 @@ O MVP são os **56 requisitos Must** da v0.2. Should entra se houver contorno ma
 | Leitura | Detecção de formato, OFX de qualquer banco, PDF digital de BB e Inter, período, sem duplicar | RF-LEI-01 a 05 |
 | Conferência | Saldo por cálculo, linha a linha ou dia a dia, continuidade, cobertura do mês, bloqueio de reprovado | RF-VAL-01 a 05 |
 | Avisos | Aviso ao cliente no envio, mensagens em português simples | RF-AVI-01, 02 |
-| Classificação | Regras, transferência interna, sócio, histórico, parecidas, IA nas sobras, origem e confiança, limite, precedência | RF-CLA-01 a 07, 09, 10 |
-| Maquininha (mínimo) | Crédito de adquirente como "recebimento de cartão", sem abrir as vendas | RF-MAQ-01 (depende de D-02) |
+| Classificação | Regras, transferência interna, sócio, histórico, parecidas, IA nas sobras, origem e confiança, limite, precedência | RF-CLA-01, RF-CLA-02a, 02b e 02c, RF-CLA-03 a 07, 09 e 10 |
+| Maquininha (mínimo) | Crédito de adquirente como "recebimento de cartão", sem abrir as vendas | RF-MAQ-01 (D-02: regra prevista, mas desativada até a confirmação) |
 | Perguntas | Agrupadas por contraparte, resposta com um toque, "não sei", conversão em conta | RF-PER-01 a 05 |
 | Aprendizado | Resposta aceita vira regra, correção vira aprendizado, separado por cliente | RF-APR-01 a 03 |
 | Revisão | Três grupos, aceitar, trocar ou pendente, resultado da conferência, nada sai sem revisão | RF-REV-01 a 04 |
@@ -32,24 +32,33 @@ O estudo de banco de dados resume o mesmo recorte: Must são PDF digital de BB e
 
 ## O que depende de decisão
 
-| Decisão | Afeta no MVP |
-|---|---|
-| D-02 | Se a regra mínima de maquininha (RF-MAQ-01) entra |
-| D-04 | Qual é o terceiro banco de PDF |
-| D-05 | O layout exato da planilha do Domínio; bloqueia a exportação final |
-| D-06 | Tamanho máximo de arquivo e validade do link |
-| D-03, D-07, D-08, D-09 | Nomes enviados à IA, carteira compartilhada, limite de confiança, papel do chefe |
+Em 18/11/2026 a líder aprovou padrões provisórios e configuráveis para quase todas as D-xx (`docs/decisoes/DECISIONS.md`, seção 2). Elas não travam mais o MVP; valem até o piloto mostrar o contrário.
+
+| Decisão | Padrão em vigor (18/11) | Afeta no MVP |
+|---|---|---|
+| D-02 | Regra de adquirente prevista e desativada | RF-MAQ-01 |
+| D-03 | Todo nome de contraparte pseudonimizado (`PESSOA_nnn` / `EMPRESA_nnn`) | RF-SEG-03 |
+| D-04 | BB e Inter; terceiro banco parametrizado | RF-LEI-03 |
+| D-05 | Layout do Domínio provisório (`layouts/dominio.yaml` marcado PROVISORIO) | RF-EXP-01 |
+| D-06 | Link de 7 dias; arquivo de até 20 MiB | RF-SEG-01, RF-ENV-02 |
+| D-07, D-09 | Carteira individual, um responsável ativo; o chefe vê o escritório inteiro | RF-AUT-02 a 04 |
+| D-01, D-08 | **Pendentes** | Foto e print (Should); limite de confiança |
 
 Detalhes no [índice de decisões](/lastro-lancamentos/decisoes/).
 
 ## Valores a definir
 
-Os requisitos marcam com **[definir]** os valores ainda abertos:
+Os requisitos marcam com **[definir]** os valores ainda abertos. Dois deles já têm padrão provisório e configurável:
+
+| Requisito | O que falta definir | Padrão provisório |
+|---|---|---|
+| RF-SEG-01 | Prazo de validade do link | 7 dias (D-06, 18/11) |
+| RF-ENV-02 | Tamanho máximo de arquivo | 20 MiB (D-06, 18/11) |
+
+Os demais continuam sem valor:
 
 | Requisito | O que falta definir |
 |---|---|
-| RF-SEG-01 | Prazo de validade do link |
-| RF-ENV-02 | Tamanho máximo de arquivo |
 | RF-CLA-06 | Critérios de cada nível de confiança |
 | RF-CLA-07 | Limite inicial de confiança, com dados do piloto |
 | RF-CLA-09 | Ordem de precedência das regras |
@@ -57,4 +66,4 @@ Os requisitos marcam com **[definir]** os valores ainda abertos:
 | RF-OBS-02 (Should) | Metas das métricas do piloto |
 | RF-CLA-08 (Could) | Limite de "valor alto" |
 
-Fontes: Requisitos funcionais v0.2; Banco de dados para o Lastro v1.0, p. 2.
+Fontes: Requisitos funcionais v0.2; `docs/decisoes/DECISIONS.md` (18/11/2026); Banco de dados para o Lastro v1.0, p. 2.

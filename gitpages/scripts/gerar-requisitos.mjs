@@ -124,7 +124,7 @@ const expandeRFs = (texto) => {
 };
 
 const decisoesCatalogo = [];
-for (const [id, decisao, afeta, recomendacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões em aberto dos requisitos')) {
+for (const [id, decisao, afeta, recomendacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões dos requisitos')) {
 	if (!/^D-0\d$/.test(id)) continue;
 	decisoesCatalogo.push({ id, decisao, afeta: expandeRFs(afeta), recomendacao });
 }

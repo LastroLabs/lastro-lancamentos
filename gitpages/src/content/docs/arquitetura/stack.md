@@ -4,7 +4,7 @@ description: O que usar em cada camada, com as versões do documento de arquitet
 ---
 
 :::note[Status]
-Recomendada, aguardando aprovação. A escolha de React está aguardando confirmação do time: a reunião de 10/11 deixou "React ou Vue" em aberto. Ver o [índice de decisões](/lastro-lancamentos/decisoes/).
+Aprovada em 18/11/2026 com ARQ-01 a ARQ-08 e BD-01 a BD-08, incluindo SPA React, Python 3.14 e PostgreSQL 18 (conforme `docs/decisoes/DECISIONS.md`, seção 1). As versões abaixo são as do estudo; a fixação no lockfile acontece nas fichas de fundação. Ver o [índice de decisões](/lastro-lancamentos/decisoes/).
 :::
 
 Uma linguagem por lado: **TypeScript no frontend e Python no backend, no worker e na IA**. O documento conferiu as versões em 10/11/2026 e pede fixar sempre a versão exata no lockfile. As versões abaixo estão copiadas dele.
@@ -56,7 +56,7 @@ A área administrativa do chefe é um conjunto de telas dentro da área do conta
 | Dinheiro | `int` em centavos em todo o código; `Decimal` só na leitura do arquivo | Regra de ouro do harness |
 | Gerenciador de pacotes | uv | Já previsto no harness |
 | Testes | pytest + Testcontainers com PostgreSQL 18 | Mesmo motor da produção; nada de SQLite nos testes |
-| Lint e tipos | Ruff + mypy (ou pyright) | Rodam no `harness.py verify` |
+| Lint e tipos | Ruff + mypy (ou pyright) | Hoje o `hx verify` roda `ruff check .` e `pytest -q` no contêiner `dev`; mypy ainda não entra (planejado, sem ficha) |
 
 ## Worker e leitura de extratos
 
@@ -77,7 +77,7 @@ A área administrativa do chefe é um conjunto de telas dentro da área do conta
 | API e worker | Containers no Compose | Dois processos do mesmo container em PaaS com região São Paulo, ex.: Fly.io `gru` |
 | Frontend | Vite dev server | Arquivos estáticos em CDN (Cloudflare Pages ou equivalente) |
 | Segredos | `.env` local fora do git | Secrets do provedor e do GitHub Actions |
-| CI | GitHub Actions: `verify` em todo PR, `noturno.yml` às 03:00 | Igual |
+| CI | GitHub Actions: `pr.yml` roda `hx verify` e `hx check-clean` em todo push e PR. O `noturno.yml` às 03:00 é planejado: ainda não existe e não tem ficha | Igual |
 | Observabilidade | Logs estruturados em JSON | Sentry (erros) + logs do provedor; nada de dado pessoal nos logs |
 
 **Por que não MinIO:** a edição comunitária foi arquivada em abril de 2026 e não recebe mais correções de segurança. O SeaweedFS fala a mesma API S3, então o código não muda entre dev e piloto.
