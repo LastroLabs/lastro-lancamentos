@@ -1,0 +1,11 @@
+# A última regra que casar vence: a regra geral vem primeiro.
+
+# Resto do repositório: qualquer pessoa do time
+*           @camposs04 @caio-nascime @guin409 @marrathomaz @RaissaOliveira19 @jvsauma
+# Adicionar quando tiver acesso de escrita:
+# *         @arthurlleite
+
+# Harness: dois donos, porque ninguém aprova o próprio PR
+/tools/     @caio-nascime @camposs04
+/.github/   @caio-nascime @camposs04
+/features/  @caio-nascime @camposs04

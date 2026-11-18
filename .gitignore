@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Astro (site de documentação)
+gitpages/node_modules/
+gitpages/dist/
+gitpages/.astro/
+
+# Variáveis de ambiente
+.env*
+!.env.example
