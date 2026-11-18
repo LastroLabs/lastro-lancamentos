@@ -193,7 +193,7 @@ def test_sem_filtro_saida_inalterada(tmp_path, capsys):
     codigo, out, err = rodar_state(tmp_path, capsys)
 
     # Saída fixa no formato de hoje (colunas alinhadas, duas colunas de espaço).
-    esperado = "\n".join(
+    esperado = "\n".join(  # noqa: FLY002
         [
             "Lastro — estado das features",
             "ID    Estado       Resp.  Prior.  Título",

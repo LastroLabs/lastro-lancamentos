@@ -17,28 +17,37 @@ Como preencher (agente, ao encerrar a sessão):
 
 
 ## Próxima ação
-Rodar `/planejar HAR-02` em sessão nova, revisar `planos/HAR-02/plan.md` (humano aprova) e só então gerar os testes de `tests/harness/test_state_filtro.py`.
+Revisar o PR (`tools/` exige aprovação do dono). Perguntas 1 a 4 do plan.md seguem com o padrão sugerido; atualizar `AGENTS.md` seção 2 com as flags (pergunta 4, PR do humano).
 
 
 ## Bloqueios e perguntas
-- (nenhum)
+- Perguntas 1 a 4 do plan.md aguardam confirmação humana (implementado com os padrões sugeridos).
 
 ## Feito
 
 - 18/11 · S1 · ficha `features/HAR-02.json` criada (rascunho de 4 critérios, revisado pelo dev), mesclada na `developer`; feature aberta com `hx feature start`.
+
+- 17/11 · S2 · `--estado` (repetível) e `--atencao` em `tools/harness.py` (`_estados_do_filtro`, `cmd_state`, parser); `# noqa: FLY002` na linha 196 do teste, com permissão do dev.
 
 ## Rodei
 
 - 18/11 · S1 · `py tools/harness.py state` → ficha válida, HAR-02 `not_started` e HX-10 `passing` (antes do start)
 - 18/11 · S1 · `hx verify` → não rodou: Docker indisponível (daemon desligado)
 
+- 17/11 · S2 · `docker compose run --rm dev pytest -q` → 194 passed; `ruff check .` OK
+- 17/11 · S2 · `hx check-clean` → OK (aviso: variável de nomes não definida); `hx verify` → OK
+
 ## Falhou
 
 - 18/11 · S1 · `hx verify` recusado: Docker Desktop desligado. Nenhum código foi escrito nesta sessão, então não há regressão conhecida.
 
+- 17/11 · S2 · `ruff` FLY002 reprovou o teste (estilo, não comportamento); `feature verify` recusou árvore suja até o commit.
+
 ## Decisões
 
 - 18/11 · S1 · prioridade `should` e dependências vazias na ficha (HX-09 do storytelling não existe no repo); critérios c2 a c4 definidos como rascunho e aprovados pelo dev.
+
+- 17/11 · S2 · `--atencao` + `--estado` recusado (código 2); filtro sem resultado mostra cabeçalho e Resumo; `Nada pede atenção.` também mostra Resumo.
 
 ## Fim de sessão
 - [ ] `hx verify` verde, ou a falha está descrita em "Falhou"

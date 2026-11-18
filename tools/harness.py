@@ -405,7 +405,32 @@ def _carregar_fichas_validas(raiz: Path, erro: str, correcao: str) -> list[dict]
     return fichas
 
 
+ESTADOS_ATENCAO = ("blocked", "regressed")
+
+
+def _estados_do_filtro(args: argparse.Namespace) -> tuple[str, ...] | None:
+    """Valida as flags do `hx state` e devolve os estados a mostrar (None = todos)."""
+    pedidos = getattr(args, "estado", None) or []
+    if getattr(args, "atencao", False):
+        if pedidos:
+            raise HarnessErro(
+                erro="--atencao e --estado foram usados juntos.",
+                motivo="--atencao já escolhe os estados blocked e regressed.",
+                correcao="use só --atencao, ou só --estado com os estados que quer ver.",
+            )
+        return ESTADOS_ATENCAO
+    for estado in pedidos:
+        if estado not in ESTADOS:
+            raise HarnessErro(
+                erro=f"estado '{estado}' não existe.",
+                motivo="--estado só aceita os estados das fichas.",
+                correcao=f"use um destes: {', '.join(ESTADOS)}.",
+            )
+    return tuple(pedidos) or None
+
+
 def cmd_state(args: argparse.Namespace, raiz: Path) -> int:
+    filtro = _estados_do_filtro(args)
     fichas = _carregar_fichas_validas(
         raiz,
         erro="as fichas de features têm problemas e não consigo montar o painel.",
@@ -413,21 +438,27 @@ def cmd_state(args: argparse.Namespace, raiz: Path) -> int:
     )
 
     fichas = sorted(fichas, key=lambda f: _chave_natural(f["id"]))
+    visiveis = fichas if filtro is None else [f for f in fichas if f["estado"] in filtro]
     linhas = [
         (f["id"], f["estado"], _texto(f["responsavel"]), _texto(f["prioridade"]), f["titulo"])
-        for f in fichas
+        for f in visiveis
     ]
     cabecalho = ("ID", "Estado", "Resp.", "Prior.", "Título")
-    larguras = [max(len(c), *(len(linha[i]) for linha in linhas)) for i, c in enumerate(cabecalho[:-1])]
+    larguras = [
+        max([len(c), *(len(linha[i]) for linha in linhas)]) for i, c in enumerate(cabecalho[:-1])
+    ]
 
     def formatar(campos: tuple[str, ...]) -> str:
         colunas = [c.ljust(w) for c, w in zip(campos[:-1], larguras)]
         return "  ".join([*colunas, campos[-1]]).rstrip()
 
     print("Lastro — estado das features")
-    print(formatar(cabecalho))
-    for linha in linhas:
-        print(formatar(linha))
+    if getattr(args, "atencao", False) and not linhas:
+        print("Nada pede atenção.")
+    else:
+        print(formatar(cabecalho))
+        for linha in linhas:
+            print(formatar(linha))
     ordem_do_resumo = ("passing", "in_progress", "not_started", "blocked", "regressed")
     contagem = {e: sum(1 for f in fichas if f["estado"] == e) for e in ordem_do_resumo}
     print("Resumo: " + " · ".join(f"{contagem[e]} {e}" for e in ordem_do_resumo))
@@ -1173,6 +1204,17 @@ def _criar_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="comando", required=True, metavar="<comando>")
     p_state = sub.add_parser(
         "state", help="painel de features e quem está com cada uma"
+    )
+    p_state.add_argument(
+        "--estado",
+        action="append",
+        metavar="ESTADO",
+        help="mostra só as fichas deste estado (pode repetir): " + ", ".join(ESTADOS),
+    )
+    p_state.add_argument(
+        "--atencao",
+        action="store_true",
+        help="mostra só as fichas blocked e regressed",
     )
     p_state.set_defaults(func=cmd_state)
     p_clean = sub.add_parser(
