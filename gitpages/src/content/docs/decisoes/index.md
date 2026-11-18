@@ -13,8 +13,8 @@ Os IDs oficiais nascem no `docs/decisoes/DECISIONS.md` quando o grupo aprova. At
 
 | ID | Decisão | Status | O que destrava no desenvolvimento | Página |
 |---|---|---|---|---|
-| ARQ-01 a ARQ-08 | Arquitetura do sistema: monólito modular em Python, SPA React, sessão no servidor, fila no PostgreSQL, gateway único de IA | Recomendada, aguardando aprovação | Estrutura do repositório, módulos com dono, contratos entre módulos e a fundação da S1 | [Arquitetura do sistema](/lastro-lancamentos/decisoes/arquitetura/) |
-| BD-01 a BD-08 | Banco de dados: PostgreSQL relacional, isolamento por escritório e carteira, centavos em BIGINT | Recomendada, aguardando aprovação | Migrações, RLS, deduplicação, aprendizado por cliente e exportação reproduzível | [Banco de dados](/lastro-lancamentos/decisoes/banco-de-dados/) |
+| ARQ-01 a ARQ-08 | Arquitetura do sistema: monólito modular em Python, SPA React, sessão no servidor, fila no PostgreSQL, gateway único de IA | Aprovada em 18/11/2026 | Estrutura do repositório, módulos com dono, contratos entre módulos e a fundação da S1 | [Arquitetura do sistema](/lastro-lancamentos/decisoes/arquitetura/) |
+| BD-01 a BD-08 | Banco de dados: PostgreSQL relacional, isolamento por escritório e carteira, centavos em BIGINT | Aprovada em 18/11/2026 | Migrações, RLS, deduplicação, aprendizado por cliente e exportação reproduzível | [Banco de dados](/lastro-lancamentos/decisoes/banco-de-dados/) |
 | — | Avaliação com LLM e escolha de modelos: código e gabarito onde há resposta certa, juiz LLM só para texto | Recomendada, aguardando aprovação | Métricas no `verify --e2e`, limiares nas fichas, juiz de perguntas validado | [Avaliação com LLM](/lastro-lancamentos/decisoes/avaliacao-llm/) |
 | — | UX/UI: fonte Inter, visual limpo, cards espaçados, contraste e responsividade | Recomendada, aguardando aprovação | Design system do frontend (Tailwind e shadcn/ui, fonte Inter) | [UX/UI](/lastro-lancamentos/decisoes/ux-ui/) |
 
@@ -25,14 +25,14 @@ Pergunta, requisitos afetados e recomendação copiados dos Requisitos funcionai
 | ID | Decisão | Afeta | Recomendação | Status | Próximo passo |
 |---|---|---|---|---|---|
 | D-01 | Foto e print entram no MVP? | RF-LEI-06 | Aceitar foto como baixa confiança, sempre com conferência de saldo, se der tempo depois do Must. Hoje está em Should | Em aberto | Reavaliar depois dos Must |
-| D-02 | A regra mínima de maquininha entra no MVP? | RF-MAQ-01 | Sim. Sem ela, créditos de cartão viram perguntas inúteis ao cliente. A v2 deixa a maquininha toda fora, então precisa de aprovação | Em aberto | Aprovar ou recusar a recomendação |
-| D-03 | Nomes de contrapartes podem ser enviados ao serviço de IA? | RF-SEG-03 | Precisa de decisão da equipe e do termo de uso com os pilotos. Sem nomes, a IA classifica pior | Em aberto | Decisão da equipe e termo de uso com os pilotos |
-| D-04 | Qual é o terceiro banco do MVP? | RF-LEI-03 | Sicoob ou Nubank, conforme o que aparecer nos extratos dos pilotos. BB e Inter aparecem nos dois escritórios | Em aberto | Ver os bancos nos extratos dos pilotos |
-| D-05 | Qual é o layout exato de importação do Domínio? | RF-EXP-01 | Pedir um exemplo aos dois escritórios e testar a importação na semana 1 | Em aberto | Pedir o exemplo na semana 1 |
-| D-06 | Qual o tamanho máximo de arquivo e a validade do link? | RF-ENV-02, RF-SEG-01 | Definir antes de programar o envio | Em aberto | Definir antes da feature de envio |
-| D-07 | Contadores do mesmo escritório compartilham carteira? | RF-AUT-02 | Hoje cada contador vê só a sua. Perguntar nos pilotos se isso atende | Em aberto | Perguntar nos pilotos |
+| D-02 | A regra mínima de maquininha entra no MVP? | RF-MAQ-01 | Sim. Sem ela, créditos de cartão viram perguntas inúteis ao cliente. A v2 deixa a maquininha toda fora, então precisa de aprovação | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Aprovar ou recusar a recomendação |
+| D-03 | Nomes de contrapartes podem ser enviados ao serviço de IA? | RF-SEG-03 | Precisa de decisão da equipe e do termo de uso com os pilotos. Sem nomes, a IA classifica pior | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Decisão da equipe e termo de uso com os pilotos |
+| D-04 | Qual é o terceiro banco do MVP? | RF-LEI-03 | Sicoob ou Nubank, conforme o que aparecer nos extratos dos pilotos. BB e Inter aparecem nos dois escritórios | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Ver os bancos nos extratos dos pilotos |
+| D-05 | Qual é o layout exato de importação do Domínio? | RF-EXP-01 | Pedir um exemplo aos dois escritórios e testar a importação na semana 1 | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Pedir o exemplo na semana 1 |
+| D-06 | Qual o tamanho máximo de arquivo e a validade do link? | RF-ENV-02, RF-SEG-01 | Definir antes de programar o envio | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Definir antes da feature de envio |
+| D-07 | Contadores do mesmo escritório compartilham carteira? | RF-AUT-02 | Hoje cada contador vê só a sua. Perguntar nos pilotos se isso atende | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Perguntar nos pilotos |
 | D-08 | Qual o limite de confiança para perguntar ao cliente? | RF-CLA-06, RF-CLA-07 | Calibrar com os dados do gabarito, não por palpite | Em aberto | Calibrar no gabarito |
-| D-09 | O chefe também revisa e exporta? Um cliente pode ter mais de um contador ao mesmo tempo? | RF-AUT-02, RF-AUT-03, RF-AUT-04 | Perguntar à colega do grupo e aos pilotos. Enquanto isso, modelar a atribuição para aceitar mais de um contador por cliente, que custa pouco | Em aberto | Perguntar à colega do grupo e aos pilotos |
+| D-09 | O chefe também revisa e exporta? Um cliente pode ter mais de um contador ao mesmo tempo? | RF-AUT-02, RF-AUT-03, RF-AUT-04 | Perguntar à colega do grupo e aos pilotos. Enquanto isso, modelar a atribuição para aceitar mais de um contador por cliente, que custa pouco | Decidida em 18/11/2026 (padrão provisório; ver DECISIONS.md) | Perguntar à colega do grupo e aos pilotos |
 
 ### O que destrava cada uma
 

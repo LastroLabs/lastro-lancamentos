@@ -5,9 +5,9 @@ description: PostgreSQL relacional, isolamento por escritório e carteira, centa
 
 | Status | Data | Fonte |
 |---|---|---|
-| Recomendada, aguardando aprovação | 10/11/2026 | Banco de dados para o Lastro, v1.0 |
+| Aprovada | 18/11/2026 (estudo de 10/11/2026) | Banco de dados para o Lastro, v1.0 |
 
-O documento apresenta a escolha como "decisão recomendada" e diz que as escolhas são "propostas concretas deste estudo". Por isso o status aqui é recomendada, não aceita.
+O documento apresenta a escolha como "decisão recomendada" e diz que as escolhas são "propostas concretas deste estudo". A líder aprovou a decisão em 18/11/2026 (ver `docs/decisoes/DECISIONS.md`).
 
 ## Contexto
 

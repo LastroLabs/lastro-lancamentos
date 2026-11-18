@@ -5,7 +5,7 @@ description: Monólito modular em Python, SPA React, sessão no servidor, fila n
 
 | Status | Data | Fonte |
 |---|---|---|
-| Recomendada, aguardando aprovação | 10/11/2026 | Lastro — Arquitetura do Sistema |
+| Aprovada | 18/11/2026 (estudo de 10/11/2026) | Lastro — Arquitetura do Sistema |
 
 ## Contexto
 

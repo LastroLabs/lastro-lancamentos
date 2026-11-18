@@ -1,0 +1,58 @@
+# Lastro — DECISIONS.md
+
+Registro das decisões do projeto. Uma linha por decisão: ID, data, decisão, motivo em uma linha e fichas afetadas.
+Quem decide as perguntas de negócio (D-xx) é a líder. Decisão nova entra aqui antes de entrar no código (AGENTS.md, regras 9 e 12).
+
+Legenda de status: **aprovada** (decidida pela líder) · **assumida** (recomendação da revisão aplicada sem mudar o escopo de nenhum RF; a líder pode reverter) · **pendente**.
+
+## 1. Arquitetura e banco de dados
+
+| ID | Data | Status | Decisão | Motivo | Fichas afetadas |
+|---|---|---|---|---|---|
+| ARQ-01 a ARQ-08 | 2026-11-18 | aprovada | Arquitetura do sistema como em `gitpages/src/content/docs/decisoes/arquitetura.md`: monólito modular em **Python 3.14** + FastAPI, SPA React, sessão no servidor, fila no PostgreSQL, gateway único de IA, API em `/api/v1`. | Estudo de arquitetura aceito; destrava a fundação da S1. | NUC-01, NUC-02, NUC-03, ACE-01..05, IA-02 |
+| BD-01 a BD-08 | 2026-11-18 | aprovada | Banco de dados como em `gitpages/src/content/docs/decisoes/banco-de-dados.md`: **PostgreSQL 18**, migrações versionadas, isolamento por escritório e carteira com RLS, centavos em BIGINT, CI com PostgreSQL e fixtures sintéticas. | Estudo de banco aceito; destrava migrações e isolamento. | NUC-01, NUC-03, HAR-03 |
+
+Consequência: o AGENTS.md §1 deixa de listar o banco como "em aberto" e passa a dizer Python 3.14. O `Dockerfile` ainda usa `python:3.12-slim`; a troca entra pela NUC-01 (c5).
+
+## 2. Perguntas de negócio (D-xx)
+
+Padrões provisórios e configuráveis, tirados de "Encaminhamento proposto pelos estudos" (`gitpages/src/content/docs/decisoes/index.md`). Valem até o piloto mostrar o contrário.
+
+| ID | Data | Status | Decisão | Motivo | Fichas afetadas |
+|---|---|---|---|---|---|
+| D-02 | 2026-11-18 | aprovada (provisória) | Regra mínima de adquirente prevista, mas **desativada** até a confirmação; leitores extensíveis. | Padrão dos estudos; não muda o escopo agora. | — (nenhuma neste lote) |
+| D-03 | 2026-11-18 | aprovada | **Todo** nome de contraparte, pessoa ou empresa, é pseudonimizado antes de ir à IA (`PESSOA_nnn` / `EMPRESA_nnn`). Ligado por padrão e configurável. Fecha a P-06 da revisão. | Protege dado de terceiros sem depender de lista de nomes. | IA-01, IA-02 |
+| D-04 | 2026-11-18 | aprovada (provisória) | Terceiro banco parametrizado; nenhum banco novo como entrega confirmada. | Padrão dos estudos. | — |
+| D-05 | 2026-11-18 | aprovada (provisória) | Layout do Domínio provisório (`layouts/dominio.yaml` marcado PROVISORIO) até o teste real de importação. | Padrão dos estudos. | — |
+| D-06 | 2026-11-18 | aprovada (provisória) | Link do cliente vale **7 dias**; arquivo de no máximo **20 MiB**. Os dois configuráveis. | Padrão dos estudos, medido no piloto. | ACE-05 |
+| D-07 | 2026-11-18 | aprovada (provisória) | Carteira individual: cada contador vê só os clientes atribuídos a ele. | Padrão dos estudos. | NUC-02, ACE-03, ACE-04, CAD-04..07, ACE-05 |
+| D-09 | 2026-11-18 | aprovada (provisória) | Um responsável ativo por cliente (o modelo aceita vários vínculos); o chefe vê o escritório inteiro. | Padrão dos estudos. | NUC-02, ACE-02, ACE-03, ACE-04 |
+
+D-01 e D-08 continuam pendentes.
+
+## 3. Processo
+
+| ID | Data | Status | Decisão | Motivo | Fichas afetadas |
+|---|---|---|---|---|---|
+| PROC-01 | 2026-11-18 | aprovada | Branch da verdade = `developer` (base das branches `feat/*`). | Alinha com o `hx feature start`. | todas |
+| PROC-02 | 2026-11-18 | aprovada | Identidade = `HX_USUARIO` = handle do GitHub (o mesmo de `responsavel`). | Um só identificador entre ficha, harness e GitHub. | todas |
+| PROC-03 | 2026-11-18 | aprovada | Onda = semana, de 1 a 4. | Planejamento até 07/12. | todas |
+| PROC-04 | 2026-11-18 | aprovada | `verificacao` lista 100% dos testes da ficha. | A evidência do `hx feature verify` cobre a ficha inteira. | todas |
+
+## 4. Revisão das fichas da onda S1 (P-xx)
+
+| ID | Data | Status | Decisão | Motivo | Fichas afetadas |
+|---|---|---|---|---|---|
+| P-01 | 2026-11-18 | aprovada | Status HTTP: **401** sem sessão ou com sessão encerrada; **403** com sessão, mas o papel não permite; **404** para recurso de outra carteira, de outro escritório ou inexistente, com corpo idêntico ao de um recurso inexistente, inclusive em rotas que alteram dados. | Impede descobrir se um recurso de outro escritório existe. | ACE-01..05, CAD-03..07 |
+| P-02 | 2026-11-18 | aprovada | **Só o chefe cadastra cliente.** Um contador sozinho no escritório é o próprio chefe. | RF-AUT-03 (mais recente) e D-09. | ACE-02, CAD-03 |
+| P-02a | 2026-11-18 | aprovada | **Releitura do RF-CAD-01:** "o chefe deve poder cadastrar um cliente com nome e CNPJ"; o critério passa a ser "o cliente aparece no escritório depois de salvo e, atribuído, na carteira do contador". | Consequência da P-02. | CAD-03 |
+| P-03 | 2026-11-18 | aprovada | "Fichas encadeadas na mesma onda" conta só a dependência **direta**. CAD-04, CAD-05, CAD-07 e ACE-05 dependem de NUC-02 + ACE-02, e não de ACE-03. | ACE-03 é a tela de listagem; as outras só precisam da regra e da atribuição. | CAD-03..07, ACE-05 |
+| P-05 | 2026-11-18 | superada | Python 3.14 (ARQ-08 aprovada). | Decidido acima. | NUC-01 |
+| P-06 | 2026-11-18 | aprovada | Ver D-03. | — | IA-01, IA-02 |
+| P-07 | 2026-11-18 | assumida | "Onda 1 = 6 fichas" conta só as fichas novas; as preexistentes passing não contam. | A líder já disse o mesmo na rodada 2. | HAR-02, HX-10 |
+| P-08 | 2026-11-18 | assumida | HX-10 mantém o ID (preexistente); novas fichas de CI usam `CI-nn`. O validador trata HX-10 como exceção. | Renomear mexe em evidência e branch. | HX-10, HAR-04 |
+| P-10 | 2026-11-18 | assumida | Planilha do plano: cabeçalho `código` e `nome` na linha 1. É uma **suposição**, a confirmar com os pilotos. | Destrava CAD-02 sem esperar o modelo dos pilotos. | CAD-02, CAD-05, HAR-03 |
+| P-11 | 2026-11-18 | assumida | Uma nova carga do plano **substitui** o plano anterior; se a conta transitória não estiver no plano novo, o cliente fica sem transitória. | Mais simples e auditável; segue o critério do RF-CAD-04 ("a conta precisa existir no plano"). | CAD-05, CAD-06 |
+| P-12 | 2026-11-18 | assumida em parte | Criada a HAR-04 (alinhamento do validador e do check-clean). **Não** criada ficha de CI de banco: o banco de teste no ambiente de verificação entra na NUC-01 (c5). | Evita uma ficha nova; BD-07 fica coberta pela NUC-01. | HAR-04, NUC-01 |
+| P-09 | — | **pendente** | O chefe edita o cadastro de um cliente (contas, plano, transitória, sócios) e gera link, mesmo sem estar atribuído? Os estudos dizem "o chefe revisa e exporta quando estiver atribuído". | Responder exige criar comportamento novo: muda escopo. | CAD-04..07, ACE-05 |
+| P-13 | — | **pendente** | Status HTTP de recusa por dado inválido (ex.: CNPJ inválido, nome vazio, conta fora do plano): 400 ou 422? A P-01 não cobre esse caso. As fichas usam `[definir P-13]`. | Surgiu ao aplicar a P-01. | CAD-03, CAD-04, CAD-06, CAD-07 |

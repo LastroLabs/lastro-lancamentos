@@ -6,7 +6,7 @@ Responda e escreva textos de interface em português do Brasil. Este arquivo é 
 
 Lastro (nome provisório) lê o extrato bancário de clientes pequenos de escritórios contábeis (PDF digital BB/Inter e OFX de qualquer banco), confere o saldo por cálculo, sugere a conta de cada linha com motivo e confiança, pergunta ao cliente só o que não sabe e entrega o Excel no layout do Domínio. Papéis: chefe, contador, cliente final (celular, sem login). MVP em **07/12/2026**.
 
-**Stack decidida:** Python 3.12, FastAPI, Docker. **Em aberto** (não decida; ver `docs/decisoes/DECISIONS.md`): front (React ou Vue), banco, hospedagem, provedor de LLM, layout do Domínio (D-05) e as demais D-xx.
+**Stack decidida** (ARQ e BD aprovadas em 18/11/2026): Python 3.14, FastAPI, PostgreSQL 18, SPA React, Docker. **Em aberto** (não decida; ver `docs/decisoes/DECISIONS.md`): hospedagem, provedor de LLM, layout definitivo do Domínio (D-05) e as D-xx pendentes.
 
 ## 2. Comandos
 
