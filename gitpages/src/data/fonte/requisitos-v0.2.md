@@ -5,10 +5,12 @@ description: Requisitos funcionais do Lastro por prioridade (MoSCoW), versão 0.
 
 Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do escopo. Esta página reproduz o documento; qualquer mudança começa nele.
 
+Ajuste posterior à v0.2: o RF-CAD-01 foi relido em 18/11/2026 pela decisão P-02a (só o chefe cadastra cliente), registrada no `docs/decisoes/DECISIONS.md` e em [Decisão: acesso e cadastro](/lastro-lancamentos/decisoes/acesso-e-cadastro/).
+
 - **Selos:** NOVO e AJUSTADO marcam o que mudou na v0.2.
 - **Origem:** v2 (proposta v2), Esc.1 e Esc.2 (escritórios-piloto), Ata, Proposta e Equipe, como estão no documento.
 - **[definir]:** valor ainda aberto. A lista está em [Escopo do MVP](/lastro-lancamentos/visao/escopo-mvp/#valores-a-definir).
-- **Decisões em aberto:** D-01 a D-09 estão no [índice de decisões](/lastro-lancamentos/decisoes/).
+- **Decisões:** D-01 a D-09 estão no [índice de decisões](/lastro-lancamentos/decisoes/). Em 18/11, D-02 a D-07 e D-09 ganharam padrão provisório; D-01 e D-08 seguem pendentes.
 
 | Prioridade | Significado | Quantidade |
 |---|---|---|
@@ -35,7 +37,7 @@ Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do esco
 
 | ID | Requisito | Critério de aceitação | Origem |
 |---|---|---|---|
-| RF-CAD-01 | O contador deve poder cadastrar um cliente com nome e CNPJ. | O cliente aparece na carteira do contador depois de salvo. | v2 (F04) |
+| RF-CAD-01 | O chefe deve poder cadastrar um cliente com nome e CNPJ. (Ajustado em 18/11: no v0.2 era "o contador"; ver decisão P-02a.) | O cliente aparece no escritório depois de salvo e, atribuído, na carteira do contador. (Ajustado em 18/11, ver decisão P-02a.) | v2 (F04) |
 | RF-CAD-02 | O contador deve poder informar os bancos (e as contas) do cliente. | O cliente guarda uma ou mais contas, cada uma com banco e apelido. | v2 (passo 1) |
 | RF-CAD-03 | O contador deve poder carregar o plano de contas do cliente por planilha. | O plano de contas do piloto é carregado com código e nome de cada conta. Linha inválida é rejeitada com a linha indicada. | Esc.1, v2 |
 | RF-CAD-04 | O contador deve poder indicar qual conta do plano é a conta transitória do cliente. | A conta escolhida precisa existir no plano. Sem ela, o sistema não permite exportar. | Esc.1, Esc.2, v2 |
@@ -189,4 +191,4 @@ Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do esco
 - **Decisões:** concordamos com as recomendações D-01 a D-09? Alguma muda o escopo?
 - **Fonte única:** o fluxo de chefe e troca de responsável veio de um relato só. Vamos confirmar nos pilotos antes de tratá-lo como certo?
 
-**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em histórias de usuário para o `feature_list.json` do harness.
+**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em fichas `features/<ID>.json` do harness, uma por arquivo (nota de 18/11: o documento v0.2 falava em um arquivo único de features, que não existe).

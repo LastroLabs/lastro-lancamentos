@@ -10,7 +10,7 @@
 	},
 	"notas": {
 		"criterio": "Nos Won't, o campo criterio guarda o Motivo.",
-		"modulo": "Mapeamento proposto (não decidido): por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won't sem módulo.",
+		"modulo": "Módulos aprovados com a ARQ-01 (18/11/2026). O vínculo requisito → módulo é por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won't sem módulo. Quando há ficha, vale o módulo da ficha.",
 		"frente": "Pela tabela de frentes da equipe; prefixos que a tabela não cita ficam com frente null.",
 		"area": "Must: subtítulo da seção. Demais: área Must do mesmo prefixo ou rótulo tirado do texto do requisito."
 	},
@@ -337,8 +337,8 @@
 			"selo": null,
 			"prioridade": "Must",
 			"area": "Cadastro",
-			"requisito": "O contador deve poder cadastrar um cliente com nome e CNPJ.",
-			"criterio": "O cliente aparece na carteira do contador depois de salvo.",
+			"requisito": "O chefe deve poder cadastrar um cliente com nome e CNPJ. (Ajustado em 18/11: no v0.2 era \"o contador\"; ver decisão P-02a.)",
+			"criterio": "O cliente aparece no escritório depois de salvo e, atribuído, na carteira do contador. (Ajustado em 18/11, ver decisão P-02a.)",
 			"origem": "v2 (F04)",
 			"decisoes": [],
 			"aDefinir": false,

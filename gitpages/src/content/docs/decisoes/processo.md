@@ -24,7 +24,7 @@ O harness (`tools/harness.py`) já cria branch, grava estado e evidência e conf
 - A identidade é a variável de ambiente `HX_USUARIO`, com o handle do GitHub. É o mesmo valor do campo `responsavel` da ficha.
 - O `hx feature start` recusa a ficha se `HX_USUARIO` não bater com `responsavel`.
 - Sem `HX_USUARIO`, o código usa `git config user.name` como reserva (`tools/harness.py`, `_identidade_do_dev`).
-- Não existe opção `--owner`: o parser do `hx` não a aceita.
+- Não há opção de linha de comando para dizer quem é a dev: o parser do `hx` só aceita `<ID>` e `--sem-branch` no `feature start`.
 
 ### Onda e meta (PROC-03, P-07)
 
@@ -64,7 +64,7 @@ O validador de `tools/harness.py` ainda **não** confere a regex do ID, a lista 
 
 ## Consequências
 
-- O `AGENTS.md` da `developer` ainda cita `hx feature start <ID> --owner <nome>`, e uma mensagem de erro do `harness.py` também. Os dois ficam desatualizados até a próxima PR do harness.
+- O `AGENTS.md` da `developer` ainda mostra o `hx feature start` com uma opção de dono que não existe, e uma mensagem de erro do `harness.py` também. Os dois ficam desatualizados até a próxima PR do harness.
 - Ficha que não segue as regras de ID e módulo passa no `hx state` até a HAR-04 entrar.
 
 Fontes: `docs/decisoes/DECISIONS.md` (18/11/2026), seções 3 e 4; `tools/harness.py` (branch `developer`).

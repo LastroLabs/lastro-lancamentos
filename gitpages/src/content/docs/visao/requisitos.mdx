@@ -23,7 +23,7 @@ Esta página reproduz os **Requisitos funcionais v0.2, de 07/11/2026**, que são
 |---|---|
 | <span class="req-selo req-selo--novo">NOVO</span> | Requisito que entrou na v0.2 |
 | <span class="req-selo req-selo--ajustado">AJUSTADO</span> | Requisito que mudou na v0.2 |
-| <span class="req-selo req-selo--decisao">D-xx</span> | Depende de uma decisão em aberto (D-01 a D-09); o selo leva ao [índice de decisões](/lastro-lancamentos/decisoes/) |
+| <span class="req-selo req-selo--decisao">D-xx</span> | Ligado a uma decisão D-01 a D-09 (pendente ou com padrão provisório desde 18/11); o selo leva ao [índice de decisões](/lastro-lancamentos/decisoes/) |
 | **[definir]** | Valor ainda aberto; a lista está em [Escopo do MVP](/lastro-lancamentos/visao/escopo-mvp/#valores-a-definir) |
 | **Origem** | v2 (proposta v2), Esc.1 e Esc.2 (escritórios-piloto), Ata, Proposta e Equipe, como estão no documento |
 | **#rf-…** | Cada linha tem uma âncora com o ID em minúsculas, por exemplo [#rf-val-01](#rf-val-01) |
@@ -95,7 +95,7 @@ Fora desta versão.
 - **Decisões:** concordamos com as recomendações D-01 a D-09? Alguma muda o escopo?
 - **Fonte única:** o fluxo de chefe e troca de responsável veio de um relato só. Vamos confirmar nos pilotos antes de tratá-lo como certo?
 
-**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em histórias de usuário para o `feature_list.json` do harness. Há um [rascunho das histórias no Backlog](/lastro-lancamentos/requisitos/backlog/#histórias-de-usuário-rascunho).
+**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em fichas `features/<ID>.json` do harness (primeiro lote em revisão, ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha)). Há um [rascunho das histórias no Backlog](/lastro-lancamentos/requisitos/backlog/#histórias-de-usuário-rascunho).
 
 ## Histórico de versão
 
@@ -103,3 +103,4 @@ Fora desta versão.
 |---|---|---|
 | 12/11/2026 | 1.0 | Página criada a partir dos Requisitos funcionais v0.2 (07/11/2026), em tabelas por prioridade |
 | 12/11/2026 | 1.1 | Requisitos passam a ser dados (`src/data/requisitos.json`, gerado por `scripts/gerar-requisitos.mjs`); entram resumo, legenda, explorador e abas por prioridade. Texto dos requisitos sem alteração |
+| 18/11/2026 | 1.2 | RF-CAD-01 relido pela decisão P-02a: o chefe cadastra o cliente |

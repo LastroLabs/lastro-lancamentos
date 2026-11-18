@@ -19,7 +19,7 @@ export interface Requisito {
 	dores: string[];
 	/** Frente da equipe, pela tabela de frentes; null quando a fonte não cita o prefixo. */
 	frente: string | null;
-	/** Módulo src/lastro/<modulo>/: mapeamento proposto, ainda não decidido. */
+	/** Módulo src/lastro/<modulo>/: módulos aprovados (ARQ-01); vínculo pelo prefixo do ID. Quando há ficha, vale o módulo da ficha. */
 	modulo: string | null;
 }
 

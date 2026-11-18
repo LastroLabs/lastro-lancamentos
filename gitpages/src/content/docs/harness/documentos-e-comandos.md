@@ -53,7 +53,7 @@ Tirados do parser de `tools/harness.py` (`_criar_parser`). Opção que não est�
 | `hx verify --e2e` | Rodar as jornadas de ponta a ponta | Planejado, sem ficha |
 | Checagem de arquitetura no `hx verify` | Conferir as regras de dependência entre módulos com `import-linter` | Planejado, sem ficha |
 
-Comandos do guia v0.1 que **não existem** no código: `init`, `feature progress` e a opção `--owner`.
+Comandos do guia v0.1 que **não existem** no código: `init`, `feature progress` e a opção de dono no `feature start` (a identidade vem de `HX_USUARIO`).
 
 ### O que o `hx feature start` confere, nesta ordem
 

@@ -171,7 +171,7 @@ const saida = {
 	fontes: FONTES,
 	notas: {
 		criterio: "Nos Won't, o campo criterio guarda o Motivo.",
-		modulo: 'Mapeamento proposto (não decidido): por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won\'t sem módulo.',
+		modulo: 'Módulos aprovados com a ARQ-01 (18/11/2026). O vínculo requisito → módulo é por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won\'t sem módulo. Quando há ficha, vale o módulo da ficha.',
 		frente: 'Pela tabela de frentes da equipe; prefixos que a tabela não cita ficam com frente null.',
 		area: 'Must: subtítulo da seção. Demais: área Must do mesmo prefixo ou rótulo tirado do texto do requisito.',
 	},

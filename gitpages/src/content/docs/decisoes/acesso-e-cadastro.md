@@ -32,7 +32,7 @@ O 404 com corpo idêntico impede descobrir se um cliente de outro escritório ex
 - O RF-CAD-01 é relido assim:
   - requisito: "o chefe deve poder cadastrar um cliente com nome e CNPJ";
   - critério: "o cliente aparece no escritório depois de salvo e, atribuído, na carteira do contador".
-- A releitura já está nos [Requisitos v0.2](/lastro-lancamentos/visao/requisitos/), com o selo AJUSTADO.
+- A releitura já está nos [Requisitos v0.2](/lastro-lancamentos/visao/requisitos/#rf-cad-01), com a nota "Ajustado em 18/11". Não leva o selo AJUSTADO, que marca só o que mudou na v0.2.
 
 ### Plano de contas (P-10 e P-11, assumidas)
 
