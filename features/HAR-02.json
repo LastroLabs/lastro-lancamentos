@@ -6,7 +6,7 @@
   "prioridade": "should",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "in_progress",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -46,12 +46,30 @@
     }
   ],
   "verificacao": [
-    { "criterio": "c1", "comando": "pytest tests/harness/test_state_filtro.py::test_filtra_por_um_ou_mais_estados -q" },
-    { "criterio": "c2", "comando": "pytest tests/harness/test_state_filtro.py::test_estado_invalido_e_recusado -q" },
-    { "criterio": "c3", "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_lista_blocked_e_regressed -q" },
-    { "criterio": "c3", "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_sem_nada_avisa -q" },
-    { "criterio": "c4", "comando": "pytest tests/harness/test_state_filtro.py::test_resumo_conta_todas_as_fichas -q" },
-    { "criterio": "c4", "comando": "pytest tests/harness/test_state_filtro.py::test_sem_filtro_saida_inalterada -q" }
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_filtra_por_um_ou_mais_estados -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_estado_invalido_e_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_lista_blocked_e_regressed -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_atencao_sem_nada_avisa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_resumo_conta_todas_as_fichas -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_state_filtro.py::test_sem_filtro_saida_inalterada -q"
+    }
   ],
   "evidencia": null
 }
