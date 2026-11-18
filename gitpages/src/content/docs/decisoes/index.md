@@ -113,3 +113,7 @@ Saíram desta lista, porque foram resolvidos:
 - quem assume cada frente, definido pela líder em 18/11 (ver [Equipe](/lastro-lancamentos/home/equipe/)).
 
 Fontes: `docs/decisoes/DECISIONS.md` (18/11/2026); Requisitos funcionais v0.2; Lastro — Arquitetura do Sistema; Banco de dados para o Lastro v1.0; Estudo de Avaliação com LLM; Estudo de UX/UI; Fluxo de desenvolvimento do Lastro.
+
+## Relação com a modelagem
+
+A [modelagem](/lastro-lancamentos/modelagem/) apresenta o impacto das decisões na persistência. A página [Premissas e decisões](/lastro-lancamentos/modelagem/decisoes/) reaproveita os status D-01 a D-09 desta tabela, identifica P-09/P-13 pendentes e relaciona entidades e requisitos. O esquema detalhado é uma proposta, sem aprovação automática decorrente de ARQ e BD.

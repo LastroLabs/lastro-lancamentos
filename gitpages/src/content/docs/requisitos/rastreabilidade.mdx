@@ -8,6 +8,7 @@ import Mermaid from '../../../components/Mermaid.astro';
 import Rastreabilidade from '../../../components/Rastreabilidade.astro';
 import { requisitos, linkRequisito } from '../../../data/requisitos';
 import { fichas, fichasDoRequisito } from '../../../data/fichas';
+import ModelagemVinculos from '../../../components/ModelagemVinculos.astro';
 
 export const naoWont = requisitos.filter((r) => r.prioridade !== "Won't");
 export const semRF = fichas.filter((f) => !f.requisitos.some((id) => id.startsWith('RF-')));
@@ -41,6 +42,10 @@ A rastreabilidade liga cada requisito à **origem** (de onde veio) e ao **destin
 
 Os requisitos vêm de `src/data/requisitos.json`, gerado pelo script `scripts/gerar-requisitos.mjs`. As fichas vêm de `src/data/fichas.ts`.
 :::
+
+## Requisito e dados
+
+A [rastreabilidade da modelagem](/lastro-lancamentos/modelagem/rastreabilidade/) complementa esta matriz com entidades, regras e condições das decisões. Cada [entidade](/lastro-lancamentos/modelagem/entidades/) oferece a consulta inversa dos requisitos. Os vínculos usam as mesmas fichas em revisão apresentadas abaixo, sem atribuir a elas implementação ou estado diferente do catálogo.
 
 ## Vistas
 
@@ -88,7 +93,7 @@ Cada requisito fora dos Won't e as fichas que o citam no campo `requisitos`. Tod
 			const fs = fichasDoRequisito(r.id);
 			return (
 				<tr>
-					<td><a href={linkRequisito(r.id)}><code>{r.id}</code></a></td>
+					<td><a href={linkRequisito(r.id)}><code>{r.id}</code></a><ModelagemVinculos requisito={r.id} /></td>
 					<td>{r.prioridade}</td>
 					<td>{fs.length ? fs.map((f) => <span><code>{f.id}</code> {f.titulo}<br /></span>) : '—'}</td>
 					<td>{fs.length ? [...new Set(fs.map((f) => f.modulo))].join(', ') : '—'}</td>

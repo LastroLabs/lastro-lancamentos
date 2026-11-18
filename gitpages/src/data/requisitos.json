@@ -28,7 +28,9 @@
 			"afeta": [
 				"RF-LEI-06"
 			],
-			"recomendacao": "Aceitar foto como baixa confiança, sempre com conferência de saldo, se der tempo depois do Must. Hoje está em Should"
+			"recomendacao": "Aceitar foto como baixa confiança, sempre com conferência de saldo, se der tempo depois do Must. Hoje está em Should",
+			"status": "Pendente",
+			"deliberacao": "—"
 		},
 		{
 			"id": "D-02",
@@ -36,7 +38,9 @@
 			"afeta": [
 				"RF-MAQ-01"
 			],
-			"recomendacao": "Sim. Sem ela, créditos de cartão viram perguntas inúteis ao cliente. A v2 deixa a maquininha toda fora, então precisa de aprovação"
+			"recomendacao": "Sim. Sem ela, créditos de cartão viram perguntas inúteis ao cliente. A v2 deixa a maquininha toda fora, então precisa de aprovação",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "Regra mínima de adquirente prevista, mas **desativada** até a confirmação; leitores extensíveis"
 		},
 		{
 			"id": "D-03",
@@ -44,7 +48,9 @@
 			"afeta": [
 				"RF-SEG-03"
 			],
-			"recomendacao": "Precisa de decisão da equipe e do termo de uso com os pilotos. Sem nomes, a IA classifica pior"
+			"recomendacao": "Precisa de decisão da equipe e do termo de uso com os pilotos. Sem nomes, a IA classifica pior",
+			"status": "Aprovada, 18/11",
+			"deliberacao": "**Todo** nome de contraparte, pessoa ou empresa, é pseudonimizado antes de ir à IA (`PESSOA_nnn` / `EMPRESA_nnn`). Ligado por padrão e configurável"
 		},
 		{
 			"id": "D-04",
@@ -52,7 +58,9 @@
 			"afeta": [
 				"RF-LEI-03"
 			],
-			"recomendacao": "Sicoob ou Nubank, conforme o que aparecer nos extratos dos pilotos. BB e Inter aparecem nos dois escritórios"
+			"recomendacao": "Sicoob ou Nubank, conforme o que aparecer nos extratos dos pilotos. BB e Inter aparecem nos dois escritórios",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "BB e Inter; terceiro banco parametrizado, sem banco novo como entrega confirmada"
 		},
 		{
 			"id": "D-05",
@@ -60,7 +68,9 @@
 			"afeta": [
 				"RF-EXP-01"
 			],
-			"recomendacao": "Pedir um exemplo aos dois escritórios e testar a importação na semana 1"
+			"recomendacao": "Pedir um exemplo aos dois escritórios e testar a importação na semana 1",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "Layout provisório (`layouts/dominio.yaml` marcado PROVISORIO) até o teste real de importação"
 		},
 		{
 			"id": "D-06",
@@ -69,7 +79,9 @@
 				"RF-ENV-02",
 				"RF-SEG-01"
 			],
-			"recomendacao": "Definir antes de programar o envio"
+			"recomendacao": "Definir antes de programar o envio",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "Link vale **7 dias**; arquivo de no máximo **20 MiB**; os dois configuráveis"
 		},
 		{
 			"id": "D-07",
@@ -77,7 +89,9 @@
 			"afeta": [
 				"RF-AUT-02"
 			],
-			"recomendacao": "Hoje cada contador vê só a sua. Perguntar nos pilotos se isso atende"
+			"recomendacao": "Hoje cada contador vê só a sua. Perguntar nos pilotos se isso atende",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "Carteira individual: cada contador vê só os clientes atribuídos a ele"
 		},
 		{
 			"id": "D-08",
@@ -86,7 +100,9 @@
 				"RF-CLA-06",
 				"RF-CLA-07"
 			],
-			"recomendacao": "Calibrar com os dados do gabarito, não por palpite"
+			"recomendacao": "Calibrar com os dados do gabarito, não por palpite",
+			"status": "Pendente",
+			"deliberacao": "—"
 		},
 		{
 			"id": "D-09",
@@ -96,7 +112,9 @@
 				"RF-AUT-03",
 				"RF-AUT-04"
 			],
-			"recomendacao": "Perguntar à colega do grupo e aos pilotos. Enquanto isso, modelar a atribuição para aceitar mais de um contador por cliente, que custa pouco"
+			"recomendacao": "Perguntar à colega do grupo e aos pilotos. Enquanto isso, modelar a atribuição para aceitar mais de um contador por cliente, que custa pouco",
+			"status": "Aprovada (provisória), 18/11",
+			"deliberacao": "Um responsável ativo por cliente (o modelo aceita vários vínculos); o chefe vê o escritório inteiro"
 		}
 	],
 	"dores": [

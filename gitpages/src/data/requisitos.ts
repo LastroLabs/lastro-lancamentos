@@ -23,7 +23,7 @@ export interface Requisito {
 	modulo: string | null;
 }
 
-export interface Decisao { id: string; decisao: string; afeta: string[]; recomendacao: string }
+export interface Decisao { id: string; decisao: string; afeta: string[]; recomendacao: string; status: string; deliberacao: string }
 export interface Dor { dor: string; relatou: string; resposta: string; requisitos: string[] }
 
 export const requisitos = dados.requisitos as Requisito[];

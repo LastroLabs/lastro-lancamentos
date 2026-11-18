@@ -67,3 +67,7 @@ O banco precisa sustentar a confiança no fluxo: explicar de onde veio cada suge
 Detalhes do modelo em [Arquitetura · Dados](/lastro-lancamentos/arquitetura/dados/).
 
 **Fonte:** Banco de dados para o Lastro, v1.0 (10/11/2026).
+
+## Relação com a modelagem
+
+Os [atributos](/lastro-lancamentos/modelagem/entidades/), [diagramas](/lastro-lancamentos/modelagem/diagramas/), [modelo lógico](/lastro-lancamentos/modelagem/modelo-logico/) e [operações](/lastro-lancamentos/modelagem/modelo-fisico/) detalham a proposta de domínio. A [rastreabilidade](/lastro-lancamentos/modelagem/rastreabilidade/) relaciona os requisitos aos registros e às condições de implementação. Essa proposta mantém as decisões BD aprovadas, sem afirmar que as migrações já existam.

@@ -92,6 +92,18 @@ export default defineConfig({
 					],
 				},
 				{
+					label: "Modelagem de dados",
+					items: [
+						{ label: "Visão geral", slug: "modelagem" },
+						{ label: "Entidades e atributos", slug: "modelagem/entidades" },
+						{ label: "Diagramas", slug: "modelagem/diagramas" },
+						{ label: "Modelo lógico", slug: "modelagem/modelo-logico" },
+						{ label: "Modelo físico e operações", slug: "modelagem/modelo-fisico" },
+						{ label: "Premissas e decisões", slug: "modelagem/decisoes" },
+						{ label: "Rastreabilidade", slug: "modelagem/rastreabilidade" },
+					],
+				},
+				{
 					label: "Harness",
 					items: [
 						{ label: "Documentos e comandos", slug: "harness/documentos-e-comandos" },

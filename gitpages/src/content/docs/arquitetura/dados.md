@@ -7,6 +7,12 @@ description: Modelo de dados, centavos, isolamento, duplicidades e exportação 
 Aprovada em 18/11/2026 (BD-01 a BD-08, conforme `docs/decisoes/DECISIONS.md`). Ver [Decisão: banco de dados](/lastro-lancamentos/decisoes/banco-de-dados/). Os nomes de tabela abaixo são uma proposta de esquema, não tabelas que já existem.
 :::
 
+## Especificação do modelo do MVP
+
+A seção [Modelagem de dados](/lastro-lancamentos/modelagem/) detalha a proposta em **27 tabelas de domínio e acesso**, com [entidades e atributos](/lastro-lancamentos/modelagem/entidades/), [diagramas](/lastro-lancamentos/modelagem/diagramas/), [chaves](/lastro-lancamentos/modelagem/modelo-logico/), [operações](/lastro-lancamentos/modelagem/modelo-fisico/) e [rastreabilidade](/lastro-lancamentos/modelagem/rastreabilidade/).
+
+As tabelas agrupadas abaixo registram conceitos do estudo e não constituem uma lista fechada de tabelas físicas. A especificação detalhada mantém MEMBRO, SESSAO e PLANO_CONTAS separados; preserva ocorrências e versões; e concentra algumas configurações nos registros de negócio. A fila continua sendo Procrastinate, conforme ARQ-04. Os nomes e a decomposição do esquema proposto ainda precisam de validação, sem reabrir a escolha de banco já aprovada.
+
 ## Regras de base
 
 | Tema | Regra |

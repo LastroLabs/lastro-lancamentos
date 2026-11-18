@@ -5,6 +5,10 @@ description: O que entra, o que fica fora e o que ainda depende de decisão.
 
 O MVP são os **56 requisitos Must** da v0.2. Should entra se houver contorno manual e tempo. Could, só se sobrar tempo. Won't fica fora desta versão. A lista completa está em [Requisitos v0.2](/lastro-lancamentos/visao/requisitos/).
 
+## Modelo de dados do MVP
+
+A [modelagem](/lastro-lancamentos/modelagem/) especifica 27 entidades de domínio e acesso, com [vínculo dos 56 Must](/lastro-lancamentos/modelagem/rastreabilidade/?prioridade=Must). Should e Could mantêm suas prioridades, mesmo quando uma estrutura oferece apoio parcial. Os padrões de 18/11 estão detalhados em [Premissas e decisões](/lastro-lancamentos/modelagem/decisoes/).
+
 ## O que entra
 
 | Bloco | O MVP entrega | Requisitos |

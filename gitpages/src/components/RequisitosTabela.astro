@@ -2,6 +2,7 @@
 // Tabela de requisitos lida de src/data/requisitos.json.
 // Cada linha tem id="<rf-id em minúsculas>" para servir de âncora (ex.: #rf-aut-01).
 import { porPrioridade, ancora, linkDecisoes, type Prioridade } from '../data/requisitos';
+import ModelagemVinculos from './ModelagemVinculos.astro';
 
 interface Props {
 	prioridade: Prioridade;
@@ -40,7 +41,7 @@ const colunaCriterio = prioridade === "Won't" ? 'Motivo' : 'Critério de aceita�
 							))}
 						</span>
 					</td>
-					<td>{r.requisito}</td>
+					<td>{r.requisito}<ModelagemVinculos requisito={r.id} /></td>
 					<td>{r.criterio}</td>
 					<td class="req-origem">{r.origem}</td>
 				</tr>

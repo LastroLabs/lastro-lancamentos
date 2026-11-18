@@ -3,6 +3,7 @@
 // Texto da história em src/data/historias.ts; critério de aceitação vem do requisito.
 import { porPrioridade, linkRequisito } from '../data/requisitos';
 import { historias } from '../data/historias';
+import ModelagemVinculos from './ModelagemVinculos.astro';
 
 interface Props {
 	areas: string[];
@@ -13,7 +14,7 @@ const linhas = porPrioridade('Must').filter((r) => areas.includes(r.area));
 
 <table class="hu">
 	<thead>
-		<tr>
+					<tr id={`historia-${r.id.toLowerCase()}`}>
 			<th scope="col">Requisito</th>
 			<th scope="col">História (rascunho)</th>
 			<th scope="col">Critério de aceitação (do requisito)</th>
@@ -28,6 +29,7 @@ const linhas = porPrioridade('Must').filter((r) => areas.includes(r.area));
 							{r.id}
 						</a>
 						<span class="hu-area">{r.area}</span>
+							<ModelagemVinculos requisito={r.id} />
 					</td>
 					<td>{historias[r.id] ?? <em>história a escrever</em>}</td>
 					<td class="hu-crit">{r.criterio}</td>
@@ -64,3 +66,18 @@ const linhas = porPrioridade('Must').filter((r) => areas.includes(r.area));
 		color: var(--sl-color-gray-2);
 	}
 </style>
+
+<script>
+	function revelarHistoria() {
+		const id = location.hash.slice(1);
+		if (!id.startsWith('historia-')) return;
+		const alvo = document.getElementById(id);
+		const painel = alvo?.closest<HTMLElement>('[role="tabpanel"]');
+		if (painel?.hidden) document.querySelector<HTMLAnchorElement>(`[role="tab"][href="#${painel.id}"]`)?.click();
+		if (alvo) requestAnimationFrame(() => alvo.scrollIntoView({ block: 'center' }));
+	}
+	window.addEventListener('hashchange', revelarHistoria);
+	document.addEventListener('astro:page-load', revelarHistoria);
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', revelarHistoria);
+	else revelarHistoria();
+</script>

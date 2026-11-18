@@ -11,6 +11,7 @@ import {
 	linkDecisoes,
 	link,
 } from '../data/requisitos';
+import ModelagemVinculos from './ModelagemVinculos.astro';
 
 const sem = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const listaAreas = areas();
@@ -121,7 +122,9 @@ const listaFrentes = [...frentes.map((f) => f.frente).filter((f) => requisitos.s
 								<em>nenhuma</em>
 							)}
 						</dd>
-					</dl>
+							<dt>Modelo de dados</dt>
+							<dd><ModelagemVinculos requisito={r.id} /></dd>
+						</dl>
 					<a class="rx-ver" href={linkRequisito(r.id)}>
 						Ver na tabela
 					</a>

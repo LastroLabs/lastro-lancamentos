@@ -55,3 +55,7 @@ O 404 com corpo idêntico impede descobrir se um cliente de outro escritório ex
 Fichas afetadas (em revisão): ACE-01 a ACE-05, CAD-02 a CAD-07, HAR-03. Ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/).
 
 Fonte: `docs/decisoes/DECISIONS.md` (18/11/2026), seção 4.
+
+## Relação com a modelagem
+
+As entidades [MEMBRO](/lastro-lancamentos/modelagem/entidades/#membro), [CLIENTE](/lastro-lancamentos/modelagem/entidades/#cliente), [PLANO_CONTAS](/lastro-lancamentos/modelagem/entidades/#plano_contas) e [CONTA_CONTABIL](/lastro-lancamentos/modelagem/entidades/#conta_contabil) incorporam os efeitos de P-01/P-02/P-02a e das suposições P-10/P-11. P-09 e P-13 permanecem pendentes na [especificação das operações](/lastro-lancamentos/modelagem/modelo-fisico/).

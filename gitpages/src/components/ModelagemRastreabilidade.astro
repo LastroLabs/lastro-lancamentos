@@ -1,0 +1,98 @@
+---
+import { requisitos, PRIORIDADES, classePrioridade, linkRequisito, link } from '../data/requisitos';
+import { fichasDoRequisito } from '../data/fichas';
+import { entidades, entidadesDoRequisito, vinculoDoRequisito, decisoesDoRequisito, linkEntidade, linkDecisaoModelo } from '../data/modelagem';
+const normalizar = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+---
+<div class="modelo not-content" data-modelagem>
+  <form role="search" aria-label="Filtrar rastreabilidade da modelagem">
+    <label>Buscar requisito, entidade, decisão ou ficha<input name="busca" type="search" placeholder="Ex.: CAD-03, saldo, P-11, plano_contas" /></label>
+    <label>Prioridade<select name="prioridade"><option value="">Todas</option>{PRIORIDADES.map((p) => <option value={p}>{p}</option>)}</select></label>
+    <label>Entidade<select name="entidade"><option value="">Todas</option>{entidades.map((e) => <option value={e.id}>{e.nome}</option>)}</select></label>
+    <label>Vínculo<select name="vinculo"><option value="">Todos</option><option value="documentado">Documentado</option><option value="sem">Sem vínculo documentado</option><option value="fora">Fora do escopo</option></select></label>
+    <button type="reset">Limpar filtros</button>
+  </form>
+  <p role="status" aria-live="polite"><strong data-total>{requisitos.length}</strong> de {requisitos.length} requisitos</p>
+  {requisitos.map((r) => {
+    const v = vinculoDoRequisito(r.id);
+    const es = entidadesDoRequisito(r.id);
+    const fs = fichasDoRequisito(r.id);
+    const ds = decisoesDoRequisito(r.id);
+    return <details id={r.id.toLowerCase()} class={`item ${classePrioridade(r.prioridade)}`} data-item
+      data-prioridade={r.prioridade} data-entidades={es.map((e) => e.id).join(' ')}
+      data-vinculo={r.prioridade === "Won't" ? 'fora' : v ? 'documentado' : 'sem'}
+      data-busca={normalizar(`${r.id} ${r.requisito} ${r.criterio} ${v?.regra ?? ''} ${es.map((e) => e.nome).join(' ')} ${ds.join(' ')} ${fs.map((f) => f.id).join(' ')}`)}>
+      <summary><span class="prioridade">{r.prioridade}</span> <strong>{r.id}</strong> <span>{r.requisito}</span></summary>
+      <div class="conteudo">
+        <p><strong>{r.prioridade === "Won't" ? 'Motivo da exclusão' : 'Critério de aceitação'}:</strong> {r.criterio}</p>
+        {v ? <><p><strong>Regra de dados:</strong> {v.regra}</p><p><strong>Entidades:</strong> {es.length ? es.map((e) => <a class="identificador" href={linkEntidade(e.id)}>{e.nome}</a>) : 'Regra da aplicação; não exige tabela própria.'}</p></> : <p>{r.prioridade === "Won't" ? 'Fora do modelo do MVP.' : 'Sem vínculo documentado nesta especificação. Não representa uma funcionalidade implementada.'}</p>}
+        {ds.length > 0 && <p><strong>Decisões e condições:</strong> {ds.map((id) => <a class="identificador" href={linkDecisaoModelo(id)}>{id}</a>)}</p>}
+        <p><strong>Origem:</strong> {r.origem}. <strong>Módulo pelo catálogo:</strong> {r.modulo ?? 'transversal ou não definido'}.</p>
+        <p><strong>Fichas:</strong> {fs.length ? fs.map((f) => <span class="ficha"><a href={`https://github.com/LastroLabs/lastro-lancamentos/blob/${f.emRevisao ? 'fichas/onda-s1' : 'developer'}/features/${f.id}.json`}>{f.id}</a> — {f.titulo}; módulo {f.modulo}; onda {f.onda}; {f.emRevisao ? 'em revisão, fora da developer' : `estado registrado: ${f.estado}`}.</span>) : 'Sem ficha vinculada nos metadados atuais do Pages.'}</p>
+        <nav aria-label={`Referências de ${r.id}`}><a href={linkRequisito(r.id)}>Requisito original</a>{r.prioridade === 'Must' && <a href={link(`requisitos/backlog/#historia-${r.id.toLowerCase()}`)}>História de usuário</a>}<a href={link('requisitos/rastreabilidade/')}>Origem, frente e fichas</a></nav>
+      </div>
+    </details>;
+  })}
+  <p data-vazio hidden>Nenhum requisito corresponde aos filtros.</p>
+</div>
+<style>
+  form { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .75rem; }
+  label { display: grid; gap: .3rem; font-size: .85rem; }
+  label:first-child { grid-column: 1 / -1; }
+  input, select, button { padding: .5rem; font: inherit; color: var(--sl-color-white); background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-4); border-radius: 6px; min-width: 0; }
+  button { cursor: pointer; align-self: end; }
+  .item { border: 1px solid var(--sl-color-gray-5); border-left: 4px solid var(--req-cor); border-radius: 8px; margin-block: .75rem; scroll-margin-top: 6rem; }
+  .item[hidden] { display: none; }
+  summary { padding: .85rem; cursor: pointer; font-size: .9rem; }
+  summary strong, .identificador { font-family: 'Geist Mono', monospace; }
+  .prioridade { font-weight: 700; color: var(--req-cor); }
+  .conteudo { padding: 0 1rem 1rem; font-size: .9rem; }
+  .identificador { display: inline-block; margin: .2rem .6rem .2rem 0; font-size: .8rem; overflow-wrap: anywhere; }
+  .ficha { display: block; margin-top: .5rem; }
+  nav { display: flex; gap: .75rem; flex-wrap: wrap; }
+</style>
+<script>
+  function iniciarModelagem() {
+    document.querySelectorAll<HTMLElement>('[data-modelagem]').forEach((raiz) => {
+      if (raiz.dataset.pronto) return;
+      raiz.dataset.pronto = 'true';
+      const form = raiz.querySelector<HTMLFormElement>('form')!;
+      const busca = form.elements.namedItem('busca') as HTMLInputElement;
+      const prioridade = form.elements.namedItem('prioridade') as HTMLSelectElement;
+      const entidade = form.elements.namedItem('entidade') as HTMLSelectElement;
+      const vinculo = form.elements.namedItem('vinculo') as HTMLSelectElement;
+      const itens = [...raiz.querySelectorAll<HTMLDetailsElement>('[data-item]')];
+      function aplicar() {
+        const termos = busca.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/\s+/).filter(Boolean);
+        let n = 0;
+        for (const item of itens) {
+          item.hidden = !(termos.every((t) => item.dataset.busca?.includes(t)) &&
+            (!prioridade.value || item.dataset.prioridade === prioridade.value) &&
+            (!entidade.value || item.dataset.entidades?.split(' ').includes(entidade.value)) &&
+            (!vinculo.value || item.dataset.vinculo === vinculo.value));
+          if (!item.hidden) n++;
+        }
+        raiz.querySelector('[data-total]')!.textContent = String(n);
+        (raiz.querySelector('[data-vazio]') as HTMLElement).hidden = n > 0;
+      }
+      function revelarHash() {
+        const alvo = itens.find((i) => i.id === location.hash.slice(1).toLowerCase());
+        if (alvo) { form.reset(); aplicar(); alvo.open = true; requestAnimationFrame(() => alvo.scrollIntoView({ block: 'start' })); }
+      }
+      form.addEventListener('submit', (e) => e.preventDefault());
+      form.addEventListener('input', aplicar);
+      form.addEventListener('change', aplicar);
+      form.addEventListener('reset', () => requestAnimationFrame(aplicar));
+      window.addEventListener('hashchange', revelarHash);
+      const params = new URLSearchParams(location.search);
+      for (const select of [prioridade, entidade, vinculo]) {
+        const value = params.get(select.name);
+        if (value && [...select.options].some((o) => o.value === value)) select.value = value;
+      }
+      aplicar(); revelarHash();
+    });
+  }
+  document.addEventListener('astro:page-load', iniciarModelagem);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciarModelagem);
+  else iniciarModelagem();
+</script>
