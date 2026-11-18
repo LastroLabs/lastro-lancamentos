@@ -1,0 +1,135 @@
+---
+title: Rastreabilidade
+description: Da fonte e da dor ao requisito, à frente, ao módulo, à ficha e ao teste.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import Mermaid from '../../../components/Mermaid.astro';
+import Rastreabilidade from '../../../components/Rastreabilidade.astro';
+import { requisitos, linkRequisito } from '../../../data/requisitos';
+import { fichas, fichasDoRequisito } from '../../../data/fichas';
+
+export const naoWont = requisitos.filter((r) => r.prioridade !== "Won't");
+export const semRF = fichas.filter((f) => !f.requisitos.some((id) => id.startsWith('RF-')));
+
+A rastreabilidade liga cada requisito à **origem** (de onde veio) e ao **destino** (quem constrói e como se prova). Assim dá para responder, por exemplo:
+- "que requisitos atendem a esta dor?";
+- "quem é dono deste Must?";
+- "o que esta decisão trava?".
+
+<Mermaid code={`flowchart TD
+  A["Fonte<br/>Esc.1, Esc.2, v2, Ata, Proposta, Equipe"]
+  B["Dor<br/>tabela Da dor ao requisito"]
+  C["Requisito<br/>RF-xxx, com critério de aceitação"]
+  D["Frente e módulo<br/>frente da arquitetura, src/lastro/modulo"]
+  E["Ficha<br/>features/ID.json (lote S1 em revisão)"]
+  F["Teste<br/>tabela critério → teste no PR"]
+  X["Decisão D-xx"]
+  A --> B --> C --> D --> E --> F
+  A --> C
+  X -. "trava ou condiciona" .-> C
+`}/>
+
+:::note[De onde vêm os vínculos]
+- **Fonte:** coluna Origem de cada requisito ([Requisitos v0.2](/lastro-lancamentos/visao/requisitos/)).
+- **Dor:** tabela [Da dor ao requisito](/lastro-lancamentos/visao/cenario/#da-dor-ao-requisito). Faixas como "RF-VAL-01 a 04" e prefixos como "RF-APR" foram expandidos para todos os IDs que cobrem. Só 24 requisitos aparecem nessa tabela; os demais ficam sem dor ligada.
+- **Decisão:** coluna Afeta do [índice de decisões](/lastro-lancamentos/decisoes/), mais as menções "D-0x" no texto do requisito. Em 18/11, D-02 a D-07 e D-09 ganharam padrão provisório; D-01 e D-08 seguem pendentes.
+- **Frente:** tabela de frentes da arquitetura na [Equipe](/lastro-lancamentos/home/equipe/#as-frentes-da-arquitetura), pelo prefixo do ID. Prefixos que a tabela não cita (por exemplo AVI e MAQ) ficam **sem frente na fonte**. É a frente técnica do estudo, não a frente das pessoas de 18/11.
+- **Módulo:** os 14 módulos foram aprovados com a ARQ-01 em 18/11 ([Arquitetura](/lastro-lancamentos/arquitetura/visao-geral/#módulos)). O vínculo requisito → módulo continua sendo **por prefixo do ID**, por isso a matriz ainda o chama de "proposto". Quando há ficha, vale o módulo da ficha (tabela [Requisito → ficha](#requisito--ficha)).
+- **Ficha:** IDs do primeiro lote, copiados de `features/*.json` da branch `fichas/onda-s1` para `src/data/fichas.ts`. Estão **em revisão**: ainda não entraram na `developer`.
+- **Teste:** fica na própria ficha (`verificacao`) e na tabela critério → teste de cada PR.
+
+Os requisitos vêm de `src/data/requisitos.json`, gerado pelo script `scripts/gerar-requisitos.mjs`. As fichas vêm de `src/data/fichas.ts`.
+:::
+
+## Vistas
+
+<Tabs>
+<TabItem label="Dores → requisitos">
+
+Cada dor relatada e os requisitos que a respondem.
+
+<Rastreabilidade vista="dores" />
+
+</TabItem>
+<TabItem label="Fontes × prioridade">
+
+Quantos requisitos citam cada fonte na coluna Origem. Um requisito pode citar mais de uma fonte.
+
+<Rastreabilidade vista="fontes" />
+
+</TabItem>
+<TabItem label="Frentes dos Must">
+
+Os 56 Must por frente da equipe.
+
+<Rastreabilidade vista="frentes" />
+
+</TabItem>
+<TabItem label="Decisão → requisitos">
+
+Os requisitos que cada decisão D-01 a D-09 afeta.
+
+<Rastreabilidade vista="decisoes" />
+
+</TabItem>
+</Tabs>
+
+## Requisito → ficha
+
+Cada requisito fora dos Won't e as fichas que o citam no campo `requisitos`. Todas as fichas abaixo estão **em revisão** (branch `fichas/onda-s1`). "—" quer dizer que o requisito ainda não tem ficha.
+
+<table>
+	<thead>
+		<tr><th>Requisito</th><th>Prioridade</th><th>Ficha (em revisão)</th><th>Módulo da ficha</th><th>Onda</th></tr>
+	</thead>
+	<tbody>
+		{naoWont.map((r) => {
+			const fs = fichasDoRequisito(r.id);
+			return (
+				<tr>
+					<td><a href={linkRequisito(r.id)}><code>{r.id}</code></a></td>
+					<td>{r.prioridade}</td>
+					<td>{fs.length ? fs.map((f) => <span><code>{f.id}</code> {f.titulo}<br /></span>) : '—'}</td>
+					<td>{fs.length ? [...new Set(fs.map((f) => f.modulo))].join(', ') : '—'}</td>
+					<td>{fs.length ? [...new Set(fs.map((f) => f.onda))].join(', ') : '—'}</td>
+				</tr>
+			);
+		})}
+	</tbody>
+</table>
+
+### Fichas sem RF
+
+Fichas de fundação e de harness, ligadas a decisões de arquitetura e banco (ARQ, BD) ou a nenhum requisito.
+
+<table>
+	<thead>
+		<tr><th>Ficha</th><th>Título</th><th>Módulo</th><th>Justificativa</th><th>Onda</th><th>Situação</th></tr>
+	</thead>
+	<tbody>
+		{semRF.map((f) => (
+			<tr>
+				<td><code>{f.id}</code></td>
+				<td>{f.titulo}</td>
+				<td>{f.modulo}</td>
+				<td>{f.requisitos.length ? f.requisitos.join(', ') : '—'}</td>
+				<td>{f.onda}</td>
+				<td>{f.emRevisao ? 'em revisão' : `${f.estado} (na developer)`}</td>
+			</tr>
+		))}
+	</tbody>
+</table>
+
+## Matriz completa
+
+Todos os requisitos, exceto os Won't, que estão fora desta versão. Role na horizontal para ver todas as colunas.
+
+<Rastreabilidade vista="matriz" />
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada: diagrama de rastreabilidade, quatro vistas e matriz, a partir de `src/data/requisitos.json` |
+| 18/11/2026 | 1.1 | Tabela Requisito → ficha, com as fichas do lote S1 em revisão; nota sobre os módulos aprovados |

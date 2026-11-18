@@ -1,0 +1,137 @@
+---
+// Um card por área dos Must (épico EP-xx), lido de src/data/requisitos.json.
+// A semana vem do roteiro da Arquitetura (visao/cronograma.md, "A outra versão: roteiro da Arquitetura").
+import { areas, porArea } from '../data/requisitos';
+import Chips from './ReqChips.astro';
+
+// Semana(s) do roteiro em que a área aparece, com o trecho do roteiro que a justifica.
+const ROTEIRO: Record<string, { semana: string; evidencia: string }> = {
+	'Acesso e segurança': { semana: '1 a 3', evidencia: 'S1 sessão, RLS e gateway ia/ com anonimizar(); S2 link do cliente; S3 atribuição e reatribuição com revogação' },
+	Cadastro: { semana: '1 e 2', evidencia: 'S1 escritório/usuário/cliente; S2 plano de contas por planilha' },
+	'Envio e coleta': { semana: '2', evidencia: 'S2 link do cliente, upload, quarentena, página de envio no celular, carteira com status' },
+	Leitura: { semana: '1 a 3', evidencia: 'S1 leitor OFX; S2 PDF do BB; S3 PDF do Inter e dedup por FITID' },
+	'Conferência de valores': { semana: '2 e 3', evidencia: 'S2 conferência de saldo linha a linha ou dia a dia; S3 continuidade e cobertura do mês' },
+	Avisos: { semana: '4', evidencia: 'S4 avisos em português simples' },
+	Classificação: { semana: '2 e 3 (calibragem em 4,5)', evidencia: 'S2 regras, transferência interna, sócio; S3 histórico, parecidas, IA nas sobras, confiança; 4,5 calibrar D-08' },
+	'Maquininha (mínimo)': { semana: 'não aparece no roteiro', evidencia: 'Depende de D-02' },
+	'Perguntas ao cliente': { semana: '4', evidencia: 'S4 perguntas com um toque e agrupamento de perguntas' },
+	Aprendizado: { semana: '4', evidencia: 'S4 aprendizado por cliente' },
+	'Revisão': { semana: '3', evidencia: 'S3 tela de revisão (três grupos, ações em lote)' },
+	'Exportação': { semana: '4 (homologação em 4,5)', evidencia: 'S4 exportação, Excel por YAML, conciliação; 4,5 importação real no Domínio (fecha D-05)' },
+};
+
+const epicos = areas('Must').map((area, i) => {
+	const reqs = porArea(area, 'Must');
+	return {
+		codigo: `EP-${String(i + 1).padStart(2, '0')}`,
+		area,
+		reqs,
+		frentes: [...new Set(reqs.map((r) => r.frente ?? 'sem frente na fonte'))],
+		decisoes: [...new Set(reqs.flatMap((r) => r.decisoes))].sort(),
+		roteiro: ROTEIRO[area],
+	};
+});
+---
+
+<div class="be not-content">
+	{
+		epicos.map((e) => (
+			<article class="be-card">
+				<header class="be-topo">
+					<span class="be-cod">{e.codigo}</span>
+					<span class="be-n">
+						{e.reqs.length} Must
+					</span>
+				</header>
+				<h3 class="be-titulo">{e.area}</h3>
+				<dl class="be-meta">
+					<dt>Frente</dt>
+					<dd>{e.frentes.join(', ')}</dd>
+					<dt>Semana</dt>
+					<dd>
+						{e.roteiro?.semana ?? 'a definir'}
+						{e.roteiro && <span class="be-evid">{e.roteiro.evidencia}</span>}
+					</dd>
+					<dt>Decisões</dt>
+					<dd>
+						{e.decisoes.length ? e.decisoes.map((d) => <span class="req-selo req-selo--decisao">{d}</span>) : 'nenhuma'}
+					</dd>
+				</dl>
+				<Chips ids={e.reqs.map((r) => r.id)} />
+			</article>
+		))
+	}
+</div>
+
+<style>
+	.be {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+		gap: 1rem;
+		margin: 1.5rem 0;
+	}
+
+	.be-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 1rem 1.1rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-top: 4px solid var(--lastro-red);
+		border-radius: 10px;
+		background: var(--sl-color-bg-nav);
+	}
+
+	.be-topo {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.be-cod {
+		font-family: 'Geist Mono', monospace;
+		font-weight: 700;
+		font-size: 0.85rem;
+		color: var(--lastro-indigo);
+	}
+
+	.be-n {
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--lastro-red);
+	}
+
+	.be-titulo {
+		margin: 0;
+		font-size: 1.05rem;
+		color: var(--sl-color-white);
+	}
+
+	.be-meta {
+		display: grid;
+		grid-template-columns: 4.6rem 1fr;
+		gap: 0.3rem 0.6rem;
+		margin: 0;
+		font-size: 0.82rem;
+	}
+
+	.be-meta dt {
+		font-weight: 600;
+		color: var(--sl-color-gray-3);
+	}
+
+	.be-meta dd {
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		align-items: center;
+		color: var(--sl-color-gray-2);
+	}
+
+	.be-evid {
+		flex-basis: 100%;
+		font-size: 0.75rem;
+		color: var(--sl-color-gray-3);
+	}
+</style>

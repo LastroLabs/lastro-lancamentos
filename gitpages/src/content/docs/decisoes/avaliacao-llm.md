@@ -77,6 +77,10 @@ O estudo avisa que não encontrou benchmarks de juízes para esses modelos. A es
 
 ### Plano em fases
 
+:::note[Planejado]
+O plano cita `hx verify --e2e`, `hx fixtures build` e `noturno.yml`. Nenhum existe hoje em `tools/harness.py` nem em `.github/workflows/`. O `fixtures build` será entregue pela ficha HAR-03 (em revisão); `--e2e` e o noturno ainda não têm ficha.
+:::
+
 | Fase | Entregável | Dependência |
 |---|---|---|
 | 0. Golden set | Rótulos da contadora (fora do repositório) convertidos em casos do `fixtures build` | Tempo da contadora; onde guardar os rótulos reais |
@@ -93,8 +97,8 @@ O estudo avisa que não encontrou benchmarks de juízes para esses modelos. A es
 | Valores dos limiares das features | Em aberto, sem ID |
 | Orçamento mensal de API e frequência do juiz no noturno | Em aberto, sem ID |
 | Onde guardar os rótulos reais | Em aberto, sem ID |
-| D-03 nomes para a IA | Em aberto; afeta o que o juiz e a tarefa recebem |
-| D-08 limite de confiança (RF-CLA-07 [definir]) | Em aberto; a calibragem usa as métricas deste estudo |
+| D-03 nomes para a IA | Aprovada em 18/11: todo nome de contraparte vai pseudonimizado (`PESSOA_nnn` / `EMPRESA_nnn`); o juiz e a tarefa recebem só pseudônimos |
+| D-08 limite de confiança (RF-CLA-07 [definir]) | Pendente; a calibragem usa as métricas deste estudo |
 
 Como a IA entra no sistema: [Arquitetura · IA](/lastro-lancamentos/arquitetura/ia/).
 

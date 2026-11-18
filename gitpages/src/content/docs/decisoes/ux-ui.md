@@ -48,7 +48,7 @@ O estudo comparou cinco produtos. O que serviu de exemplo e o que evitar:
 
 | Pendência | Relação |
 |---|---|
-| React ou Vue (sem ID) | O design system depende da biblioteca de UI; a Arquitetura recomenda React |
+| React ou Vue (sem ID) | Resolvida: React, aprovado com a ARQ-02 em 18/11/2026 |
 | RF-AVI-02 | Mensagens em português simples, sem termos técnicos: validar a lista com uma contadora |
 | RF-PER-02 | Perguntas respondidas com um toque, no celular |
 

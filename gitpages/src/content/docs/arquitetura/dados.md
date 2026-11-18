@@ -4,7 +4,7 @@ description: Modelo de dados, centavos, isolamento, duplicidades e exportação 
 ---
 
 :::note[Status]
-Recomendada, aguardando aprovação. Ver [Decisão: banco de dados](/lastro-lancamentos/decisoes/banco-de-dados/). Os nomes de tabela abaixo são uma proposta de esquema, não tabelas que já existem.
+Aprovada em 18/11/2026 (BD-01 a BD-08, conforme `docs/decisoes/DECISIONS.md`). Ver [Decisão: banco de dados](/lastro-lancamentos/decisoes/banco-de-dados/). Os nomes de tabela abaixo são uma proposta de esquema, não tabelas que já existem.
 :::
 
 ## Regras de base

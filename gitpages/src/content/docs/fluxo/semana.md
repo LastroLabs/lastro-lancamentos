@@ -12,17 +12,16 @@ A semana tem **sete momentos e uma única reunião**. O planejamento é na segun
 | C · Começar | Quem pegou a feature | Logo após o planejamento | 5 min de setup | Branch criada, progress aberto, testes escritos e falhando |
 | D · Desenvolver | Quem pegou a feature | Durante a semana | 1 a 2 sessões | Implementação passando e progress atualizado |
 | E · Entregar | Quem pegou a feature | Quando os testes passam | 15 a 20 min | PR aberto com todas as evidências |
-| F · Revisar | Outra pessoa e a CI | Em até 24 h | 15 a 25 min | Feature `passing` na main |
+| F · Revisar | Outra pessoa e a CI | Em até 24 h | 15 a 25 min | Feature `passing` na `developer` |
 | G · Fechar | Donos do harness | Domingo | 30 min | Painel da semana e lições viradas em regra |
 
 ## A · Preparar
 
-- Rodar `hx state` e olhar as issues do noturno. Feature `regressed` entra primeiro.
+- Rodar `hx state` (ou `hx state --atencao`). Feature `regressed` entra primeiro.
 - Escolher as features pela meta de `passing` e pela ordem de dependência.
 - Revisar os `features/*.json`: critérios verificáveis e `depende_de` preenchido.
-- Atualizar o `DECISIONS.md`. Uma decisão aberta que trava uma feature a deixa `blocked` e fora da sprint.
-- Contratos novos congelados pelo dono B antes da segunda.
-- Tudo em um PR de preparação, mesclado antes da reunião.
+- Atualizar o `DECISIONS.md`. Uma decisão pendente que trava uma feature a deixa `blocked` e fora da sprint (hoje por PR na ficha: nenhum comando grava `blocked`).
+- Tudo em um PR de preparação para a `developer`, mesclado antes da reunião.
 
 ## B · Planejar
 
@@ -31,12 +30,13 @@ A semana tem **sete momentos e uma única reunião**. O planejamento é na segun
 - 15 a 35 min: cada pessoa escolhe uma feature e lê a ficha em voz alta. Critério errado? Fala agora.
 - 35 a 45 min: riscos e dependências cruzadas.
 - WIP=1: ninguém com duas features em andamento.
-- O líder faz um commit preenchendo `responsavel`. Sem isso, não dá para iniciar.
+- A líder preenche o `responsavel` (handle do GitHub) por PR na `developer`. Sem isso, o `hx feature start` recusa.
 
 ## C · Começar
 
-- `hx feature start LEI-02 --owner voce` cria a branch, marca `in_progress` e cria o progress.
-- Ler a ficha, a página do módulo e as decisões citadas (10 min).
+- Com `HX_USUARIO` definido: `hx feature start LEI-02` cria a branch a partir de `origin/developer`, marca `in_progress` e cria o progress.
+- Em sessão nova do agente, `/planejar LEI-02` gera `planos/LEI-02/plan.md` e `tasks.md`; um humano aprova.
+- Ler a ficha, o plan e as decisões citadas (10 min).
 - Escrever os testes primeiro, a partir dos critérios. Eles devem falhar.
 - Commitar os testes sozinhos, para provar que vieram antes do código.
 - Abrir uma sessão nova do agente para implementar, sem editar os testes.
@@ -51,11 +51,11 @@ A semana tem **sete momentos e uma única reunião**. O planejamento é na segun
 
 ## E · Entregar
 
-- `hx verify --e2e`, `hx feature verify LEI-02` e `hx check-clean`.
+- `hx verify`, `hx feature verify LEI-02` (commitar a ficha depois) e `hx check-clean`.
 - Fechar o progress: feito, rodei, falhou, decisão, próxima ação.
-- Abrir o PR com o template, incluindo a tabela critério → teste.
+- Abrir o PR para a `developer` com o template, incluindo a tabela critério → teste.
 - Pedir revisão. Você não mescla o próprio PR.
-- Só depois de abrir o PR, iniciar a próxima feature.
+- Iniciar a próxima feature depois do merge: o `hx feature start` recusa enquanto houver outra branch `feat/*` sua fora da `developer`.
 
 ## F · Revisar
 
@@ -63,16 +63,18 @@ A semana tem **sete momentos e uma única reunião**. O planejamento é na segun
 - Rodar `hx feature verify` na branch, sem confiar só na CI.
 - Preencher a rubrica: aceitar, pedir ajustes ou bloquear.
 - Comentário que se repete em dois PRs vira check automático.
-- Merge por squash, com CI verde e aprovação.
+- Merge na `developer`, com CI verde e aprovação.
 
 ## G · Fechar
 
 - `hx state` comparado com a meta acumulada.
 - Abaixo da meta: aplicar o rebaixamento combinado. As 4 funcionalidades essenciais não saem.
-- Limpeza: branches mortas, progress concluídos, `qualidade.md`.
+- Limpeza: branches mortas e progress concluídos.
 - Erro repetido da semana vira check, teste ou regra no `AGENTS.md`.
 - Registrar decisões em `DECISIONS.md` e alimentar o próximo momento A.
 
-`hx` é o atalho para `docker compose run --rm dev python tools/harness.py`.
+`hx` é o atalho para `python tools/harness.py`, que roda no host. Só o ruff e o pytest rodam no contêiner `dev` (ver [Documentos e comandos](/lastro-lancamentos/harness/documentos-e-comandos/#onde-cada-coisa-roda)).
 
-Fonte: Fluxo de desenvolvimento do Lastro, seção 04.
+O LEI-02 é só um exemplo de ID. O mapa de quem faz o quê está em [Orquestração](/lastro-lancamentos/fluxo/orquestracao/).
+
+Fontes: Fluxo de desenvolvimento do Lastro, seção 04; `tools/harness.py` (branch `developer`); `docs/decisoes/DECISIONS.md` (18/11/2026).

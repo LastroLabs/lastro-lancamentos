@@ -1,0 +1,140 @@
+---
+title: Processo de engenharia de requisitos
+description: Como os requisitos do Lastro nascem, são priorizados, validados, verificados e mudam.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+
+Esta página descreve o caminho de um requisito no Lastro, das fontes até a verificação em código. Ela junta o que já está registrado no site: os [Requisitos v0.2](/lastro-lancamentos/visao/requisitos/), o [cenário](/lastro-lancamentos/visao/cenario/), o [índice de decisões](/lastro-lancamentos/decisoes/) e o [fluxo de desenvolvimento](/lastro-lancamentos/fluxo/visao-geral/).
+
+## Visão do processo
+
+<Mermaid code={`flowchart TD
+  F["Fontes<br/>entrevistas Esc.1 e Esc.2, proposta v2,<br/>ata, equipe, pesquisa de mercado"]
+  E1["1. Elicitação<br/>dores e evidências"]
+  E2["2. Análise e priorização<br/>MoSCoW: Must, Should, Could, Won't"]
+  E3["3. Especificação<br/>requisito + critério de aceitação + origem"]
+  E4["4. Validação<br/>perguntas para o time e confirmação nos pilotos"]
+  E5["5. Decisões em aberto<br/>D-01 a D-09, com dono e próximo passo"]
+  E6["6. Do requisito à verificação<br/>história, ficha features/ID.json, teste"]
+  F --> E1 --> E2 --> E3 --> E4
+  E4 --> E5
+  E5 -- "decisão registrada" --> E3
+  E4 --> E6
+`}/>
+
+| Atividade | Pergunta que responde | Saída |
+|---|---|---|
+| 1. Elicitação | Qual é a dor e quem a relatou? | Tabela [Da dor ao requisito](/lastro-lancamentos/visao/cenario/#da-dor-ao-requisito) |
+| 2. Análise e priorização | Sem isso o MVP funciona? | Requisitos classificados em Must, Should, Could e Won't |
+| 3. Especificação | O que o sistema deve fazer e como se prova? | Requisito com ID, critério de aceitação e origem |
+| 4. Validação | Está coerente, necessário, testável e cabe no prazo? | Respostas às perguntas para o time |
+| 5. Decisões em aberto | O que precisa ser decidido antes de construir? | D-xx no [índice de decisões](/lastro-lancamentos/decisoes/) e, depois, no `DECISIONS.md` |
+| 6. Do requisito à verificação | Como saber que o requisito foi atendido? | História de usuário, ficha `features/<ID>.json` e teste ligado ao critério |
+
+## 1. Elicitação
+
+- **Entrevistas de validação** em 02/11/2026 com um contador de cada escritório-piloto. Os escritórios aparecem só como Esc.1 e Esc.2.
+- **Pesquisa de mercado** usada como sinal, não como medida exata: CFC (abr/2025), Cora/Hibou (set/2026), Univali (251 escritórios de SC) e Omie (jul/2026).
+- **Outras origens** registradas na coluna Origem de cada requisito: a proposta v2, a ata, a equipe e propostas do próprio documento.
+- Os dois contadores relatam de 2 a 4 horas por fechamento de um cliente. São relatos de dois profissionais, não uma amostra: orientam o MVP, não prometem ganho.
+
+Detalhes em [Cenário e dor](/lastro-lancamentos/visao/cenario/).
+
+## 2. Análise e priorização
+
+A priorização usa **MoSCoW**:
+
+| Prioridade | Significado | Requisitos |
+|---|---|---|
+| Must | Sem isso o MVP não funciona | 56 |
+| Should | Importante, com contorno manual | 11 |
+| Could | Só se sobrar tempo | 6 |
+| Won't | Fora desta versão | 12 |
+
+Os Won't trazem o **motivo** no lugar do critério de aceitação, por exemplo "Os dois pilotos usam Domínio" (RF-EXP-06).
+
+## 3. Especificação
+
+Cada requisito tem:
+
+- **ID** no formato `RF-<ÁREA>-<número>`, por exemplo `RF-VAL-01`;
+- **requisito** no formato "O sistema deve…" ou "O contador deve poder…";
+- **critério de aceitação** verificável;
+- **origem**, que liga o requisito à fonte.
+
+Marcas da v0.2:
+
+- **NOVO** e **AJUSTADO** mostram o que mudou nesta versão.
+- **[definir]** marca um valor ainda aberto, por exemplo a validade do link (RF-SEG-01).
+- **Ver decisão D-xx** liga o requisito a uma decisão em aberto.
+
+## 4. Validação
+
+O documento de requisitos traz sete perguntas para o time avaliar: coerência, necessidade, lacunas, testabilidade, prazo, decisões e fonte única. Elas estão no fim da página [Requisitos de Software](/lastro-lancamentos/visao/requisitos/#perguntas-para-o-time-avaliar).
+
+Alguns pontos dependem dos pilotos, por exemplo:
+- **Fonte única:** o fluxo de chefe e troca de responsável veio de um relato só e precisa ser confirmado nos pilotos.
+- **D-07:** perguntar nos pilotos se a carteira individual atende.
+- **D-05:** pedir um exemplo do layout de importação do Domínio aos dois escritórios.
+
+## 5. Decisões em aberto
+
+- As perguntas de negócio são as D-01 a D-09. Quem as decide é a **líder**.
+- Em 18/11/2026, D-02 a D-07 e D-09 ganharam padrão provisório e configurável; D-01 e D-08 seguem pendentes. Ver o [índice de decisões](/lastro-lancamentos/decisoes/).
+- Uma decisão pendente que trava uma feature deixa a feature `blocked` e fora da sprint.
+- O registro oficial é o `docs/decisoes/DECISIONS.md`, com ID, data, status, motivo e fichas afetadas.
+
+## 6. Do requisito à verificação
+
+Os Must viram fichas de feature, uma por arquivo, em `features/<ID>.json` (não existe um arquivo único com todas). O primeiro lote, da onda S1, está em revisão (ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha)).
+
+1. O ID da ficha é a sigla do módulo + `-nn`: `ACE-01` (acesso), `CAD-03` (cadastro), `NUC-01` (núcleo), `IA-01` (IA); `HAR-nn` para o harness e `CI-nn` para a CI.
+2. A ficha traz o módulo, os RFs atendidos, a prioridade (a MoSCoW do RF), a onda (1 a 4), o responsável, as dependências, os critérios com exemplo de entrada e saída, os comandos de verificação (100% dos testes) e o estado.
+3. Os testes são escritos antes do código, a partir dos critérios da ficha.
+4. Só o script marca `passing`, com `hx feature verify <ID>`.
+5. O PR traz a tabela critério → teste, e outra pessoa revisa pela rubrica.
+
+As regras de ID e de módulo são decisões de 18/11 ([processo e fichas](/lastro-lancamentos/decisoes/processo/)). O validador ainda não as confere: isso vem da ficha HAR-04 (planejado).
+
+Ver [Backlog](/lastro-lancamentos/requisitos/backlog/), [DoR e DoD](/lastro-lancamentos/requisitos/dor-dod/) e [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/).
+
+## Gestão de mudanças
+
+<Mermaid code={`flowchart TD
+  M["Algo precisa mudar"] --> T{"Que tipo de mudança?"}
+  T -- "Critério ambíguo ou errado na ficha" --> P1["PR corrigindo a ficha antes de codar<br/>o dono do módulo aprova"]
+  T -- "Falta uma decisão de negócio" --> P2["Issue decisao:<br/>feature fica blocked (bloqueada_por: D-xx)"]
+  P2 --> P3["Quem tem autoridade decide em até 24 h<br/>registro no DECISIONS.md, por PR"]
+  T -- "Entrada ou saída entre módulos" --> P4["Issue contrato:<br/>o dono do módulo decide e versiona"]
+  T -- "Requisito novo ou alterado" --> P5["Nova versão do documento de requisitos<br/>esta página e o JSON são regerados"]
+  T -- "Feature grande demais" --> P6["Dividir em duas fichas,<br/>cada uma com seus critérios"]
+`}/>
+
+| Mudança | Como entra | Prazo |
+|---|---|---|
+| Critério ambíguo ou errado na ficha | PR corrigindo a ficha antes de codar; o dono do módulo aprova | No mesmo dia |
+| Falta uma decisão | Issue `decisao:`, feature `blocked`, registro no `DECISIONS.md` | Resposta em 24 h |
+| Contrato entre módulos | Issue `contrato:`; o dono do módulo decide e versiona (AGENTS.md, regra 11) | 24 h |
+| Feature maior que 2 sessões | Dividir em duas fichas | Ao perceber |
+| Requisito novo ou alterado | Nova versão do documento de requisitos; o site é atualizado a partir dele | — |
+
+Os prazos vêm do [Fluxo de desenvolvimento](/lastro-lancamentos/fluxo/quando-trava/). A última linha segue a regra desta documentação: o documento de requisitos é a fonte de verdade.
+
+## Ferramentas
+
+| Ferramenta | Uso nos requisitos |
+|---|---|
+| Este site (Astro + Starlight) | Publica requisitos, decisões, rastreabilidade e backlog |
+| `src/data/requisitos.json` | Requisitos como dados, gerados por `scripts/gerar-requisitos.mjs` a partir do documento |
+| GitHub: issues e PRs | Issues `decisao:`, `contrato:`, `fixture:` e `harness:`; PRs com a tabela critério → teste |
+| `docs/decisoes/DECISIONS.md` | Registro das decisões, com contexto, escolha e quem decidiu |
+| `features/<ID>.json` e `progress/<ID>.md` | Ficha e diário de cada feature |
+| `tools/harness.py` (atalho `hx`) | `state`, `check-clean`, `verify`, `feature start` e `feature verify`. Ver [Documentos e comandos](/lastro-lancamentos/harness/documentos-e-comandos/#comandos-do-hx) |
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada a partir dos requisitos v0.2, do cenário, das decisões e do fluxo de desenvolvimento |
+| 18/11/2026 | 1.1 | Fichas em `features/<ID>.json` com formato de ID; decisões de 18/11; comandos reais do `hx` |
