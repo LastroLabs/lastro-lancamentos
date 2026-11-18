@@ -1,0 +1,132 @@
+---
+// Grade com os cards da equipe. Dados em src/data/equipe.ts.
+import { equipe, iniciais } from '../data/equipe';
+---
+
+<div class="tg not-content">
+	{
+		equipe.map((m) => (
+			<article class="tg-card">
+				<div class="tg-avatar">
+					{m.github && (
+						<img
+							src={`https://github.com/${m.github}.png?size=128`}
+							alt={`Foto de ${m.nome}`}
+							width="64"
+							height="64"
+							loading="lazy"
+							onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
+						/>
+					)}
+					<span class="tg-iniciais" aria-hidden="true" hidden={!!m.github}>
+						{iniciais(m.nome)}
+					</span>
+				</div>
+				<div class="tg-info">
+					<h3 class="tg-nome">{m.nome}</h3>
+					<p class="tg-papel">
+						{m.papel} / {m.frente}
+					</p>
+					{m.github ? (
+						<a class="tg-github" href={`https://github.com/${m.github}`} rel="noopener">
+							@{m.github}
+						</a>
+					) : (
+						<span class="tg-sem-github">GitHub a informar</span>
+					)}
+				</div>
+			</article>
+		))
+	}
+</div>
+
+<style>
+	/* Até 3 colunas, cada uma com no mínimo 16rem. */
+	.tg {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(max(16rem, calc((100% - 2rem) / 3)), 1fr));
+		gap: 1rem;
+		margin: 1.5rem 0;
+	}
+
+	.tg-card {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.1rem;
+		border: 1px solid var(--lastro-green);
+		border-radius: 12px;
+		background: rgba(16, 185, 129, 0.08);
+	}
+
+	.tg-avatar {
+		flex-shrink: 0;
+		width: 64px;
+		height: 64px;
+	}
+
+	.tg-avatar img,
+	.tg-iniciais {
+		width: 64px;
+		height: 64px;
+		border-radius: 50%;
+		border: 2px solid var(--lastro-indigo);
+		box-sizing: border-box;
+	}
+
+	.tg-avatar img {
+		display: block;
+		object-fit: cover;
+	}
+
+	.tg-iniciais {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 1.2rem;
+		color: var(--lastro-indigo);
+		background: var(--sl-color-bg);
+	}
+
+	.tg-iniciais[hidden],
+	.tg-avatar img[hidden] {
+		display: none;
+	}
+
+	.tg-info {
+		min-width: 0;
+	}
+
+	.tg-nome {
+		margin: 0 0 0.35rem;
+		padding-bottom: 0.35rem;
+		border-bottom: 1px solid var(--sl-color-gray-5);
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.tg-papel {
+		margin: 0 0 0.25rem;
+		font-size: 0.8rem;
+		color: var(--lastro-green);
+	}
+
+	.tg-github {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--lastro-indigo);
+		text-decoration: none;
+		border-bottom: none;
+	}
+
+	.tg-github:hover {
+		text-decoration: underline;
+	}
+
+	.tg-sem-github {
+		font-size: 0.85rem;
+		color: var(--sl-color-gray-3);
+	}
+</style>

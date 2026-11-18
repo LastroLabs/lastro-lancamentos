@@ -1,0 +1,174 @@
+---
+title: Backlog
+description: Épicos, ordem de construção, histórias de usuário (rascunho) e regras do backlog.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BacklogEpicos from '../../../components/BacklogEpicos.astro';
+import HistoriasUsuario from '../../../components/HistoriasUsuario.astro';
+import { porPrioridade, linkRequisito } from '../../../data/requisitos';
+
+## Níveis do backlog
+
+| Nível | O que é | Onde vive |
+|---|---|---|
+| Épico (EP-xx) | Uma área dos requisitos Must, por exemplo "Leitura" ou "Exportação". **Agrupamento proposto** para organizar o backlog | Esta página |
+| Requisito (RF-xxx) | O que o sistema deve fazer, com critério de aceitação e origem | [Requisitos de Software](/lastro-lancamentos/visao/requisitos/) |
+| Feature | Comportamento verificável que uma pessoa termina em 1 ou 2 sessões, com estado controlado pelo script | Ficha `features/<ID>.json` no repositório |
+
+:::caution[Este site não acompanha o andamento]
+O backlog aqui mostra o **escopo** e a **ordem planejada**, não o que já foi feito. O estado de cada feature (`not_started`, `in_progress`, `blocked`, `passing`, `regressed`) fica nas fichas `features/<ID>.json` e aparece no painel `harness.py state`.
+:::
+
+## Épicos
+
+Um épico por área dos Must. A semana vem do roteiro da Arquitetura, que tem 4,5 semanas. A estratégia vigente usa S1 a S4 (ver [Cronograma](/lastro-lancamentos/visao/cronograma/)).
+
+<BacklogEpicos />
+
+## Ordem de construção
+
+A ordem segue o caminho do dado: primeiro alguém entra e envia, depois o sistema lê e confere, depois classifica, por fim revisa e exporta. As semanas e metas são as da estratégia vigente. O que se constrói em cada uma vem do roteiro da Arquitetura, semana a semana.
+
+<div class="fases-container not-content">
+	<div class="fase-item">
+		<h4>S1 · Fundação</h4>
+		<p><strong>09/11 a 15/11</strong> · meta acumulada: 6 features passing</p>
+		<p>Compose, CI, migrações base, sessão, RLS, escritório/usuário/cliente.</p>
+		<p>Esqueleto do app, login, design system, cliente da API gerado.</p>
+		<p>Spike ofx-br × ofxparse no gabarito; leitor OFX.</p>
+		<p>Contratos, gateway <code>ia/</code> com <code>anonimizar()</code> e teste de vazamento.</p>
+	</div>
+	<div class="fase-item">
+		<h4>S2 · Ritmo</h4>
+		<p><strong>16/11 a 22/11</strong> · meta acumulada: 18</p>
+		<p>Link do cliente, upload, quarentena, fila; plano de contas por planilha.</p>
+		<p>Página de envio no celular; carteira com status.</p>
+		<p>PDF do BB; conferência de saldo linha a linha ou dia a dia.</p>
+		<p>Regras por palavra-chave, transferência interna, sócio.</p>
+	</div>
+	<div class="fase-item">
+		<h4>S3 · Integração</h4>
+		<p><strong>23/11 a 29/11</strong> · meta acumulada: 32</p>
+		<p>Atribuição e reatribuição com revogação; auditoria.</p>
+		<p>Tela de revisão (três grupos, ações em lote).</p>
+		<p>PDF do Inter; continuidade e cobertura do mês; dedup por FITID.</p>
+		<p>Histórico, parecidas (<code>pg_trgm</code>), IA nas sobras, confiança.</p>
+	</div>
+	<div class="fase-item">
+		<h4>S4 · Congelamento</h4>
+		<p><strong>30/11 a 06/12</strong> · meta acumulada: 39</p>
+		<p>Exportação: fotografia, Excel por YAML, conciliação.</p>
+		<p>Perguntas com um toque; tela de exportação.</p>
+		<p>Avisos em português simples; casos de defeito nas fixtures.</p>
+		<p>Agrupamento de perguntas, aprendizado por cliente.</p>
+		<p><strong>03/12</strong> congelamento · <strong>04/12</strong> ensaio · <strong>07/12</strong> demo ao vivo.</p>
+	</div>
+</div>
+
+A semana 4,5 do roteiro da Arquitetura não tem semana própria na estratégia vigente. Ela prevê deploy do piloto, backup testado, `check-clean`, ajustes de usabilidade com a contadora, correções do gabarito, calibragem do limite de confiança (D-08) e importação real no Domínio (fecha D-05).
+
+## Jornada demonstrável por semana
+
+Ao fim de cada semana existe uma jornada que roda de ponta a ponta no `verify --e2e`, mesmo que incompleta.
+
+| Semana do roteiro | Jornada demonstrável |
+|---|---|
+| 1 | Contador entra e cadastra cliente |
+| 2 | Cliente envia OFX, contador vê "enviado" e saldo conferido |
+| 3 | Extrato vira sugestões revisáveis |
+| 4 | Ciclo completo: envio → pergunta → revisão → planilha |
+| 4,5 | Importação real no Domínio (fecha D-05) |
+
+Fonte: Lastro — Arquitetura do Sistema, seção 10.
+
+## Histórias de usuário (rascunho)
+
+:::caution[RASCUNHO para avaliação do time]
+As histórias abaixo são uma **proposta** para avaliação do time. Elas não foram aprovadas e não substituem os requisitos.
+
+- Há uma história para cada um dos **56 Must**.
+- A coluna de critério traz o critério de aceitação do próprio requisito, sem mudança.
+- As personas (contador, chefe, cliente do escritório) vêm de [O que é o Lastro](/lastro-lancamentos/home/sobre/).
+- O "para" de cada história vem da dor relatada ou do critério do requisito.
+
+Depois de revisadas, elas alimentam o `feature_list.json` do harness, como pedem os requisitos.
+:::
+
+<Tabs>
+<TabItem label="Acesso e cadastro">
+
+<HistoriasUsuario areas={['Acesso e segurança', 'Cadastro']} />
+
+</TabItem>
+<TabItem label="Envio, leitura e conferência">
+
+<HistoriasUsuario areas={['Envio e coleta', 'Leitura', 'Conferência de valores', 'Avisos']} />
+
+</TabItem>
+<TabItem label="Classificação">
+
+<HistoriasUsuario areas={['Classificação', 'Maquininha (mínimo)']} />
+
+</TabItem>
+<TabItem label="Perguntas e aprendizado">
+
+<HistoriasUsuario areas={['Perguntas ao cliente', 'Aprendizado']} />
+
+</TabItem>
+<TabItem label="Revisão e exportação">
+
+<HistoriasUsuario areas={['Revisão', 'Exportação']} />
+
+</TabItem>
+</Tabs>
+
+## Should, Could e Won't
+
+<Tabs>
+<TabItem label="Should (11)">
+
+Importantes, com contorno manual. Entram depois dos Must, se houver tempo.
+
+<ul>
+{porPrioridade('Should').map((r) => <li><a href={linkRequisito(r.id)}><code>{r.id}</code></a> {r.requisito}</li>)}
+</ul>
+
+</TabItem>
+<TabItem label="Could (6)">
+
+Só se sobrar tempo.
+
+<ul>
+{porPrioridade('Could').map((r) => <li><a href={linkRequisito(r.id)}><code>{r.id}</code></a> {r.requisito}</li>)}
+</ul>
+
+</TabItem>
+<TabItem label="Won't (12)">
+
+Fora desta versão, com o motivo registrado nos requisitos.
+
+<ul>
+{porPrioridade("Won't").map((r) => <li><a href={linkRequisito(r.id)}><code>{r.id}</code></a> {r.requisito} <em>Motivo: {r.criterio}</em></li>)}
+</ul>
+
+</TabItem>
+</Tabs>
+
+## Regras do backlog
+
+- **Meta em features que passam, não em horas.** As metas acumuladas são 6, 18, 32 e 39 features `passing`.
+- **Escolha da semana:** pela meta de `passing` e pela ordem de dependência (`depende_de` preenchido na ficha).
+- **Regressão primeiro:** feature `regressed` entra antes de feature nova.
+- **Decisão aberta:** feature que depende de D-xx em aberto fica `blocked` e fora da sprint.
+- **WIP=1:** ninguém com duas features em andamento. O responsável é gravado na ficha pelo líder.
+- **Tamanho:** passou de 2 sessões, a feature vira duas fichas.
+- **Gatilho de corte:** abaixo da meta no domingo, rebaixa itens da lista combinada. As quatro funcionalidades essenciais nunca saem. Quais são elas ainda é [pendência em aberto](/lastro-lancamentos/decisoes/#pendências-em-aberto-sem-id).
+
+Fontes: Fluxo de desenvolvimento do Lastro; Lastro: guia do harness v0.1.
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada: épicos por área dos Must, ordem de construção, jornadas, histórias de usuário (rascunho) e regras do backlog |

@@ -1,0 +1,82 @@
+---
+title: Rastreabilidade
+description: Da fonte e da dor ao requisito, à frente, ao módulo, à ficha e ao teste.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import Mermaid from '../../../components/Mermaid.astro';
+import Rastreabilidade from '../../../components/Rastreabilidade.astro';
+
+A rastreabilidade liga cada requisito à **origem** (de onde veio) e ao **destino** (quem constrói e como se prova). Assim dá para responder, por exemplo:
+- "que requisitos atendem a esta dor?";
+- "quem é dono deste Must?";
+- "o que esta decisão trava?".
+
+<Mermaid code={`flowchart TD
+  A["Fonte<br/>Esc.1, Esc.2, v2, Ata, Proposta, Equipe"]
+  B["Dor<br/>tabela Da dor ao requisito"]
+  C["Requisito<br/>RF-xxx, com critério de aceitação"]
+  D["Frente e módulo<br/>frente da equipe, src/lastro/modulo (proposto)"]
+  E["Ficha<br/>features/ID.json"]
+  F["Teste<br/>tabela critério → teste no PR"]
+  X["Decisão D-xx"]
+  A --> B --> C --> D --> E --> F
+  A --> C
+  X -. "trava ou condiciona" .-> C
+`}/>
+
+:::note[De onde vêm os vínculos]
+- **Fonte:** coluna Origem de cada requisito ([Requisitos v0.2](/lastro-lancamentos/visao/requisitos/)).
+- **Dor:** tabela [Da dor ao requisito](/lastro-lancamentos/visao/cenario/#da-dor-ao-requisito). Faixas como "RF-VAL-01 a 04" e prefixos como "RF-APR" foram expandidos para todos os IDs que cobrem. Só 24 requisitos aparecem nessa tabela; os demais ficam sem dor ligada.
+- **Decisão:** coluna Afeta do [índice de decisões](/lastro-lancamentos/decisoes/), mais as menções "D-0x" no texto do requisito.
+- **Frente:** tabela de frentes da [Equipe](/lastro-lancamentos/home/equipe/#as-frentes-da-arquitetura), pelo prefixo do ID. Prefixos que a tabela não cita (por exemplo AVI e MAQ) ficam **sem frente na fonte**.
+- **Módulo:** **mapeamento proposto**, não decidido, pelo prefixo do ID e pelos módulos da [Arquitetura](/lastro-lancamentos/arquitetura/visao-geral/#módulos).
+- **Ficha e teste:** ainda não existem no site. Nascem no repositório quando as features forem criadas (`features/<ID>.json` e a tabela critério → teste de cada PR).
+
+Tudo é gerado de `src/data/requisitos.json` pelo script `scripts/gerar-requisitos.mjs`.
+:::
+
+## Vistas
+
+<Tabs>
+<TabItem label="Dores → requisitos">
+
+Cada dor relatada e os requisitos que a respondem.
+
+<Rastreabilidade vista="dores" />
+
+</TabItem>
+<TabItem label="Fontes × prioridade">
+
+Quantos requisitos citam cada fonte na coluna Origem. Um requisito pode citar mais de uma fonte.
+
+<Rastreabilidade vista="fontes" />
+
+</TabItem>
+<TabItem label="Frentes dos Must">
+
+Os 56 Must por frente da equipe.
+
+<Rastreabilidade vista="frentes" />
+
+</TabItem>
+<TabItem label="Decisão → requisitos">
+
+Os requisitos que cada decisão em aberto afeta.
+
+<Rastreabilidade vista="decisoes" />
+
+</TabItem>
+</Tabs>
+
+## Matriz completa
+
+Todos os requisitos, exceto os Won't, que estão fora desta versão. Role na horizontal para ver todas as colunas.
+
+<Rastreabilidade vista="matriz" />
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada: diagrama de rastreabilidade, quatro vistas e matriz, a partir de `src/data/requisitos.json` |

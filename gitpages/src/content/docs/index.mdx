@@ -9,8 +9,8 @@ hero:
     - text: O que é o Lastro
       link: /lastro-lancamentos/home/sobre/
       icon: right-arrow
-    - text: Fluxo de desenvolvimento
-      link: /lastro-lancamentos/fluxo/visao-geral/
+    - text: Requisitos
+      link: /lastro-lancamentos/visao/requisitos/
       icon: right-arrow
       variant: minimal
     - text: GitHub
@@ -19,7 +19,9 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import RequisitosResumo from '../../components/RequisitosResumo.astro';
+import TeamGrid from '../../components/TeamGrid.astro';
 
 ## O problema
 
@@ -59,10 +61,35 @@ Escritórios contábeis pequenos que importam lançamentos no **Domínio**. Na p
 
 | Item | Situação | Fonte |
 |---|---|---|
-| Requisitos funcionais | v0.2 (07/11/2026), em avaliação pelo time | Requisitos funcionais v0.2 |
+| Requisitos funcionais | v0.2 (07/11/2026), em avaliação pelo time | [Requisitos de Software](/lastro-lancamentos/visao/requisitos/) |
 | Guia do harness | v0.1 (08/11/2026), sujeito a ajuste na primeira semana | Guia do harness |
 | Estudos | Arquitetura, banco de dados, avaliação com LLM e UX/UI concluídos; recomendações aguardando aprovação | [Decisões](/lastro-lancamentos/decisoes/) |
 | Decisões em aberto | D-01 a D-09 | [Índice de decisões](/lastro-lancamentos/decisoes/) |
 | Cronograma | Pelo plano, semana S1 (Fundação, 09/11 a 15/11); demo ao vivo em 07/12 | [Cronograma](/lastro-lancamentos/visao/cronograma/) |
 
 Este site não acompanha o andamento do código. O estado de cada feature fica nas fichas `features/<ID>.json` e aparece no painel `harness.py state`.
+
+## Requisitos em números
+
+<RequisitosResumo compacto />
+
+Detalhes, explorador e tabelas em [Requisitos de Software](/lastro-lancamentos/visao/requisitos/).
+
+## Navegue pela documentação
+
+<CardGrid>
+  <LinkCard title="Requisitos de Software" description="Os 85 requisitos v0.2 por prioridade, com explorador e filtros." href="/lastro-lancamentos/visao/requisitos/" />
+  <LinkCard title="Processo de engenharia de requisitos" description="Como os requisitos nascem, são validados e mudam." href="/lastro-lancamentos/requisitos/engenharia-de-requisitos/" />
+  <LinkCard title="Backlog" description="Épicos, ordem de construção e histórias de usuário (rascunho)." href="/lastro-lancamentos/requisitos/backlog/" />
+  <LinkCard title="Rastreabilidade" description="Da dor ao requisito, à frente e ao módulo." href="/lastro-lancamentos/requisitos/rastreabilidade/" />
+  <LinkCard title="Fluxo de desenvolvimento" description="Ritmo da semana, ciclo de uma feature e o que fazer quando algo trava." href="/lastro-lancamentos/fluxo/visao-geral/" />
+  <LinkCard title="Decisões" description="Estudos recomendados e as decisões D-01 a D-09 em aberto." href="/lastro-lancamentos/decisoes/" />
+  <LinkCard title="Arquitetura" description="Monólito modular, stack, dados, IA e segurança." href="/lastro-lancamentos/arquitetura/visao-geral/" />
+  <LinkCard title="Harness" description="Documentos, comandos e regras de revisão de PR." href="/lastro-lancamentos/harness/documentos-e-comandos/" />
+</CardGrid>
+
+## Equipe do Projeto
+
+<TeamGrid />
+
+Papéis, frentes e suplências em [Equipe](/lastro-lancamentos/home/equipe/).
