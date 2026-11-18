@@ -1,0 +1,55 @@
+{
+  "id": "IA-02",
+  "titulo": "Enviar ao serviço de IA só descrições anonimizadas",
+  "modulo": "ia",
+  "requisitos": ["RF-SEG-03"],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "camposs04",
+  "depende_de": ["IA-01", "HAR-03"],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Com extratos do gabarito que contêm documentos, a requisição que chega ao serviço de IA não contém nenhum deles",
+      "exemplo": {
+        "entrada": "movimentações de EMP-1 lidas dos OFX gerados por hx fixtures build (semente padrão), com CPF e CNPJ de teste, agência e conta nas descrições; o teste ainda acrescenta 1 descrição com CNPJ numérico válido e 1 com CNPJ alfanumérico válido, gerados na hora; um serviço de IA falso grava tudo o que recebe; pede-se a sugestão de conta dessas movimentações",
+        "saida": "o serviço falso recebeu ao menos 1 requisição; nenhuma requisição contém qualquer CPF, CNPJ, número de agência ou de conta presentes nas descrições originais"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Os nomes de sócios do cliente chegam ao serviço de IA só como pseudônimos (D-03)",
+      "exemplo": {
+        "entrada": "EMP-1 com os sócios do gabarito; movimentação 'PIX <nome do primeiro sócio de EMP-1>'; serviço de IA falso; pede-se a sugestão de conta",
+        "saida": "a requisição recebida não contém o nome do sócio; contém um pseudônimo no formato PESSOA_ e 3 dígitos"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "A requisição de um cliente leva só as descrições desse cliente, nunca as de outro escritório",
+      "exemplo": {
+        "entrada": "movimentações pendentes de EMP-1 (ESC-1) e de EMP-9 (ESC-2), do gabarito; serviço de IA falso; pede-se a sugestão de conta das movimentações de EMP-1",
+        "saida": "nenhuma requisição recebida contém descrição de EMP-9; a quantidade de descrições enviadas é igual à de movimentações de EMP-1 pedidas"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Pedido sem nenhuma movimentação não chama o serviço de IA",
+      "exemplo": {
+        "entrada": "EMP-1 sem movimentações pendentes; serviço de IA falso; pede-se a sugestão de conta de uma lista vazia",
+        "saida": "o serviço falso recebeu 0 requisições; o resultado é uma lista vazia, sem erro"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/ia/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q"},
+    {"criterio": "c2", "comando": "pytest tests/ia/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q"},
+    {"criterio": "c3", "comando": "pytest tests/ia/test_gateway_vazamento.py::test_requisicao_so_com_descricoes_do_cliente -q"},
+    {"criterio": "c4", "comando": "pytest tests/ia/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q"}
+  ],
+  "evidencia": null
+}

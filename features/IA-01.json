@@ -1,0 +1,64 @@
+{
+  "id": "IA-01",
+  "titulo": "Remover CPF, CNPJ, agência e conta de descrições",
+  "modulo": "ia",
+  "requisitos": ["RF-SEG-03"],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "arthurlleite",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "CPF e CNPJ numéricos saem da descrição, com ou sem máscara, com dígito verificador certo ou errado",
+      "exemplo": {
+        "entrada": "descrições montadas pelo teste com CPF e CNPJ gerados na hora: 'PIX ENVIADO <CPF com máscara>', 'TED RECEBIDA <CNPJ só dígitos>', 'BOLETO <CNPJ com máscara>' e 'PIX <CPF com dígito verificador errado>'",
+        "saida": "em cada descrição anonimizada: nenhuma sequência dos dígitos originais do documento; no lugar dele, um marcador que diz o tipo (CPF ou CNPJ); o resto do texto ('PIX ENVIADO', 'TED RECEBIDA', 'BOLETO', 'PIX') igual ao original"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "CNPJ alfanumérico (padrão de julho/2026) sai da descrição, em maiúsculas ou minúsculas",
+      "exemplo": {
+        "entrada": "descrições 'PAGAMENTO <CNPJ alfanumérico com máscara>' e 'pagamento <mesmo CNPJ em minúsculas, sem máscara>', com o CNPJ gerado na hora",
+        "saida": "nas 2 descrições: nenhum dos 14 caracteres do CNPJ em sequência; marcador de CNPJ no lugar; 'PAGAMENTO' e 'pagamento' preservados"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Números de agência e conta saem da descrição",
+      "exemplo": {
+        "entrada": "descrições 'TED AG 1234 C/C 56789-0', 'TRANSF AGENCIA 0001 CONTA 9876543-2' e 'DOC AG:4321 CC:11223-4'",
+        "saida": "em cada descrição: nenhum dos números de agência e conta originais; marcadores de agência e de conta no lugar; 'TED', 'TRANSF' e 'DOC' preservados"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Nomes conhecidos de contraparte viram pseudônimos estáveis no formato PESSOA_nnn (D-03)",
+      "exemplo": {
+        "entrada": "lista de nomes conhecidos do cliente: 'CONTRAPARTE TESTE A' e 'CONTRAPARTE TESTE B'; anonimiza juntas as descrições 'PIX CONTRAPARTE TESTE A', 'PIX CONTRAPARTE TESTE B' e 'TED CONTRAPARTE TESTE A'",
+        "saida": "nenhuma descrição contém os nomes; 'CONTRAPARTE TESTE A' vira o mesmo pseudônimo nas 2 descrições em que aparece; 'CONTRAPARTE TESTE B' vira outro pseudônimo; os dois seguem o formato PESSOA_ e 3 dígitos"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Valores, datas e descrição sem dado pessoal ficam iguais",
+      "exemplo": {
+        "entrada": "descrições 'TARIFA PACOTE SERVICOS', 'IOF 15/10/2026' e 'COMPRA CARTAO R$ 1.234,56'",
+        "saida": "as 3 descrições saem idênticas às originais, sem nenhum marcador"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/ia/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q"},
+    {"criterio": "c2", "comando": "pytest tests/ia/test_anonimizar.py::test_cnpj_alfanumerico_removido -q"},
+    {"criterio": "c3", "comando": "pytest tests/ia/test_anonimizar.py::test_agencia_e_conta_removidas -q"},
+    {"criterio": "c4", "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_viram_pseudonimos_estaveis -q"},
+    {"criterio": "c5", "comando": "pytest tests/ia/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q"}
+  ],
+  "evidencia": null
+}

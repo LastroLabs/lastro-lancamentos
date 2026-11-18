@@ -1,0 +1,56 @@
+{
+  "id": "CAD-01",
+  "titulo": "Validar CNPJ numérico e alfanumérico do cliente",
+  "modulo": "cadastro",
+  "requisitos": ["RF-CAD-01"],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "marrathomaz",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "CNPJ numérico com dígitos verificadores corretos é aceito com ou sem máscara e guardado sem máscara",
+      "exemplo": {
+        "entrada": "um CNPJ numérico de 14 dígitos com dígitos verificadores corretos, gerado na hora pelo teste; valida (a) só os 14 dígitos e (b) o mesmo número com máscara (pontos, barra e hífen)",
+        "saida": "nos 2 casos: aceito; o valor normalizado tem 14 caracteres, sem máscara, e é igual nos dois casos"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "CNPJ com dígito verificador errado é recusado com mensagem em português simples",
+      "exemplo": {
+        "entrada": "o CNPJ de c1 com o último dígito trocado por outro",
+        "saida": "recusado com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "CNPJ alfanumérico (padrão de julho/2026) com dígitos verificadores corretos é aceito, inclusive em minúsculas",
+      "exemplo": {
+        "entrada": "um CNPJ alfanumérico (12 primeiros caracteres com letras e números, 2 dígitos verificadores numéricos corretos), gerado na hora pelo teste; valida (a) em maiúsculas e (b) o mesmo em minúsculas; valida também (c) o mesmo CNPJ com um dígito verificador trocado",
+        "saida": "(a) e (b) aceitos, com o mesmo valor normalizado em maiúsculas; (c) recusado com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "CNPJ vazio, com tamanho errado ou com caractere fora do padrão é recusado",
+      "exemplo": {
+        "entrada": "valida (a) texto vazio, (b) 13 caracteres, (c) 15 caracteres e (d) 14 caracteres com um '#' no meio",
+        "saida": "(a) recusado com a mensagem 'Informe o CNPJ do cliente.'; (b), (c) e (d) recusados com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_numerico_valido_aceito_com_e_sem_mascara -q"},
+    {"criterio": "c2", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_com_digito_errado_recusado -q"},
+    {"criterio": "c3", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_alfanumerico_valido_aceito -q"},
+    {"criterio": "c3", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_alfanumerico_com_digito_errado_recusado -q"},
+    {"criterio": "c4", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_vazio_ou_fora_do_padrao_recusado -q"}
+  ],
+  "evidencia": null
+}

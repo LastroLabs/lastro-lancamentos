@@ -1,0 +1,64 @@
+{
+  "id": "ACE-02",
+  "titulo": "Cadastrar contador e atribuir cliente pelo chefe",
+  "modulo": "acesso",
+  "requisitos": ["RF-AUT-03"],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "camposs04",
+  "depende_de": ["ACE-01", "CAD-03"],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O chefe cadastra um contador no próprio escritório e esse contador consegue entrar",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; chefe_1 cadastra contador_c com usuário e senha iniciais; depois contador_c entra com esse usuário e essa senha",
+        "saida": "cadastro aceito; a lista de usuários de ESC-1 tem 3 pessoas e contador_c aparece com papel contador; a entrada de contador_c é aceita; a senha não aparece em nenhuma resposta"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O chefe atribui um cliente sem responsável a um contador e o cliente passa a ter esse contador como único responsável ativo",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_a e contador_c; EMP-1 cadastrada em ESC-1, sem responsável; chefe_1 atribui EMP-1 a contador_c e depois consulta EMP-1",
+        "saida": "atribuição aceita; a consulta de EMP-1 mostra 1 responsável ativo: contador_c"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Um contador sem o papel de chefe é recusado ao cadastrar contador, cadastrar cliente ou atribuir cliente",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a (sessão aberta) e EMP-1 sem responsável; contador_a tenta (a) cadastrar contador_d, (b) cadastrar o cliente EMP-5 e (c) atribuir EMP-1 a si mesmo",
+        "saida": "nos 3 casos: status 403, mensagem 'Só o chefe do escritório pode fazer isso.'; ESC-1 continua com os mesmos usuários e clientes, e EMP-1 continua sem responsável; a identificação da sessão de contador_a informa o papel contador"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "O chefe de outro escritório não atribui cliente que não é dele e nenhum dado desse cliente aparece",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e EMP-1 sem responsável; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta atribuir EMP-1 a contador_x",
+        "saida": "acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum dado de EMP-1 na resposta; EMP-1 continua sem responsável"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "O chefe não atribui cliente a contador de outro escritório",
+      "exemplo": {
+        "entrada": "mesmo estado de c4, com chefe_1 de sessão aberta; chefe_1 tenta atribuir EMP-1 a contador_x (de ESC-2)",
+        "saida": "recusado com a mensagem 'Este contador não é do seu escritório.'; nenhum dado de contador_x na resposta; EMP-1 continua sem responsável"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_cadastra_contador_que_consegue_entrar -q"},
+    {"criterio": "c2", "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_atribui_cliente_com_um_responsavel_ativo -q"},
+    {"criterio": "c3", "comando": "pytest tests/acesso/test_cadastro_contador.py::test_contador_sem_papel_de_chefe_recusado -q"},
+    {"criterio": "c4", "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_de_outro_escritorio_nao_atribui_cliente -q"},
+    {"criterio": "c5", "comando": "pytest tests/acesso/test_cadastro_contador.py::test_atribuir_a_contador_de_outro_escritorio_recusado -q"}
+  ],
+  "evidencia": null
+}

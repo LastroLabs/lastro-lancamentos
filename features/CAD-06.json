@@ -1,0 +1,56 @@
+{
+  "id": "CAD-06",
+  "titulo": "Indicar a conta transitória do cliente dentre as do plano",
+  "modulo": "cadastro",
+  "requisitos": ["RF-CAD-04"],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "guin409",
+  "depende_de": ["CAD-05"],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O contador indica uma conta do plano como transitória e o cliente passa a mostrá-la",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta); EMP-1 atribuída a contador_a, com plano carregado com as contas 1.1.01 Caixa, 2.1.05 Fornecedores e 9.9.99 Transitória, e sem conta transitória; contador_a consulta EMP-1, indica 9.9.99 como transitória e consulta EMP-1 de novo",
+        "saida": "primeira consulta: EMP-1 sem conta transitória; indicação aceita; segunda consulta: conta transitória 9.9.99 Transitória"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Conta que não existe no plano do cliente é recusada e a transitória anterior não muda",
+      "exemplo": {
+        "entrada": "estado final de c1 (transitória 9.9.99); contador_a indica 8.8.88, que não está no plano de EMP-1",
+        "saida": "recusado com a mensagem 'A conta 8.8.88 não existe no plano de contas deste cliente.'; EMP-1 continua com a transitória 9.9.99"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Cliente sem plano carregado não aceita conta transitória",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem plano carregado; contador_a indica 9.9.99 como transitória de EMP-3",
+        "saida": "recusado com a mensagem 'A conta 9.9.99 não existe no plano de contas deste cliente.'; EMP-3 continua sem conta transitória"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Conta de outro cliente não serve, e outra carteira ou outro escritório não altera a transitória",
+      "exemplo": {
+        "entrada": "estado final de c1; EMP-2 atribuída a contador_b (sessão aberta), com plano que contém 7.7.77 Transitória B; ESC-2 com chefe_2 (sessão aberta); (a) contador_a indica 7.7.77 para EMP-1; (b) contador_b e chefe_2 tentam, cada um, indicar 1.1.01 como transitória de EMP-1",
+        "saida": "(a) recusado com a mensagem 'A conta 7.7.77 não existe no plano de contas deste cliente.'; (b) nos 2 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.' e nenhum dado de EMP-1 na resposta; EMP-1 continua com a transitória 9.9.99"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_contador_indica_transitoria_do_plano -q"},
+    {"criterio": "c2", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_fora_do_plano_recusada -q"},
+    {"criterio": "c3", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_cliente_sem_plano_recusa_transitoria -q"},
+    {"criterio": "c4", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_de_outro_cliente_recusada -q"},
+    {"criterio": "c4", "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_outra_carteira_e_outro_escritorio_negados -q"}
+  ],
+  "evidencia": null
+}

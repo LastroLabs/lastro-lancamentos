@@ -1,0 +1,55 @@
+{
+  "id": "CAD-07",
+  "titulo": "Cadastrar os sócios do cliente e mostrá-los na ficha",
+  "modulo": "cadastro",
+  "requisitos": ["RF-CAD-06"],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "marrathomaz",
+  "depende_de": ["ACE-03"],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O contador cadastra sócios pelo nome e eles aparecem na ficha do cliente",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-1 atribuída a contador_a, sem sócios; contador_a cadastra os sócios 'SOCIO TESTE A' e 'SOCIO TESTE B'; depois abre a ficha de EMP-1",
+        "saida": "2 cadastros aceitos; a ficha de EMP-1 lista 2 sócios: 'SOCIO TESTE A' e 'SOCIO TESTE B'"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Sócio sem nome é recusado e a lista não muda",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a tenta cadastrar (a) nome vazio e (b) nome só com espaços",
+        "saida": "nos 2 casos: recusado com a mensagem 'Informe o nome do sócio.'; a ficha de EMP-1 continua com 2 sócios"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Cliente sem sócios mostra lista vazia, sem erro",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem sócios; contador_a abre a ficha de EMP-3",
+        "saida": "sucesso; 0 sócios"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Contador de outra carteira ou usuário de outro escritório não lê nem cadastra sócios do cliente",
+      "exemplo": {
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta, sem EMP-1); ESC-2 com chefe_2 (sessão aberta); contador_b e chefe_2 tentam, cada um, (a) ler os sócios de EMP-1 e (b) cadastrar o sócio 'SOCIO TESTE C' em EMP-1",
+        "saida": "nos 4 casos: acesso negado com a mensagem 'Você não tem acesso a este cliente.'; nenhum nome de sócio de EMP-1 na resposta; a ficha de EMP-1 continua com 2 sócios"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/cadastro/test_socios.py::test_contador_cadastra_socios_que_aparecem_na_ficha -q"},
+    {"criterio": "c2", "comando": "pytest tests/cadastro/test_socios.py::test_socio_sem_nome_recusado -q"},
+    {"criterio": "c3", "comando": "pytest tests/cadastro/test_socios.py::test_cliente_sem_socios_lista_vazia -q"},
+    {"criterio": "c4", "comando": "pytest tests/cadastro/test_socios.py::test_outra_carteira_e_outro_escritorio_negados -q"}
+  ],
+  "evidencia": null
+}

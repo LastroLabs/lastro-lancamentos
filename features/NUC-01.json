@@ -1,0 +1,55 @@
+{
+  "id": "NUC-01",
+  "titulo": "Responder a saúde da API com o banco e as migrações",
+  "modulo": "nucleo",
+  "requisitos": ["ARQ-01", "ARQ-08", "BD-01"],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "guin409",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Com o banco no ar e as migrações aplicadas, GET /saude responde sucesso dizendo que o banco está conectado, sem pedir login",
+      "exemplo": {
+        "entrada": "API e PostgreSQL no ar; banco com todas as migrações aplicadas; nenhuma sessão aberta; cliente HTTP faz GET /saude",
+        "saida": "status 200; a resposta diz que a API está no ar e que o banco está conectado; nenhum dado de escritório, usuário ou cliente na resposta"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Com o banco fora do ar, GET /saude responde indisponível em português simples, sem detalhe técnico",
+      "exemplo": {
+        "entrada": "API no ar; PostgreSQL parado; cliente HTTP faz GET /saude",
+        "saida": "status 503; mensagem 'O banco de dados não está respondendo. Tente de novo em alguns minutos.'; a resposta não traz endereço do banco, usuário, senha nem rastro de erro"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Em um banco vazio, aplicar as migrações leva o esquema da versão zero até a última versão",
+      "exemplo": {
+        "entrada": "PostgreSQL no ar com um banco recém-criado, sem nenhuma migração aplicada; roda a aplicação das migrações",
+        "saida": "termina sem erro; a versão registrada no banco é a da última migração do repositório"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Aplicar as migrações de novo em um banco já atualizado não muda nada e não dá erro",
+      "exemplo": {
+        "entrada": "mesmo banco de c3, já na última versão; roda a aplicação das migrações outra vez",
+        "saida": "termina sem erro; nenhuma migração aplicada; a versão registrada continua a mesma de c3"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/nucleo/test_saude.py::test_saude_com_banco_conectado_responde_ok -q"},
+    {"criterio": "c2", "comando": "pytest tests/nucleo/test_saude.py::test_saude_sem_banco_responde_indisponivel -q"},
+    {"criterio": "c3", "comando": "pytest tests/nucleo/test_saude.py::test_migracoes_em_banco_vazio_chegam_a_ultima_versao -q"},
+    {"criterio": "c4", "comando": "pytest tests/nucleo/test_saude.py::test_migracoes_reaplicadas_nao_mudam_nada -q"}
+  ],
+  "evidencia": null
+}
