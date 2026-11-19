@@ -40,6 +40,7 @@ Cada regra traz `[origem]`. Sem `vale` ou `expira`, ela vale sempre e não expir
 
 ## 4. Onde achar o resto (leia só quando a tarefa pedir)
 
+- `ARCHITECTURE.md`: mapa das pastas, dependências e invariantes. Leia antes de criar arquivo ou importar outro módulo.
 - `features/<ID>.json`: o que entregar e como provar. Leia ao começar uma feature.
 - `progress/<ID>.md`: de onde parou. Leia ao retomar; atualize ao terminar.
 - `planos/<ID>/plan.md` e `tasks.md`: o que decidir e o que fazer. Leia ao implementar ou escrever testes; as tasks mandam. Só um humano marca o plan como aprovado.
