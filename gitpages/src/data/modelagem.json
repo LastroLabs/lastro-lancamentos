@@ -1,0 +1,916 @@
+{
+  "entidades": [
+    {
+      "id": "escritorio",
+      "nome": "ESCRITORIO",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "BD-02"
+      ]
+    },
+    {
+      "id": "usuario",
+      "nome": "USUARIO",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "ARQ-03"
+      ]
+    },
+    {
+      "id": "membro",
+      "nome": "MEMBRO",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "P-01",
+        "P-02",
+        "P-09"
+      ]
+    },
+    {
+      "id": "sessao",
+      "nome": "SESSAO",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "ARQ-03",
+        "P-01"
+      ]
+    },
+    {
+      "id": "cliente",
+      "nome": "CLIENTE",
+      "grupo": "Identidade e carteira",
+      "modulo": "cadastro",
+      "decisoes": [
+        "P-02",
+        "P-02a",
+        "P-11"
+      ]
+    },
+    {
+      "id": "atribuicao",
+      "nome": "ATRIBUICAO",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "D-07",
+        "D-09"
+      ]
+    },
+    {
+      "id": "conta_bancaria",
+      "nome": "CONTA_BANCARIA",
+      "grupo": "Cadastro e plano contábil",
+      "modulo": "cadastro",
+      "decisoes": [
+        "BD-02",
+        "P-09"
+      ]
+    },
+    {
+      "id": "socio",
+      "nome": "SOCIO",
+      "grupo": "Cadastro e plano contábil",
+      "modulo": "cadastro",
+      "decisoes": [
+        "P-09"
+      ]
+    },
+    {
+      "id": "plano_contas",
+      "nome": "PLANO_CONTAS",
+      "grupo": "Cadastro e plano contábil",
+      "modulo": "cadastro",
+      "decisoes": [
+        "P-10",
+        "P-11"
+      ]
+    },
+    {
+      "id": "conta_contabil",
+      "nome": "CONTA_CONTABIL",
+      "grupo": "Cadastro e plano contábil",
+      "modulo": "cadastro",
+      "decisoes": [
+        "P-11",
+        "BD-02"
+      ]
+    },
+    {
+      "id": "competencia",
+      "nome": "COMPETENCIA",
+      "grupo": "Envio e conferência",
+      "modulo": "envio",
+      "decisoes": []
+    },
+    {
+      "id": "link_cliente",
+      "nome": "LINK_CLIENTE",
+      "grupo": "Envio e conferência",
+      "modulo": "acesso",
+      "decisoes": [
+        "D-06",
+        "P-09"
+      ]
+    },
+    {
+      "id": "arquivo",
+      "nome": "ARQUIVO",
+      "grupo": "Envio e conferência",
+      "modulo": "envio",
+      "decisoes": [
+        "D-06",
+        "BD-03",
+        "ARQ-04"
+      ]
+    },
+    {
+      "id": "extrato",
+      "nome": "EXTRATO",
+      "grupo": "Envio e conferência",
+      "modulo": "leitura",
+      "decisoes": [
+        "D-04"
+      ]
+    },
+    {
+      "id": "movimentacao",
+      "nome": "MOVIMENTACAO",
+      "grupo": "Envio e conferência",
+      "modulo": "leitura",
+      "decisoes": [
+        "BD-05"
+      ]
+    },
+    {
+      "id": "origem_movimentacao",
+      "nome": "ORIGEM_MOVIMENTACAO",
+      "grupo": "Envio e conferência",
+      "modulo": "leitura",
+      "decisoes": []
+    },
+    {
+      "id": "validacao",
+      "nome": "VALIDACAO",
+      "grupo": "Envio e conferência",
+      "modulo": "validacao",
+      "decisoes": []
+    },
+    {
+      "id": "regra_classificacao",
+      "nome": "REGRA_CLASSIFICACAO",
+      "grupo": "Classificação e revisão",
+      "modulo": "classificacao",
+      "decisoes": [
+        "D-02",
+        "D-08",
+        "P-11"
+      ]
+    },
+    {
+      "id": "sugestao",
+      "nome": "SUGESTAO",
+      "grupo": "Classificação e revisão",
+      "modulo": "classificacao",
+      "decisoes": [
+        "D-03",
+        "D-08",
+        "ARQ-06"
+      ]
+    },
+    {
+      "id": "pergunta",
+      "nome": "PERGUNTA",
+      "grupo": "Classificação e revisão",
+      "modulo": "perguntas",
+      "decisoes": [
+        "D-08"
+      ]
+    },
+    {
+      "id": "pergunta_item",
+      "nome": "PERGUNTA_ITEM",
+      "grupo": "Classificação e revisão",
+      "modulo": "perguntas",
+      "decisoes": []
+    },
+    {
+      "id": "pergunta_opcao",
+      "nome": "PERGUNTA_OPCAO",
+      "grupo": "Classificação e revisão",
+      "modulo": "perguntas",
+      "decisoes": []
+    },
+    {
+      "id": "resposta",
+      "nome": "RESPOSTA",
+      "grupo": "Classificação e revisão",
+      "modulo": "perguntas",
+      "decisoes": []
+    },
+    {
+      "id": "revisao",
+      "nome": "REVISAO",
+      "grupo": "Classificação e revisão",
+      "modulo": "revisao",
+      "decisoes": []
+    },
+    {
+      "id": "exportacao",
+      "nome": "EXPORTACAO",
+      "grupo": "Exportação",
+      "modulo": "exportacao",
+      "decisoes": [
+        "D-05",
+        "BD-04",
+        "BD-05"
+      ]
+    },
+    {
+      "id": "exportacao_item",
+      "nome": "EXPORTACAO_ITEM",
+      "grupo": "Exportação",
+      "modulo": "exportacao",
+      "decisoes": [
+        "D-05"
+      ]
+    },
+    {
+      "id": "exportacao_validacao",
+      "nome": "EXPORTACAO_VALIDACAO",
+      "grupo": "Exportação",
+      "modulo": "exportacao",
+      "decisoes": []
+    }
+  ],
+  "vinculos": [
+    {
+      "requisito": "RF-AUT-01",
+      "entidades": [
+        "usuario",
+        "membro",
+        "sessao"
+      ],
+      "regra": "Identidade e sessão individuais; eventos identificam o membro autor.",
+      "decisoes": [
+        "ARQ-03"
+      ]
+    },
+    {
+      "requisito": "RF-AUT-02",
+      "entidades": [
+        "membro",
+        "cliente",
+        "atribuicao"
+      ],
+      "regra": "Chefe vê os clientes do escritório; contador consulta somente atribuições vigentes.",
+      "decisoes": [
+        "D-07",
+        "D-09",
+        "P-01"
+      ]
+    },
+    {
+      "requisito": "RF-AUT-03",
+      "entidades": [
+        "membro",
+        "cliente",
+        "atribuicao"
+      ],
+      "regra": "Papel de chefe autoriza cadastro de contador, cliente e atribuição.",
+      "decisoes": [
+        "P-02"
+      ]
+    },
+    {
+      "requisito": "RF-AUT-04",
+      "entidades": [
+        "atribuicao",
+        "cliente",
+        "sessao"
+      ],
+      "regra": "Troca transacional da atribuição e versão de acesso; sessão aberta não conserva autorização revogada.",
+      "decisoes": [
+        "D-09"
+      ]
+    },
+    {
+      "requisito": "RF-SEG-01",
+      "entidades": [
+        "link_cliente"
+      ],
+      "regra": "Token imprevisível, hash, revogação e validade padrão configurável de 7 dias.",
+      "decisoes": [
+        "D-06",
+        "P-09"
+      ]
+    },
+    {
+      "requisito": "RF-SEG-02",
+      "entidades": [
+        "escritorio",
+        "membro",
+        "cliente"
+      ],
+      "regra": "Escopo nas chaves e autorização/RLS em leitura e escrita; recurso externo à carteira não revela existência.",
+      "decisoes": [
+        "BD-02",
+        "P-01"
+      ]
+    },
+    {
+      "requisito": "RF-SEG-03",
+      "entidades": [
+        "sugestao"
+      ],
+      "regra": "Gateway remove identificadores e pseudonimiza todos os nomes antes de cada chamada; só metadados sanitizados são persistidos.",
+      "decisoes": [
+        "D-03",
+        "ARQ-06"
+      ]
+    },
+    {
+      "requisito": "RF-CAD-01",
+      "entidades": [
+        "cliente",
+        "membro"
+      ],
+      "regra": "Somente o chefe cadastra nome e CNPJ; depois da atribuição o cliente aparece na carteira do contador.",
+      "decisoes": [
+        "P-02",
+        "P-02a",
+        "P-13"
+      ]
+    },
+    {
+      "requisito": "RF-CAD-02",
+      "entidades": [
+        "cliente",
+        "conta_bancaria"
+      ],
+      "regra": "Cadastro de uma ou mais contas com banco e apelido.",
+      "decisoes": [
+        "P-09"
+      ]
+    },
+    {
+      "requisito": "RF-CAD-03",
+      "entidades": [
+        "plano_contas",
+        "conta_contabil",
+        "cliente"
+      ],
+      "regra": "Importação valida código/nome e linha inválida; nova publicação substitui o plano vigente.",
+      "decisoes": [
+        "P-09",
+        "P-10",
+        "P-11",
+        "P-13"
+      ]
+    },
+    {
+      "requisito": "RF-CAD-04",
+      "entidades": [
+        "cliente",
+        "plano_contas",
+        "conta_contabil"
+      ],
+      "regra": "Transitória pertence ao plano vigente; sem ela não há exportação. Nova carga pode deixá-la não configurada.",
+      "decisoes": [
+        "P-09",
+        "P-11",
+        "P-13"
+      ]
+    },
+    {
+      "requisito": "RF-CAD-06",
+      "entidades": [
+        "socio",
+        "cliente"
+      ],
+      "regra": "Sócios cadastrados pelo nome para reconhecimento posterior, sem transformar coincidência de prefixo em prova de identidade.",
+      "decisoes": [
+        "P-09"
+      ]
+    },
+    {
+      "requisito": "RF-ENV-01",
+      "entidades": [
+        "competencia",
+        "link_cliente"
+      ],
+      "regra": "Link público restrito ao cliente e mês; emissão respeita autorização no servidor.",
+      "decisoes": [
+        "P-09"
+      ]
+    },
+    {
+      "requisito": "RF-ENV-02",
+      "entidades": [
+        "arquivo",
+        "link_cliente"
+      ],
+      "regra": "Vários arquivos compartilham grupo de envio; PDF/OFX e limite configurável atual de 20 MiB por arquivo.",
+      "decisoes": [
+        "D-06"
+      ]
+    },
+    {
+      "requisito": "RF-ENV-03",
+      "entidades": [
+        "competencia",
+        "arquivo",
+        "validacao"
+      ],
+      "regra": "Status não enviado/parcial/enviado é derivado do envio e da cobertura publicada.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-ENV-04",
+      "entidades": [
+        "arquivo",
+        "extrato",
+        "competencia",
+        "validacao"
+      ],
+      "regra": "Complemento produz novo conjunto e refaz as conferências afetadas.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-LEI-01",
+      "entidades": [
+        "arquivo",
+        "extrato"
+      ],
+      "regra": "Formato detectado automaticamente e leitor/versionamento preservados; formato não suportado gera aviso.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-LEI-02",
+      "entidades": [
+        "extrato",
+        "movimentacao",
+        "origem_movimentacao"
+      ],
+      "regra": "OFX de qualquer banco sem cadastro prévio de leitor por banco; preservar dados e contagem das transações.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-LEI-03",
+      "entidades": [
+        "extrato",
+        "arquivo"
+      ],
+      "regra": "Leitores PDF digital BB e Inter; terceiro banco parametrizado, sem entrega de banco adicional confirmada.",
+      "decisoes": [
+        "D-04"
+      ]
+    },
+    {
+      "requisito": "RF-LEI-04",
+      "entidades": [
+        "extrato",
+        "conta_bancaria"
+      ],
+      "regra": "Banco e período identificados e exibidos; distinguir período declarado e datas de movimentação.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-LEI-05",
+      "entidades": [
+        "movimentacao",
+        "origem_movimentacao",
+        "arquivo"
+      ],
+      "regra": "ID externo estável deduplica por conta/origem; linhas iguais sem ID são preservadas e sinalizadas.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-VAL-01",
+      "entidades": [
+        "extrato",
+        "movimentacao",
+        "validacao"
+      ],
+      "regra": "Conferência determinística em centavos; saldo divergente bloqueia classificação e perguntas.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-VAL-02",
+      "entidades": [
+        "origem_movimentacao",
+        "validacao"
+      ],
+      "regra": "Saldos por linha/dia permitem localizar a primeira divergência na menor granularidade disponível.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-VAL-03",
+      "entidades": [
+        "extrato",
+        "conta_bancaria",
+        "competencia",
+        "validacao"
+      ],
+      "regra": "Comparar continuidade entre meses da mesma conta; ausência do anterior é não verificado.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-VAL-04",
+      "entidades": [
+        "extrato",
+        "validacao",
+        "competencia"
+      ],
+      "regra": "Cobertura incompleta gera aviso com última data; saldos que fecham não comprovam sozinhos o período.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-VAL-05",
+      "entidades": [
+        "validacao",
+        "exportacao_validacao"
+      ],
+      "regra": "Bloquear exportação de reprovado sem liberação explícita com autor, instante, motivo e versão.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-AVI-01",
+      "entidades": [
+        "validacao",
+        "arquivo"
+      ],
+      "regra": "A página acompanha o processamento e mostra ao cliente a falha e o que falta no próprio fluxo de envio.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-AVI-02",
+      "entidades": [],
+      "regra": "Catálogo de mensagens e revisão da interface em português simples: descrever ocorrência e próximo passo. Não exige tabela própria.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-01",
+      "entidades": [
+        "sugestao",
+        "plano_contas",
+        "conta_contabil"
+      ],
+      "regra": "Somente conta válida do plano vigente do cliente ou ausência de conta.",
+      "decisoes": [
+        "P-11"
+      ]
+    },
+    {
+      "requisito": "RF-CLA-02a",
+      "entidades": [
+        "regra_classificacao",
+        "conta_contabil"
+      ],
+      "regra": "Palavras-chave e conta de destino por cliente e tipo reconhecido.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-02b",
+      "entidades": [
+        "conta_bancaria",
+        "movimentacao",
+        "sugestao"
+      ],
+      "regra": "Parear saída/entrada de mesmo valor e data entre contas próprias, sem receita ou despesa.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-02c",
+      "entidades": [
+        "socio",
+        "cliente",
+        "movimentacao",
+        "sugestao"
+      ],
+      "regra": "Reconhecimento por nome/prefixo distingue entrada e saída; ambas a confirmar e entrada nunca como receita.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-03",
+      "entidades": [
+        "regra_classificacao",
+        "revisao"
+      ],
+      "regra": "Histórico usa contraparte normalizada e direção previamente aceitas no próprio cliente.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-04",
+      "entidades": [
+        "movimentacao",
+        "revisao",
+        "sugestao"
+      ],
+      "regra": "Semelhança textual consulta movimentos aprovados do mesmo cliente; registrar origem parecidas.",
+      "decisoes": [
+        "BD-06"
+      ]
+    },
+    {
+      "requisito": "RF-CLA-05",
+      "entidades": [
+        "sugestao",
+        "regra_classificacao"
+      ],
+      "regra": "IA somente após regras, histórico e parecidas não resolverem; registrar a tentativa.",
+      "decisoes": [
+        "ARQ-06"
+      ]
+    },
+    {
+      "requisito": "RF-CLA-06",
+      "entidades": [
+        "sugestao"
+      ],
+      "regra": "Mostrar origem/motivo e confiança alta, média ou baixa; critérios precisam ser documentados.",
+      "decisoes": [
+        "D-08"
+      ]
+    },
+    {
+      "requisito": "RF-CLA-07",
+      "entidades": [
+        "sugestao",
+        "pergunta",
+        "pergunta_item"
+      ],
+      "regra": "Abaixo do limiar, não aplicar conta e gerar pergunta; não fixar valor antes da calibração.",
+      "decisoes": [
+        "D-08"
+      ]
+    },
+    {
+      "requisito": "RF-CLA-09",
+      "entidades": [
+        "regra_classificacao",
+        "sugestao"
+      ],
+      "regra": "Prioridade e regra vencedora explícitas; a ordem definitiva de precedência permanece a definir.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-CLA-10",
+      "entidades": [
+        "regra_classificacao",
+        "sugestao"
+      ],
+      "regra": "Tipo sem conta configurada segue para a camada seguinte e produz aviso ao contador.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-MAQ-01",
+      "entidades": [
+        "regra_classificacao",
+        "sugestao"
+      ],
+      "regra": "Classificação mínima de créditos de adquirentes prevista, mas desativada até confirmação. Não concilia vendas e taxas.",
+      "decisoes": [
+        "D-02"
+      ]
+    },
+    {
+      "requisito": "RF-PER-01",
+      "entidades": [
+        "pergunta",
+        "pergunta_item",
+        "movimentacao"
+      ],
+      "regra": "Agrupar por contraparte e competência, preservando todos os movimentos do grupo.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PER-02",
+      "entidades": [
+        "pergunta_opcao",
+        "resposta",
+        "link_cliente"
+      ],
+      "regra": "Uma escolha registra resposta; outro aceita texto livre pelo link válido.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PER-03",
+      "entidades": [
+        "pergunta_item",
+        "movimentacao"
+      ],
+      "regra": "Apresentar data, valor e descrição de cada linha associada à pergunta.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PER-04",
+      "entidades": [
+        "resposta",
+        "movimentacao"
+      ],
+      "regra": "Resposta não sei não atribui conta e mantém a pendência.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PER-05",
+      "entidades": [
+        "regra_classificacao",
+        "pergunta_opcao",
+        "resposta",
+        "sugestao"
+      ],
+      "regra": "Mapa configurável converte resposta em sugestão de origem cliente, sujeita à revisão.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-APR-01",
+      "entidades": [
+        "revisao",
+        "regra_classificacao",
+        "resposta"
+      ],
+      "regra": "Resposta só publica aprendizado após aceite do contador.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-APR-02",
+      "entidades": [
+        "revisao",
+        "regra_classificacao"
+      ],
+      "regra": "Correção encerra a versão anterior e passa a valer para as próximas ocorrências.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-APR-03",
+      "entidades": [
+        "regra_classificacao",
+        "cliente"
+      ],
+      "regra": "Histórico e regras sempre no escopo do cliente, sem aprendizado compartilhado entre clientes.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REV-01",
+      "entidades": [
+        "movimentacao",
+        "sugestao",
+        "resposta"
+      ],
+      "regra": "Três grupos exclusivos e contagens; grupo de apresentação não equivale a revisão concluída.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REV-02",
+      "entidades": [
+        "revisao",
+        "movimentacao"
+      ],
+      "regra": "Decisão com autor/data e versão; aceite em lote restrito aos IDs e versões visíveis.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REV-03",
+      "entidades": [
+        "validacao",
+        "extrato"
+      ],
+      "regra": "Exibir resultado e motivo da conferência na revisão.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REV-04",
+      "entidades": [
+        "revisao",
+        "exportacao_item",
+        "cliente"
+      ],
+      "regra": "Não pendentes exigem revisão válida; pendentes saem na transitória, marcadas.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-EXP-01",
+      "entidades": [
+        "exportacao",
+        "exportacao_item"
+      ],
+      "regra": "Preservar campos e versão de layout; produção depende de importação real no Domínio.",
+      "decisoes": [
+        "D-05"
+      ]
+    },
+    {
+      "requisito": "RF-EXP-02",
+      "entidades": [
+        "exportacao_item",
+        "cliente"
+      ],
+      "regra": "Toda pendência usa a conta transitória vigente e marca explícita na planilha.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-EXP-03",
+      "entidades": [
+        "exportacao",
+        "exportacao_item",
+        "exportacao_validacao"
+      ],
+      "regra": "Conferir quantidade, entradas e saídas contra o conjunto vigente, sem omitir linhas.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-EXP-04",
+      "entidades": [
+        "cliente",
+        "conta_bancaria",
+        "regra_classificacao",
+        "exportacao"
+      ],
+      "regra": "Configuração fica com o cliente após reatribuição; lote preserva a configuração utilizada.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-AUT-05",
+      "entidades": [
+        "atribuicao"
+      ],
+      "regra": "Vigências e autoria sustentam o histórico de atribuições (Should).",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PER-06",
+      "entidades": [
+        "pergunta",
+        "resposta",
+        "link_cliente"
+      ],
+      "regra": "Respostas persistidas permitem retomada pelo link enquanto válido (Should).",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-DOC-01",
+      "entidades": [
+        "arquivo"
+      ],
+      "regra": "Objeto privado e metadados permitem retenção e download; política de retenção depende de definição (Should).",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REG-01",
+      "entidades": [
+        "regra_classificacao",
+        "revisao"
+      ],
+      "regra": "Versões e vigência sustentam edição/desativação; interface e regras de gestão continuam Should.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-REV-05",
+      "entidades": [
+        "sugestao",
+        "movimentacao"
+      ],
+      "regra": "Confiança persistida permite ordenação da revisão; funcionalidade Should.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-PAI-01",
+      "entidades": [
+        "competencia",
+        "arquivo",
+        "pergunta",
+        "revisao",
+        "exportacao"
+      ],
+      "regra": "Status é derivável dos registros; a tela única da carteira continua Should.",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-OBS-01",
+      "entidades": [
+        "arquivo",
+        "extrato",
+        "validacao",
+        "sugestao",
+        "revisao"
+      ],
+      "regra": "Registros versionados dão suporte à reconstrução; instrumentação completa e retenção precisam ser implementadas (Should).",
+      "decisoes": []
+    },
+    {
+      "requisito": "RF-OBS-02",
+      "entidades": [
+        "arquivo",
+        "resposta",
+        "sugestao",
+        "revisao"
+      ],
+      "regra": "Timestamps e decisões oferecem base para métricas; cálculo, metas e gabarito dependem da funcionalidade Should.",
+      "decisoes": []
+    }
+  ]
+}

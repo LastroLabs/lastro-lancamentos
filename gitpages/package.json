@@ -6,6 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "check:docs": "node scripts/verificar-modelagem.mjs && node scripts/verificar-interacoes-modelagem.mjs",
+    "prebuild": "node scripts/verificar-modelagem.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",

@@ -1,0 +1,22 @@
+---
+title: Rastreabilidade da modelagem
+description: Requisitos, prioridades, critérios, entidades, decisões e fichas relacionadas ao modelo do MVP.
+---
+
+import ModelagemRastreabilidade from '../../../components/ModelagemRastreabilidade.astro';
+
+Os vínculos abaixo relacionam os **56 Must** à regra de dados e às entidades que a sustentam. O texto e o critério vêm do catálogo atual; as fichas vêm dos metadados já publicados no Pages. Há apoio estrutural documentado para oito Should. Os demais requisitos permanecem identificados como sem vínculo documentado ou fora do escopo.
+
+:::note[Significado de vínculo documentado]
+O vínculo especifica uma responsabilidade prevista no modelo. Não indica implementação, estado `passing` ou teste executado. As fichas marcadas **em revisão** ainda estão fora da `developer`, conforme o catálogo do site.
+:::
+
+## Consulta
+
+<ModelagemRastreabilidade />
+
+## Percurso de uma alteração
+
+Parta do [Must](/lastro-lancamentos/modelagem/rastreabilidade/?prioridade=Must), confirme o critério e a ficha e consulte as [entidades](/lastro-lancamentos/modelagem/entidades/). Verifique [chaves](/lastro-lancamentos/modelagem/modelo-logico/), [operações e integridade](/lastro-lancamentos/modelagem/modelo-fisico/) e [decisões](/lastro-lancamentos/modelagem/decisoes/). No sentido inverso, cada entidade oferece uma consulta dos requisitos que dependem dela.
+
+A [rastreabilidade geral](/lastro-lancamentos/requisitos/rastreabilidade/) conserva a origem, as dores e as frentes. O [backlog](/lastro-lancamentos/requisitos/backlog/) mantém as histórias e a ordem de construção. As fontes de estado e evidência continuam sendo as fichas e os comandos do [harness](/lastro-lancamentos/harness/documentos-e-comandos/).

@@ -61,3 +61,7 @@ Cada chamada fica registrada com provedor, modelo, versão de prompt, latência 
 Fora do MVP (Should, D-01). Se entrar, será via modelo multimodal no mesmo gateway de IA, sempre com conferência de saldo.
 
 Fontes: Lastro — Arquitetura do Sistema, seções 5.3, 5.4, 6 e 8; Banco de dados para o Lastro v1.0; Estudo de Avaliação com LLM; Documentação e Arquitetura do Projeto Contábil; Fluxo de desenvolvimento do Lastro.
+
+## Relação com a modelagem
+
+[SUGESTAO](/lastro-lancamentos/modelagem/entidades/#sugestao) registra origem, confiança, evidências e metadados sanitizados. [REGRA_CLASSIFICACAO](/lastro-lancamentos/modelagem/entidades/#regra_classificacao) preserva precedência e aprendizado aprovado do cliente. A [especificação das operações](/lastro-lancamentos/modelagem/modelo-fisico/) aplica a pseudonimização de todos os nomes aprovada em D-03 e mantém a calibração de D-08 pendente.

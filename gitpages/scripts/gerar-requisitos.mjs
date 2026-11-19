@@ -124,9 +124,9 @@ const expandeRFs = (texto) => {
 };
 
 const decisoesCatalogo = [];
-for (const [id, decisao, afeta, recomendacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões dos requisitos')) {
+for (const [id, decisao, afeta, recomendacao, status, deliberacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões dos requisitos')) {
 	if (!/^D-0\d$/.test(id)) continue;
-	decisoesCatalogo.push({ id, decisao, afeta: expandeRFs(afeta), recomendacao });
+	decisoesCatalogo.push({ id, decisao, afeta: expandeRFs(afeta), recomendacao, status, deliberacao });
 }
 if (decisoesCatalogo.length !== 9) throw new Error(`Esperava D-01 a D-09, achei ${decisoesCatalogo.length}`);
 for (const r of requisitos) {

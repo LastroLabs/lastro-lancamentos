@@ -1,0 +1,10 @@
+---
+import { vinculoDoRequisito, linkModelagem } from '../data/modelagem';
+interface Props { requisito: string; }
+const { requisito } = Astro.props;
+const vinculo = vinculoDoRequisito(requisito);
+---
+{vinculo && <a class="modelo-link" href={linkModelagem(requisito)}>Modelagem: {vinculo.entidades.length ? `${vinculo.entidades.length} entidades e regra de dados` : 'regra da aplicação'}</a>}
+<style>
+  .modelo-link { display: block; margin-top: .4rem; font-size: .8rem; }
+</style>

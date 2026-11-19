@@ -13,6 +13,7 @@ import {
 	linkRequisito,
 } from '../data/requisitos';
 import Chips from './ReqChips.astro';
+import ModelagemVinculos from './ModelagemVinculos.astro';
 
 interface Props {
 	vista: 'dores' | 'fontes' | 'frentes' | 'decisoes' | 'matriz';
@@ -170,7 +171,7 @@ const gruposFrente = [
 							<td class={classePrioridade(r.prioridade)}>
 								<span class="rt-prio">{r.prioridade}</span>
 							</td>
-							<td>{r.area}</td>
+							<td>{r.area}<ModelagemVinculos requisito={r.id} /></td>
 							<td>{origens(r).join(', ')}</td>
 							<td>{r.dores.join(' · ') || '·'}</td>
 							<td>{r.frente ?? '·'}</td>

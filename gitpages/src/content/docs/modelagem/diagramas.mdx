@@ -1,0 +1,122 @@
+---
+title: Diagramas da modelagem
+description: Vistas do relacionamento entre as entidades propostas para o MVP.
+---
+
+import Mermaid from '../../../components/Mermaid.astro';
+import ReqChips from '../../../components/ReqChips.astro';
+
+As vistas mostram os vínculos centrais, com até cinco entidades por diagrama. `||` significa exatamente um; `o|`, zero ou um; `o{`, zero ou vários; `|{`, um ou vários. O [modelo lógico](/lastro-lancamentos/modelagem/modelo-logico/) detalha escopo, FKs e unicidades que não aparecem nas vistas.
+
+## Identidade e sessão
+
+<Mermaid code={`erDiagram
+  direction TB
+  ESCRITORIO ||--o{ MEMBRO : possui
+  USUARIO ||--o{ MEMBRO : identifica
+  MEMBRO ||--o{ SESSAO : autentica
+`} />
+
+[USUARIO](/lastro-lancamentos/modelagem/entidades/#usuario) mantém a identidade; [MEMBRO](/lastro-lancamentos/modelagem/entidades/#membro), o papel no [ESCRITORIO](/lastro-lancamentos/modelagem/entidades/#escritorio); [SESSAO](/lastro-lancamentos/modelagem/entidades/#sessao), a validade e o encerramento. A sessão no servidor decorre de ARQ-03. A separação não autoriza compartilhar carteiras.
+
+<ReqChips ids={['RF-AUT-01','RF-AUT-03','RF-SEG-02']} />
+
+## Cliente e atribuição
+
+<Mermaid code={`erDiagram
+  direction TB
+  ESCRITORIO ||--o{ CLIENTE : atende
+  CLIENTE ||--o{ ATRIBUICAO : conserva
+  MEMBRO ||--o{ ATRIBUICAO : assume
+`} />
+
+[CLIENTE](/lastro-lancamentos/modelagem/entidades/#cliente) pertence a um escritório; [ATRIBUICAO](/lastro-lancamentos/modelagem/entidades/#atribuicao) preserva responsáveis sucessivos e o autor da mudança. O índice parcial limita a um responsável vigente, conforme D-09 provisória. O chefe cadastra o cliente por P-02/P-02a; a atribuição determina a carteira do contador.
+
+<ReqChips ids={['RF-AUT-02','RF-AUT-04','RF-CAD-01','RF-AUT-05']} />
+
+## Contas e plano
+
+<Mermaid code={`erDiagram
+  direction TB
+  CLIENTE ||--o{ CONTA_BANCARIA : possui
+  CLIENTE ||--o{ SOCIO : cadastra
+  CLIENTE ||--o{ PLANO_CONTAS : importa
+  PLANO_CONTAS ||--o{ CONTA_CONTABIL : contem
+  CONTA_CONTABIL o|--o{ CONTA_BANCARIA : representa
+`} />
+
+[CONTA_BANCARIA](/lastro-lancamentos/modelagem/entidades/#conta_bancaria), [SOCIO](/lastro-lancamentos/modelagem/entidades/#socio) e [PLANO_CONTAS](/lastro-lancamentos/modelagem/entidades/#plano_contas) pertencem ao cliente. [CONTA_CONTABIL](/lastro-lancamentos/modelagem/entidades/#conta_contabil) pertence a uma versão do plano. O vínculo contábil da conta bancária pode estar ausente durante o cadastro. A substituição do plano e a invalidação da transitória seguem P-11; a hierarquia contábil permanece no mesmo plano.
+
+<ReqChips ids={['RF-CAD-02','RF-CAD-03','RF-CAD-04','RF-CAD-06']} />
+
+## Envio e leitura
+
+<Mermaid code={`erDiagram
+  direction TB
+  COMPETENCIA ||--o{ LINK_CLIENTE : autoriza
+  LINK_CLIENTE ||--o{ ARQUIVO : recebe
+  ARQUIVO ||--o{ EXTRATO : interpreta
+  CONTA_BANCARIA ||--o{ EXTRATO : identifica
+`} />
+
+[COMPETENCIA](/lastro-lancamentos/modelagem/entidades/#competencia) organiza cliente e mês; [LINK_CLIENTE](/lastro-lancamentos/modelagem/entidades/#link_cliente) autoriza envio e respostas; [ARQUIVO](/lastro-lancamentos/modelagem/entidades/#arquivo) registra o documento; [EXTRATO](/lastro-lancamentos/modelagem/entidades/#extrato) preserva a interpretação versionada. O trabalho assíncrono é da fila Procrastinate, externa a esta vista de domínio.
+
+<ReqChips ids={['RF-SEG-01','RF-ENV-01','RF-ENV-02','RF-ENV-03','RF-ENV-04','RF-LEI-01']} />
+
+## Ocorrências e conferência
+
+<Mermaid code={`erDiagram
+  direction TB
+  EXTRATO ||--o{ ORIGEM_MOVIMENTACAO : evidencia
+  MOVIMENTACAO ||--|{ ORIGEM_MOVIMENTACAO : preserva
+  CONTA_BANCARIA ||--o{ MOVIMENTACAO : registra
+  CONTA_BANCARIA ||--o{ VALIDACAO : confere
+  EXTRATO o|--o{ VALIDACAO : fundamenta
+`} />
+
+[ORIGEM_MOVIMENTACAO](/lastro-lancamentos/modelagem/entidades/#origem_movimentacao) resolve a relação N:M entre extrato e [MOVIMENTACAO](/lastro-lancamentos/modelagem/entidades/#movimentacao). Cada fato publicado tem pelo menos uma ocorrência. [VALIDACAO](/lastro-lancamentos/modelagem/entidades/#validacao) pode avaliar o documento ou o conjunto da conta na competência. Saldo divergente bloqueia classificação e perguntas.
+
+<ReqChips ids={['RF-LEI-05','RF-VAL-01','RF-VAL-02','RF-VAL-03','RF-VAL-04','RF-VAL-05']} />
+
+## Sugestão, revisão e aprendizado
+
+<Mermaid code={`erDiagram
+  direction TB
+  MOVIMENTACAO ||--o{ SUGESTAO : recebe
+  MOVIMENTACAO ||--o{ REVISAO : registra
+  SUGESTAO o|--o{ REVISAO : orienta
+  REVISAO o|--o{ REGRA_CLASSIFICACAO : fundamenta
+`} />
+
+[SUGESTAO](/lastro-lancamentos/modelagem/entidades/#sugestao) não equivale a [REVISAO](/lastro-lancamentos/modelagem/entidades/#revisao). [REGRA_CLASSIFICACAO](/lastro-lancamentos/modelagem/entidades/#regra_classificacao) pode representar regra manual ou histórico aprovado; a regra aprendida depende da decisão humana que a fundamentou. Regra sem conta configurada encaminha à próxima camada.
+
+<ReqChips ids={['RF-CLA-01','RF-CLA-03','RF-CLA-05','RF-CLA-06','RF-CLA-10','RF-APR-01','RF-APR-02','RF-APR-03']} />
+
+## Perguntas e respostas
+
+<Mermaid code={`erDiagram
+  direction TB
+  PERGUNTA ||--o{ PERGUNTA_ITEM : apresenta
+  MOVIMENTACAO ||--o{ PERGUNTA_ITEM : participa
+  PERGUNTA ||--|{ PERGUNTA_OPCAO : oferece
+  PERGUNTA ||--o| RESPOSTA : recebe
+  PERGUNTA_OPCAO ||--o{ RESPOSTA : seleciona
+`} />
+
+[PERGUNTA](/lastro-lancamentos/modelagem/entidades/#pergunta), [PERGUNTA_ITEM](/lastro-lancamentos/modelagem/entidades/#pergunta_item), [PERGUNTA_OPCAO](/lastro-lancamentos/modelagem/entidades/#pergunta_opcao) e [RESPOSTA](/lastro-lancamentos/modelagem/entidades/#resposta) preservam o agrupamento e a escolha. Pergunta publicada tem itens. No recorte, há até uma resposta por pergunta; a resposta também referencia o link autorizador da mesma competência. “Não sei” mantém a pendência.
+
+<ReqChips ids={['RF-PER-01','RF-PER-02','RF-PER-03','RF-PER-04','RF-PER-05']} />
+
+## Exportação e evidências
+
+<Mermaid code={`erDiagram
+  direction TB
+  COMPETENCIA ||--o{ EXPORTACAO : congela
+  EXPORTACAO ||--o{ EXPORTACAO_ITEM : inclui
+  EXPORTACAO ||--o{ EXPORTACAO_VALIDACAO : preserva
+  VALIDACAO ||--o{ EXPORTACAO_VALIDACAO : fundamenta
+`} />
+
+[EXPORTACAO](/lastro-lancamentos/modelagem/entidades/#exportacao), [EXPORTACAO_ITEM](/lastro-lancamentos/modelagem/entidades/#exportacao_item) e [EXPORTACAO_VALIDACAO](/lastro-lancamentos/modelagem/entidades/#exportacao_validacao) preservam o lote, os dados das linhas e as conferências utilizadas. Um lote em preparação pode não ter itens; liberar o download exige conferir o conjunto, as revisões e os totais. O layout permanece provisório até homologação.
+
+<ReqChips ids={['RF-EXP-01','RF-EXP-02','RF-EXP-03','RF-EXP-04','RF-REV-04','RF-VAL-05']} />

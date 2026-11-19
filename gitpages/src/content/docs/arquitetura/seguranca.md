@@ -72,3 +72,7 @@ Nenhum extrato, CNPJ, CPF, nome de cliente ou de escritório entra no git.
 :::
 
 Fontes: Lastro — Arquitetura do Sistema, seção 8; Banco de dados para o Lastro v1.0, p. 6; Lastro: guia do harness v0.1; Fluxo de desenvolvimento do Lastro.
+
+## Relação com a modelagem
+
+O [modelo lógico](/lastro-lancamentos/modelagem/modelo-logico/) repete o escopo nas chaves e relacionamentos. [MEMBRO](/lastro-lancamentos/modelagem/entidades/#membro), [SESSAO](/lastro-lancamentos/modelagem/entidades/#sessao), [ATRIBUICAO](/lastro-lancamentos/modelagem/entidades/#atribuicao) e [LINK_CLIENTE](/lastro-lancamentos/modelagem/entidades/#link_cliente) sustentam a autorização; as [operações](/lastro-lancamentos/modelagem/modelo-fisico/) descrevem revogação, 404 indistinguível e proteção das chamadas de IA.
