@@ -1,8 +1,8 @@
-# Lastro — ARCHITECTURE.md (v0.1, 19/11/2026)
+# Lastro — ARCHITECTURE.md (v0.2)
 
 Mapa do código para quem vai criar arquivo, mover código ou importar outro módulo. Diz **onde fica cada coisa** e **o que nunca pode acontecer**. O porquê e o detalhe ficam na fonte: `gitpages/src/content/docs/arquitetura/visao-geral.mdx` (aprovada em 18/11/2026, ARQ-01 a ARQ-08 e BD-01 a BD-08 em `docs/decisoes/DECISIONS.md`). Se este arquivo e a fonte divergirem, vale a fonte; avise.
 
-Este arquivo não lista fichas, estados nem progresso (isso é o `hx state`). Muda pouco: só quando a arquitetura mudar.
+**Este arquivo não guarda estado:** nem fichas, nem o que já existe ou falta, nem quem confere cada regra hoje. Isso vem do repositório, do `hx state` e de `docs/qualidade.md`. Ele só muda quando a arquitetura mudar (seção 9).
 
 ## 1. Visão em poucas linhas
 
@@ -31,7 +31,7 @@ src/lastro/                 backend, um pacote por módulo
   observability/            registro de decisões e métricas do piloto
   api/                      rotas FastAPI finas
   worker/                   tarefas Procrastinate
-web/src/                    frontend (scaffold na ficha WEB-01)
+web/src/                    frontend
   api/                      cliente HTTP de /api/v1
   components/               componentes compartilhados
   copy/                     textos de interface
@@ -41,15 +41,15 @@ web/src/                    frontend (scaffold na ficha WEB-01)
 tests/<module>/             testes de cada módulo, mesmo nome da pasta de src/lastro/
 tests/harness/, tests/ci/   testes do harness e da CI (não mexer ao implementar feature)
 migrations/                 Alembic, uma migração por PR
-fixtures/                   dados sintéticos gerados (`hx fixtures build`, HAR-03)
+fixtures/                   dados sintéticos gerados (`hx fixtures build`)
 layouts/dominio.yaml        layout da planilha do Domínio (PROVISÓRIO, D-05)
 features/ planos/ progress/ processo: fichas, planos e diário (ver AGENTS.md)
 tools/                      harness: harness.py, hx, hx.ps1
-docs/                       decisões, requisitos, segurança, templates; docs/modules/ (a criar)
+docs/                       decisões, requisitos, segurança, templates, docs/modules/
 gitpages/                   site de documentação (Astro/Starlight, pnpm)
 ```
 
-Hoje os pacotes de `src/lastro/` e `web/src/` existem vazios. Nomes de pastas e arquivos em inglês; textos de interface, documentos e fichas em português.
+Nomes de pastas e arquivos em inglês; textos de interface, documentos e fichas em português.
 
 ## 3. Dentro de um módulo
 
@@ -83,28 +83,30 @@ Um módulo pode ter outros arquivos internos (ex.: um leitor por banco em `parsi
             core/    observability/      (base)
 ```
 
-**Proposta deste arquivo, `[definir]` até aprovação:** `core/` não depende de nenhum módulo do Lastro; nenhum módulo importa `api/` nem `worker/`. Qualquer dependência fora das regras 1 a 4: pergunte antes de criar.
+A direção **entre** módulos de domínio é a da tabela de contratos (seção 6): quem produz um contrato não importa quem o consome.
 
-## 5. Invariantes
+**Proposta, `[definir]` até aprovação:** `core/` não depende de nenhum módulo do Lastro; nenhum módulo importa `api/` nem `worker/`. Qualquer dependência fora das regras 1 a 4: pergunte antes de criar.
 
-| # | Regra | Por quê | Quem confere hoje |
-|---|---|---|---|
-| I-1 | Só `ai/` importa SDK de provedor de LLM, e só depois de anonimizar (CPF, CNPJ, agência, conta e nomes de contraparte, D-03) | vazamento de dado pessoal; troca de provedor | ninguém ainda (planejado: import-linter no `hx verify`); IA-01/IA-02 testam a anonimização |
-| I-2 | `validation/` não importa `ai/`. Saldo é conferido por código; extrato que não fecha não segue para classificação nem perguntas | RF-VAL-01 | ninguém ainda (planejado: import-linter) |
-| I-3 | Dinheiro é `int` em centavos (BIGINT no banco). Nunca `float` | arredondamento | testes de cada ficha |
-| I-4 | Isolamento no servidor em toda requisição: escritório não vê outro; contador só vê clientes atribuídos. Duas camadas: autorização em `core/`/`api/` e RLS no banco | RF-SEG-01/02, RF-AUT-02 | testes NUC-02, NUC-03, ACE-03 |
-| I-5 | Sessão no servidor (não JWT com carteira embutida); reatribuir cliente revoga o acesso na hora, mesmo com sessão aberta | RF-AUT-04 | teste ACE-04 |
-| I-6 | Link do cliente: token de 32 bytes, guardado só como hash, com validade (D-06) e revogável. Rotas públicas só em `/api/v1/publico/{token}/…` | RF-SEG-01 | teste ACE-05 |
-| I-7 | `api/` e `worker/` nunca leem ou gravam tabela direto; só `repository.py` do próprio módulo toca as tabelas do módulo | fronteiras e RLS | ninguém ainda (planejado: import-linter) |
-| I-8 | Só `uploads/` e `export/` falam com o armazenamento de arquivos. Download sempre mediado pela API; sem URL assinada longa para contador | revogação imediata | ninguém ainda |
-| I-9 | Gravar o envio e criar a tarefa na fila é uma única transação (fila no Postgres) | não perder tarefa | sem ficha ainda |
-| I-10 | Nada é exportado sem revisão; pendentes saem na conta transitória, marcados. A exportação grava uma fotografia imutável e o hash do arquivo | RF-REV-04, RF-EXP-02 | sem ficha ainda |
-| I-11 | Layout do Domínio só em `layouts/dominio.yaml`; nenhuma coluna fixa no código | D-05 provisória | sem ficha ainda |
-| I-12 | Nenhum dado real em arquivo, teste, log ou prompt. Fixtures só sintéticas, geradas por semente | LGPD | `hx check-clean` (local e CI de PR) |
-| I-13 | Sugestões, revisões e chamadas de IA são gravadas como eventos versionados | RF-OBS-01, RF-CLA-06 | sem ficha ainda |
-| I-14 | Erros da API em RFC 9457 (`application/problem+json`), mensagem em português simples: o que aconteceu + o que fazer | RF-AVI-02 | sem ficha ainda |
+## 5. Invariantes de arquitetura
 
-"Ninguém ainda" quer dizer: o `hx verify` mostra `Arquitetura: PULADO`. Quebrar a regra não reprova nada hoje, mas reprova na revisão do PR.
+Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, saldo por código, exportação revisada, dado real) ficam no `AGENTS.md` (regras 1, 4, 6 e 8) e no `docs/SECURITY.md`, e **não se repetem aqui**. Os números seguem os do v0.1 (I-3 e I-12 saíram); não renumere.
+
+| # | Regra | Por quê |
+|---|---|---|
+| I-1 | Só `ai/` importa SDK de provedor de LLM, e só depois de anonimizar, nos termos da regra 5 do `AGENTS.md` e da D-03 | vazamento de dado pessoal; troca de provedor |
+| I-2 | `validation/` não importa `ai/`. Extrato que não fecha não segue para classificação nem perguntas | RF-VAL-01 |
+| I-4 | Isolamento no servidor em toda requisição, em duas camadas: autorização em `core/` e `api/`, e RLS no banco. Escritório não vê outro; contador só vê clientes atribuídos | RF-SEG-01/02, RF-AUT-02 |
+| I-5 | Sessão no servidor (não JWT com carteira embutida). Reatribuir cliente revoga o acesso na hora, mesmo com sessão aberta | RF-AUT-04 |
+| I-6 | Link do cliente: token de 32 bytes, guardado só como hash, com validade (D-06) e revogável. Rotas públicas só em `/api/v1/publico/{token}/…` | RF-SEG-01 |
+| I-7 | `api/` e `worker/` nunca leem ou gravam tabela direto; só o `repository.py` do próprio módulo toca as tabelas do módulo | fronteiras e RLS |
+| I-8 | Só `uploads/` e `export/` falam com o armazenamento. Download sempre mediado pela API; sem URL assinada longa para contador | revogação imediata |
+| I-9 | Gravar o envio e criar a tarefa na fila é uma única transação (fila no Postgres) | não perder tarefa |
+| I-10 | A exportação grava uma fotografia imutável e o hash do arquivo | RF-EXP-02 |
+| I-11 | Layout do Domínio só em `layouts/dominio.yaml`; nenhuma coluna fixa no código | D-05 provisória |
+| I-13 | Sugestões, revisões e chamadas de IA são gravadas como eventos versionados | RF-OBS-01, RF-CLA-06 |
+| I-14 | Erros da API em RFC 9457 (`application/problem+json`), mensagem em português simples: o que aconteceu + o que fazer | RF-AVI-02 |
+
+**Conferência:** I-1, I-2, I-7 e I-8 são de import e serão conferidas por import-linter no `hx verify`; as demais, por testes das fichas e pela revisão do PR. Quem confere cada uma hoje está em `docs/qualidade.md`. Sem checagem automática, quebrar a regra reprova na revisão, não no `hx verify`.
 
 ## 6. Contratos entre módulos (versão 0)
 
@@ -117,7 +119,7 @@ Um módulo pode ter outros arquivos internos (ex.: um leitor por banco em `parsi
 | questions → review | `RespostaCliente` |
 | review → export | `ItemRevisado` |
 
-`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Os nomes dos contratos, das tabelas e dos identificadores do código continuam em português até haver decisão.
+`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
 
 ## 7. Onde colocar código novo
 
@@ -131,19 +133,24 @@ Um módulo pode ter outros arquivos internos (ex.: um leitor por banco em `parsi
 | mudar esquema do banco | uma migração em `migrations/` por PR |
 | um leitor de banco novo | `parsing/` (D-04: banco novo não é entrega confirmada) |
 | texto para o usuário | `web/src/copy/` no front; mensagem do erro RFC 9457 no back |
-| dado de teste | gerado em `fixtures/` (HAR-03); nunca copiado de extrato real |
+| dado de teste | gerado em `fixtures/`; nunca copiado de extrato real |
 | regra específica de um módulo | `docs/modules/<module>.md`, não aqui |
+| um módulo ou pasta de primeiro nível novos | não crie: registre em `DECISIONS.md` e pergunte |
 
 ## 8. Fichas e pastas
 
 - O campo `modulo` da ficha é o nome da pasta (`core`, `access`, `registry`, `ai`...) ou `harness`/`ci`. A ficha só cria código na pasta do seu módulo e testes em `tests/<module>/`.
 - O prefixo do ID é histórico e não deriva da pasta: NUC → `core`, ACE → `access`, CAD → `registry`, IA → `ai`, HAR → `harness`, HX → `ci`.
 
-## 9. Em aberto (não decida sozinho)
+## 9. Manter este arquivo
 
-- `[definir]` Divergência de versão: a arquitetura fixa Python 3.14 (ARQ-08); o `Dockerfile` usa `python:3.12-slim`. A NUC-01 (c5) cobre o ambiente de verificação.
-- `[definir]` As propostas marcadas nas seções 4 e 6.
-- `[definir]` Checagem automática das seções 4 e 5 (import-linter no `hx verify`): ainda sem ficha.
+Mudou pasta, regra de dependência, invariante ou contrato? Atualize este arquivo **no mesmo PR**. O `/planejar` lê este arquivo e checa cada task contra as seções 4 e 7; o revisor confere no item **Escopo** da rubrica. Doc desatualizada é pior do que nenhuma: na dúvida, apague a linha.
+
+## 10. Em aberto (não decida sozinho)
+
+- `[definir]` Divergência de versão: a arquitetura fixa Python 3.14 (ARQ-08); o `Dockerfile` usa `python:3.12-slim`.
+- `[definir]` As propostas marcadas nas seções 4 e 6, e a checagem automática das invariantes de import (import-linter no `hx verify`).
+- `[definir]` Alinhar a I-1 à regra 5 do `AGENTS.md` (nomes de contraparte são proibidos até a D-03).
+- `[definir]` Contratos que parecem faltar na seção 6 (conferir na fonte): `uploads → parsing`, `registry → classification/export`, `classification → questions`.
 - `[definir]` Hospedagem, provedor de LLM, D-01 e D-08 (ver `docs/decisoes/DECISIONS.md`).
-- `[definir]` HAR-04 ainda usa os nomes antigos dos módulos.
 - `[definir]` Se `planos/`, `docs/decisoes/` e `docs/requisitos/` passam para inglês.
