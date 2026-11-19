@@ -3,20 +3,24 @@ title: Cronograma
 description: Quatro semanas até a demo ao vivo de 07/12/2026.
 ---
 
-O cronograma vigente é o da **estratégia de desenvolvimento** (Fluxo de desenvolvimento do Lastro, reunião de 10/11/2026). O progresso é medido em **features que passam**, não em horas. As metas e as datas são proposta.
+O cronograma vigente é o da **estratégia de desenvolvimento** (Fluxo de desenvolvimento do Lastro, reunião de 10/11/2026). O progresso é medido em **features que passam**, não em horas.
+
+Cada semana é uma **onda**: o campo `onda` da ficha (1 a 4) diz em que semana ela deve ficar `passing` (PROC-03, aprovada em 18/11/2026).
 
 ## Semanas e metas
 
-| Semana | Período | Foco | Meta acumulada (features `passing`) |
-|---|---|---|---|
-| S1 | 09/11 a 15/11 | Fundação | 6 de 39 |
-| S2 | 16/11 a 22/11 | Ritmo | 18 de 39 |
-| S3 | 23/11 a 29/11 | Integração | 32 de 39 |
-| S4 | 30/11 a 06/12 | Congelamento | 39 de 39 |
+| Semana | Onda | Período | Foco | Meta acumulada (features `passing`) |
+|---|---|---|---|---|
+| S1 | 1 | 09/11 a 15/11 | Fundação | 6 de 39 |
+| S2 | 2 | 16/11 a 22/11 | Ritmo | 18 de 39 |
+| S3 | 3 | 23/11 a 29/11 | Integração | 32 de 39 |
+| S4 | 4 | 30/11 a 06/12 | Congelamento | 39 de 39 |
+
+Na onda 1 contam só as fichas novas; HAR-02 e HX-10, que já estavam `passing`, ficam fora da conta (P-07, assumida). O primeiro lote de fichas foi escrito em 18/11 e está em revisão. Ver [Orquestração](/lastro-lancamentos/fluxo/orquestracao/#ondas-e-metas).
 
 ### S1 · Fundação
 
-- **11/11:** CI e `init` rodando em pelo menos 5 das 7 máquinas.
+- **11/11:** CI e ambiente rodando em pelo menos 5 das 7 máquinas. (O comando `init` do guia v0.1 não foi implementado; o ambiente é testado com `docker compose build` e `hx verify`.)
 - **13/11:** contratos congelados, `AGENTS.md` e features revisados, primeiro PR mesclado.
 - **15/11:** gerador de fixtures pronto e a jornada J1 em versão inicial.
 
@@ -29,7 +33,7 @@ O cronograma vigente é o da **estratégia de desenvolvimento** (Fluxo de desenv
 ### S3 · Integração
 
 - Meta acumulada: 32 features `passing`.
-- Jornadas E2E completas rodando no noturno.
+- Jornadas E2E completas rodando. (Planejado: o `hx verify --e2e` e o `noturno.yml` ainda não existem e não têm ficha.)
 - Revisão da lista de itens rebaixados com o time.
 
 ### S4 · Congelamento
@@ -61,4 +65,4 @@ A ordem segue o caminho do dado: primeiro alguém entra e envia, depois o sistem
 | 4 | Exportação: fotografia, Excel por YAML, conciliação | Perguntas com um toque; tela de exportação | Avisos em português simples; casos de defeito nas fixtures | Agrupamento de perguntas, aprendizado por cliente | Ciclo completo: envio → pergunta → revisão → planilha |
 | 4,5 | Deploy do piloto, backup testado, `check-clean` | Ajustes de usabilidade com a contadora | Correções do gabarito | Calibrar limite de confiança (D-08) | Importação real no Domínio (fecha D-05) |
 
-Fontes: Fluxo de desenvolvimento do Lastro (seção Cronograma); Lastro — Arquitetura do Sistema, seção 10; Requisitos funcionais v0.2.
+Fontes: Fluxo de desenvolvimento do Lastro (seção Cronograma); `docs/decisoes/DECISIONS.md` (18/11/2026); Lastro — Arquitetura do Sistema, seção 10; Requisitos funcionais v0.2.

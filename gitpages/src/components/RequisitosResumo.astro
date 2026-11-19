@@ -1,0 +1,220 @@
+---
+// Resumo dos requisitos: cards por prioridade, barra proporcional, indicadores e Must por área.
+import {
+	PRIORIDADES,
+	DESCRICAO_PRIORIDADE,
+	classePrioridade,
+	contagem,
+	areas,
+	porArea,
+	versaoRequisitos,
+} from '../data/requisitos';
+
+interface Props {
+	/** Esconde as barras de Must por área (usado na página inicial). */
+	compacto?: boolean;
+}
+const { compacto = false } = Astro.props;
+
+const c = contagem();
+const pct = (n: number) => `${((n / c.total) * 100).toFixed(1)}%`;
+const areasMust = areas('Must').map((a) => ({ area: a, n: porArea(a, 'Must').length }));
+const maxArea = Math.max(...areasMust.map((a) => a.n));
+const indicadores = [
+	{ rotulo: 'NOVO na v0.2', valor: c.novo, classe: 'req-selo--novo', selo: 'NOVO' },
+	{ rotulo: 'AJUSTADO na v0.2', valor: c.ajustado, classe: 'req-selo--ajustado', selo: 'AJUSTADO' },
+	{ rotulo: 'com valor [definir]', valor: c.aDefinir, classe: 'req-selo--definir', selo: '[definir]' },
+	{ rotulo: 'ligados a uma decisão D-xx', valor: c.comDecisao, classe: 'req-selo--decisao', selo: 'D-xx' },
+];
+---
+
+<div class="rr not-content">
+	<div class="rr-cards">
+		{
+			PRIORIDADES.map((p) => (
+				<div class={`rr-card ${classePrioridade(p)}`}>
+					<span class="rr-prio">{p}</span>
+					<span class="rr-num">{c[p]}</span>
+					<span class="rr-desc">{DESCRICAO_PRIORIDADE[p]}</span>
+					<span class="rr-pct">{pct(c[p])} do total</span>
+				</div>
+			))
+		}
+	</div>
+
+	<div class="rr-barra" role="img" aria-label={PRIORIDADES.map((p) => `${p}: ${c[p]}`).join(', ')}>
+		{PRIORIDADES.map((p) => <span class={classePrioridade(p)} style={`width:${pct(c[p])}`} title={`${p}: ${c[p]}`} />)}
+	</div>
+	<p class="rr-legenda">
+		{c.total} requisitos funcionais · versão {versaoRequisitos}
+	</p>
+
+	<div class="rr-indicadores">
+		{
+			indicadores.map((i) => (
+				<div class="rr-ind">
+					<span class="rr-ind-num">{i.valor}</span>
+					<span class="rr-ind-txt">
+						<span class={`req-selo ${i.classe}`}>{i.selo}</span> {i.rotulo}
+					</span>
+				</div>
+			))
+		}
+	</div>
+
+	{
+		!compacto && (
+			<div class="rr-areas">
+				<p class="rr-areas-titulo">Must por área</p>
+				{areasMust.map((a) => (
+					<div class="rr-area">
+						<span class="rr-area-nome">{a.area}</span>
+						<span class="rr-area-trilho">
+							<span class="rr-area-barra" style={`width:${((a.n / maxArea) * 100).toFixed(1)}%`} />
+						</span>
+						<span class="rr-area-n">{a.n}</span>
+					</div>
+				))}
+			</div>
+		)
+	}
+</div>
+
+<style>
+	.rr {
+		margin: 1.5rem 0;
+	}
+
+	.rr-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+		gap: 0.75rem;
+	}
+
+	.rr-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.9rem 1rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-top: 4px solid var(--req-cor);
+		border-radius: 10px;
+		background: var(--sl-color-bg-nav);
+	}
+
+	.rr-prio {
+		font-weight: 700;
+		color: var(--req-cor);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.rr-num {
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 1.1;
+		color: var(--sl-color-white);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rr-desc,
+	.rr-pct {
+		font-size: 0.78rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	.rr-barra {
+		display: flex;
+		height: 14px;
+		margin: 1rem 0 0.35rem;
+		border-radius: 7px;
+		overflow: hidden;
+		background: var(--sl-color-gray-6);
+	}
+
+	.rr-barra span {
+		display: block;
+		height: 100%;
+		background: var(--req-cor);
+	}
+
+	.rr-legenda {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--sl-color-gray-3);
+	}
+
+	.rr-indicadores {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: 0.5rem 1rem;
+		margin: 1rem 0;
+	}
+
+	.rr-ind {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.rr-ind-num {
+		min-width: 2rem;
+		font-size: 1.35rem;
+		font-weight: 700;
+		color: var(--sl-color-white);
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rr-ind-txt {
+		font-size: 0.85rem;
+		color: var(--sl-color-gray-2);
+	}
+
+	.rr-areas {
+		margin-top: 1rem;
+		padding: 1rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 10px;
+	}
+
+	.rr-areas-titulo {
+		margin: 0 0 0.6rem;
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.rr-area {
+		display: grid;
+		grid-template-columns: minmax(9rem, 12rem) 1fr 2rem;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 0.3rem 0;
+		font-size: 0.85rem;
+	}
+
+	.rr-area-nome {
+		color: var(--sl-color-gray-2);
+	}
+
+	.rr-area-trilho {
+		height: 10px;
+		border-radius: 5px;
+		background: var(--sl-color-gray-6);
+		overflow: hidden;
+	}
+
+	.rr-area-barra {
+		display: block;
+		height: 100%;
+		background: var(--lastro-red);
+		border-radius: 5px;
+	}
+
+	.rr-area-n {
+		text-align: right;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+</style>

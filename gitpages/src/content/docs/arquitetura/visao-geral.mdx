@@ -6,7 +6,7 @@ description: Monólito modular, containers, módulos, contratos e os quatro flux
 import Mermaid from '../../../components/Mermaid.astro';
 
 :::note[Status]
-Aprovada em 18/11/2026. Ver [Decisão: arquitetura do sistema](/lastro-lancamentos/decisoes/arquitetura/).
+Aprovada em 18/11/2026 (ARQ-01 a ARQ-08 e BD-01 a BD-08, conforme `docs/decisoes/DECISIONS.md`). Ver [Decisão: arquitetura do sistema](/lastro-lancamentos/decisoes/arquitetura/).
 :::
 
 O Lastro é um **monólito modular** em Python 3.14 + FastAPI, com:
@@ -89,7 +89,11 @@ Fora de `src/`: `migrations/` (Alembic), `web/` (React + Vite), `tests/`, `fixtu
 
 ## Regras de dependência
 
-As setas só descem. O `harness.py verify` confere isso com `import-linter`, e uma violação reprova o PR.
+As setas só descem. O `hx verify` vai conferir isso com `import-linter`, e uma violação reprova o PR.
+
+:::note[Planejado]
+Hoje o `hx verify` roda só `ruff check .` e `pytest -q` e mostra "Arquitetura: PULADO (ainda não implementado)" (`tools/harness.py`). A checagem de dependências ainda não tem ficha.
+:::
 
 1. `api/` e `worker/` chamam serviços dos módulos; nunca acessam tabela direto.
 2. Um módulo chama outro só pela interface pública (`servico.py` e `contratos.py`), nunca pelos modelos internos.

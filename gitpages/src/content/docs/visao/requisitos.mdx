@@ -1,0 +1,106 @@
+---
+title: Requisitos de Software
+description: Requisitos funcionais do Lastro por prioridade (MoSCoW), versão 0.2 de 07/11/2026.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import RequisitosResumo from '../../../components/RequisitosResumo.astro';
+import RequisitosTabela from '../../../components/RequisitosTabela.astro';
+import RequisitosExplorer from '../../../components/RequisitosExplorer.astro';
+import { areas, prefixos } from '../../../data/requisitos';
+
+:::note[Fonte de verdade]
+Esta página reproduz os **Requisitos funcionais v0.2, de 07/11/2026**, que são a fonte de verdade do escopo. Qualquer mudança começa no documento. O texto dos requisitos não foi alterado aqui: só a apresentação mudou.
+:::
+
+## Resumo
+
+<RequisitosResumo />
+
+## Como ler
+
+| Marca | Significado |
+|---|---|
+| <span class="req-selo req-selo--novo">NOVO</span> | Requisito que entrou na v0.2 |
+| <span class="req-selo req-selo--ajustado">AJUSTADO</span> | Requisito que mudou na v0.2 |
+| <span class="req-selo req-selo--decisao">D-xx</span> | Ligado a uma decisão D-01 a D-09 (pendente ou com padrão provisório desde 18/11); o selo leva ao [índice de decisões](/lastro-lancamentos/decisoes/) |
+| **[definir]** | Valor ainda aberto; a lista está em [Escopo do MVP](/lastro-lancamentos/visao/escopo-mvp/#valores-a-definir) |
+| **Origem** | v2 (proposta v2), Esc.1 e Esc.2 (escritórios-piloto), Ata, Proposta e Equipe, como estão no documento |
+| **#rf-…** | Cada linha tem uma âncora com o ID em minúsculas, por exemplo [#rf-val-01](#rf-val-01) |
+
+Prefixos dos IDs e a área de cada um:
+
+<table>
+	<thead>
+		<tr><th>Prefixo</th><th>Área</th><th>Requisitos</th></tr>
+	</thead>
+	<tbody>
+		{prefixos().map((p) => (
+			<tr><td><code>RF-{p.prefixo}</code></td><td>{p.area}</td><td>{p.total}</td></tr>
+		))}
+	</tbody>
+</table>
+
+## Explorar
+
+Busque por texto ou combine filtros. Cada item abre com o critério de aceitação, a área, a origem, a frente, o módulo, a dor e as decisões.
+
+<RequisitosExplorer />
+
+## Requisitos por prioridade
+
+<Tabs>
+<TabItem label="Must (56)">
+
+Sem isso o MVP não funciona.
+
+{areas('Must').map((a) => (
+	<>
+		<h3>{a}</h3>
+		<RequisitosTabela prioridade="Must" area={a} />
+	</>
+))}
+
+</TabItem>
+<TabItem label="Should (11)">
+
+Importantes, com contorno manual.
+
+<RequisitosTabela prioridade="Should" />
+
+</TabItem>
+<TabItem label="Could (6)">
+
+Só se sobrar tempo.
+
+<RequisitosTabela prioridade="Could" />
+
+</TabItem>
+<TabItem label="Won't (12)">
+
+Fora desta versão.
+
+<RequisitosTabela prioridade="Won't" />
+
+</TabItem>
+</Tabs>
+
+## Perguntas para o time avaliar
+
+- **Coerência:** os requisitos descrevem o que o produto deve fazer, sem misturar o como? Algum está repetido ou contradiz outro?
+- **Necessidade:** existe algum Must que o piloto dispensa para provar valor? Podemos rebaixá-lo?
+- **Lacunas:** falta alguma dor dos escritórios que não aparece em nenhum requisito?
+- **Testabilidade:** os critérios de aceitação podem ser verificados por alguém que não programou o item?
+- **Prazo:** cada Must tem uma estimativa de esforço, e a soma cabe em 4 semanas e meia?
+- **Decisões:** concordamos com as recomendações D-01 a D-09? Alguma muda o escopo?
+- **Fonte única:** o fluxo de chefe e troca de responsável veio de um relato só. Vamos confirmar nos pilotos antes de tratá-lo como certo?
+
+**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em fichas `features/<ID>.json` do harness (primeiro lote em revisão, ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha)). Há um [rascunho das histórias no Backlog](/lastro-lancamentos/requisitos/backlog/#histórias-de-usuário-rascunho).
+
+## Histórico de versão
+
+| Data | Versão da página | O que mudou |
+|---|---|---|
+| 12/11/2026 | 1.0 | Página criada a partir dos Requisitos funcionais v0.2 (07/11/2026), em tabelas por prioridade |
+| 12/11/2026 | 1.1 | Requisitos passam a ser dados (`src/data/requisitos.json`, gerado por `scripts/gerar-requisitos.mjs`); entram resumo, legenda, explorador e abas por prioridade. Texto dos requisitos sem alteração |
+| 18/11/2026 | 1.2 | RF-CAD-01 relido pela decisão P-02a: o chefe cadastra o cliente |

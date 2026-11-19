@@ -1,0 +1,54 @@
+---
+title: Equipe
+description: Quem é quem no Lastro, a frente de cada pessoa e os módulos da arquitetura.
+---
+
+import TeamGrid from '../../../components/TeamGrid.astro';
+
+Sete pessoas. Cada uma tem uma **frente**, que é onde puxa o trabalho e quem recebe as fichas daquele tipo. Todos trabalham onde for preciso.
+
+<TeamGrid />
+
+## Quem cuida de quê
+
+Definido pela líder em 18/11/2026. Os handles são os do GitHub e são o mesmo valor do campo `responsavel` das fichas e da variável `HX_USUARIO` (PROC-02).
+
+| Nome e GitHub | Papel | Frente | O que puxa |
+|---|---|---|---|
+| Júlia Santana Campos<br/>[@camposs04](https://github.com/camposs04) | Líder e Tech Lead | Coordenação e curinga | Decide as perguntas de negócio (D-xx) e as regras do processo; pega as fichas de caminho crítico que a frente não puder pegar na onda |
+| Caio Nascimento<br/>[@caio-nascime](https://github.com/caio-nascime) | Vice-líder | Harness e CI | `tools/harness.py`, `AGENTS.md`, `.github/workflows/`; fichas `HAR-nn` e `CI-nn` |
+| Guilherme Pereira<br/>[@guin409](https://github.com/guin409) | Líder de banco | Banco de dados | Fundação no `nucleo`: esquema, migrações e conexão |
+| Raissa Oliveira<br/>[@RaissaOliveira19](https://github.com/RaissaOliveira19) | Desenvolvedora | Banco de dados (apoio) | Isolamento entre escritórios e persistência |
+| Arthur Leite<br/>[@arthurlleite](https://github.com/arthurlleite) | Desenvolvedor | Segurança | Login e sessão, papéis e permissões, link do cliente, anonimização para a IA |
+| Thomaz Martins<br/>[@marrathomaz](https://github.com/marrathomaz) | Desenvolvedor | Documentação | Documentação e este site; fichas simples de cadastro e de mensagens |
+| João Sauma<br/>[@jvsauma](https://github.com/jvsauma) | Desenvolvedor | Front | Hoje dedicado à prototipação das telas, fora do harness |
+
+Quem está com cada feature agora aparece no `hx state` (coluna Resp.), não neste site. O processo de quem faz o quê está em [Orquestração](/lastro-lancamentos/fluxo/orquestracao/).
+
+:::note[Fonte]
+A divisão de 18/11 substitui a proposta de 12/11, que tinha seis papéis do fluxo (Líder, A Processo, B Contratos, G Gabarito/E2E, Front e F4b IA). Os papéis de 18/11 vêm da líder e ainda não estão registrados no `docs/decisoes/DECISIONS.md`.
+:::
+
+## Papéis transversais
+
+| Papel | Quem |
+|---|---|
+| Decide as perguntas de negócio (D-xx) | Júlia (líder), conforme o `DECISIONS.md` |
+| Donos do harness (`AGENTS.md`, `harness.py`, CI) | Caio |
+| Guardião de dados (`SECURITY.md`, `check-clean`, PR que toca dado ou IA) | A definir: nenhuma fonte nomeia |
+| Revisor de PR | Todos, em rodízio, pela [rubrica de 6 itens](/lastro-lancamentos/harness/regras/#rubrica); ninguém aprova o próprio PR |
+
+## As frentes da arquitetura
+
+Agrupamento dos módulos da arquitetura por frente técnica, como no estudo de arquitetura.
+
+| Frente | Módulos que possui | Entregas Must principais |
+|---|---|---|
+| Plataforma e arquitetura | `nucleo`, `acesso`, `cadastro`, `envio`, `revisao` (back), `exportacao`, `migrations/`, infra e CI | Sessão, RLS, reatribuição (RF-AUT, RF-SEG), cadastro (RF-CAD), link e upload (RF-ENV), revisão e exportação Domínio (RF-REV, RF-EXP), Docker, deploy, backups |
+| Frontend | `web/` | Uma pessoa na área do contador (carteira, cadastro, revisão, exportação); outra na página do cliente no celular (envio, avisos, perguntas) e no design system (Tailwind + shadcn, fonte Inter) |
+| Leitura e conferência (bancos) | `leitura`, `validacao`, `docs/bancos/`, `fixtures/` | Detecção de formato, OFX de qualquer banco, PDF de BB e Inter, conferência de saldo e cobertura (RF-LEI, RF-VAL) |
+| Classificação e IA | `classificacao`, `perguntas` (back), `ia` | Regras, histórico, parecidas, gateway de IA com `anonimizar()`, agrupamento de perguntas, aprendizado (RF-CLA, RF-PER, RF-APR) e a avaliação do estudo de LLM |
+
+Esta tabela é a divisão por **módulo** da arquitetura aprovada (ARQ-01, 18/11). Ela liga cada prefixo de requisito a uma frente na [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/). As pessoas recebem fichas pela frente de 18/11, acima, e não por esta tabela.
+
+Fontes: definição da líder (18/11/2026); `docs/decisoes/DECISIONS.md` (PROC-02); Lastro — Arquitetura do Sistema, seção 9; Fluxo de desenvolvimento do Lastro, seção 02.

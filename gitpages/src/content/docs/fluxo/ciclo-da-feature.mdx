@@ -1,78 +1,76 @@
 ---
 title: Ciclo de uma feature
-description: Da ficha ao merge, passo a passo, e a estratégia de testes.
+description: Da ficha ao merge na developer, passo a passo, e a estratégia de testes.
 ---
 
-import Mermaid from '../../../components/Mermaid.astro';
+Uma **feature** é um comportamento verificável que uma pessoa termina em 1 ou 2 sessões. Cada uma tem uma ficha em `features/<ID>.json`, com critérios de aceite e exemplos, comandos de verificação, dependências e estado.
 
-Uma **feature** é um comportamento verificável que uma pessoa termina em 1 ou 2 sessões. Cada uma tem uma ficha em `features/<ID>.json`, com critérios de aceite, comando de verificação, dependências e estado.
+O mapa geral (papéis, comandos, artefatos, ondas e a máquina de estados com os gatilhos) está em [Orquestração](/lastro-lancamentos/fluxo/orquestracao/). Esta página detalha os passos e a estratégia de testes.
 
-## Estados da ficha
-
-<Mermaid code={`stateDiagram-v2
-  [*] --> not_started
-  not_started --> in_progress: feature start
-  in_progress --> blocked: depende de decisão aberta (D-xx)
-  blocked --> in_progress: decisão registrada
-  in_progress --> passing: feature verify (só o script)
-  passing --> regressed: noturno falhou
-  regressed --> passing: corrigida e verificada pelo script
-`}/>
-
-- Quem marca `passing` é o script, rodando os comandos da ficha. Ninguém edita o estado à mão.
-- Uma feature `regressed` passa na frente de feature nova.
-
-## Os oito passos
+## Os passos
 
 | Passo | Quem age | Estado | O que acontece |
 |---|---|---|---|
-| 1. Ficha com responsável | Líder | `not_started` | No planejamento, o líder grava o `responsavel` na ficha, em um commit na main. Sem responsável, o comando de início recusa. |
-| 2. Começar a feature | Dev e script | `in_progress` | O script cria a branch, muda o estado e abre o progress. Não chama o agente: só prepara os arquivos que ele vai ler. |
-| 3. Testes primeiro | Dev e agente | `in_progress` | Os testes são escritos a partir dos critérios da ficha e devem falhar. Se passassem sem código, não testariam nada. |
-| 4. Implementar | Agente | `in_progress` | Sessão nova do agente, com uma regra fixa: implementar até passar, sem editar os testes. Se o teste parecer errado, vira PR na ficha. |
-| 5. Verificar a feature | Script | `passing` (na branch) | `hx verify --e2e`, `hx feature verify` e `hx check-clean`. Só o script grava `passing`. |
-| 6. Abrir o PR | Dev | `passing` (na branch) | O template pede a tabela critério → teste, a saída da verificação e o checklist de segurança. Depois disso, pode iniciar a próxima feature (WIP continua 1). |
-| 7. Revisão pela rubrica | Revisor | `passing` (na branch) | Outra pessoa roda a verificação na branch e preenche a rubrica. Aceita com 9 ou mais de 12 e nenhum zero em correção, verificação e escopo. |
-| 8. CI e merge | CI e revisor | `passing` (na main) | A CI refaz a verificação e o PR entra por squash. De madrugada, o noturno reverifica tudo que está `passing`. |
+| 1. Ficha com responsável | Líder | `not_started` | A ficha entra na `developer` por PR, com o `responsavel` igual ao handle do GitHub de quem vai fazer. Se `HX_USUARIO` não bater com `responsavel`, o `hx feature start` recusa. |
+| 2. Começar a feature | Dev e `hx` | `in_progress` | `hx feature start <ID>` confere estado, dependências e WIP, cria a branch a partir de `origin/developer`, cria o progress, muda o estado, commita e faz push. Não chama o agente. |
+| 3. Planejar | Agente, depois a dev | `in_progress` | Em sessão nova, `/planejar <ID>` gera `planos/<ID>/plan.md` e `planos/<ID>/tasks.md`. Um humano responde o que está em "A decidir" e aprova o plan. |
+| 4. Testes primeiro | Agente e dev | `in_progress` | A task T1 escreve os testes com os nomes que a ficha cita. Eles devem falhar. Commit só de testes, com o hash anotado para o PR. |
+| 5. Implementar | Agente | `in_progress` | Sessão nova do agente, com uma regra fixa: implementar até passar, sem editar `tests/`. Se o teste parecer errado, pare e avise (AGENTS.md, regra 3). |
+| 6. Verificar a feature | `hx` | `passing` (na branch) | `hx verify`, `hx feature verify <ID>` e `hx check-clean`. Só o `hx feature verify` grava `passing` e a evidência; a dev commita a ficha. |
+| 7. Abrir o PR | Dev | `passing` (na branch) | PR para a `developer`. O template pede a tabela critério → teste, o hash do commit de testes, as evidências e os checklists. |
+| 8. Revisão e merge | Revisor e CI | `passing` (na `developer`) | A CI (`pr.yml`) roda `hx verify` e `hx check-clean`. O revisor roda `hx feature verify` na própria máquina, dá a nota pela rubrica e faz o merge na `developer`. |
 
-### Exemplo de comandos (saída ilustrativa)
+Depois do merge, a dev pode abrir a próxima feature (WIP = 1).
+
+### Nome da branch
+
+O `hx feature start` monta o nome assim: `feat/<ID>-<slug>`. O slug é o título da ficha em minúsculas, sem acento, com o que não é letra ou número trocado por `-`, cortado em 40 caracteres (função `slug` em `tools/harness.py`).
+
+Exemplo real: a ficha HAR-02, "Filtrar hx state por estado e resumir só o que pede atenção", virou `feat/HAR-02-filtrar-hx-state-por-estado-e-resumir-so`.
+
+### Exemplo de comandos
+
+Saída resumida da ficha HAR-02.
 
 ```text
-$ hx state
-LEI-02  not_started  responsavel: voce  depende_de: LEI-01 (passing)
-
-$ hx feature start LEI-02 --owner voce
-OK  branch feat/LEI-02-leitura-ofx criada
-OK  estado: in_progress
-OK  progress/LEI-02.md criado
+$ export HX_USUARIO=caio-nascime
+$ hx feature start HAR-02
+Criar a branch feat/HAR-02-filtrar-hx-state-por-estado-e-resumir-so a partir de origin/developer? [s/N] s
+Branch criada: feat/HAR-02-filtrar-hx-state-por-estado-e-resumir-so
+Progress: progress/HAR-02.md
 
 $ hx verify
-FALHOU  test_ofx.py::test_saldo_confere
-FALHOU  test_ofx.py::test_ignora_linha_vazia
-4 falharam, 0 passaram
+[1/2] ruff check .   OK
+[2/2] pytest -q      OK
+Arquitetura: PULADO (ainda não implementado)
+E2E: PULADO (ainda não implementado)
+RESULTADO: OK
 
-$ hx feature verify LEI-02
-OK  c1 saldo final confere
-OK  c2 linha vazia é ignorada
-estado: passing (gravado pelo script)
+$ hx feature verify HAR-02
+[c1] pytest tests/harness/test_state_filtro.py::test_filtra_por_um_ou_mais_estados -q → OK
+...
+Ficha atualizada. Faça commit de features/HAR-02.json.
+RESULTADO: OK
 ```
 
 A tabela critério → teste do PR liga cada critério ao teste que o prova:
 
 | Critério | Teste |
 |---|---|
-| LEI-02-c1 saldo confere | `test_saldo_confere` |
-| LEI-02-c2 linha vazia ignorada | `test_ignora_linha_vazia` |
+| c1: `--estado` filtra por um ou mais estados | `tests/harness/test_state_filtro.py::test_filtra_por_um_ou_mais_estados` |
+| c2: estado inválido é recusado | `tests/harness/test_state_filtro.py::test_estado_invalido_e_recusado` |
 
 ## Critério de pronto
 
 Uma feature está pronta quando:
 
 - todos os critérios da ficha passam em `hx feature verify` e o script gravou `passing`;
-- `hx verify --e2e` e `hx check-clean` passam;
-- o PR traz a tabela critério → teste preenchida;
+- `hx verify` e `hx check-clean` passam;
+- o PR traz a tabela critério → teste preenchida e o `git diff <hash> -- tests/` vazio;
 - outra pessoa revisou pela rubrica e aceitou;
-- a CI refez a verificação e o PR entrou por squash na main.
+- a CI passou e o PR entrou na `developer`.
+
+A lista completa está em [DoR e DoD](/lastro-lancamentos/requisitos/dor-dod/).
 
 ## Quem escreve os testes
 
@@ -83,19 +81,19 @@ O risco é o agente **corrigir a própria prova**: escreve código e teste junto
 | 1. O agente escreve o código | 1. Testes escritos a partir dos critérios da ficha |
 | 2. O mesmo agente escreve os testes do que acabou de escrever | 2. Eles falham, como esperado |
 | 3. Tudo fica verde | 3. Sessão nova implementa, sem editar os testes |
-| 4. O erro chega na demo | 4. Gabarito sintético e E2E conferem o resultado |
+| 4. O erro chega na demo | 4. Gabarito sintético confere o resultado |
 | | 5. Outra pessoa revisa pela rubrica |
 
 Com o harness, o teste nasce do requisito, não do código, e o gabarito vem de fora do agente.
 
 ## Três camadas de teste
 
-| Camada | O que cobre |
-|---|---|
-| Módulo | Testes por feature, escritos antes do código a partir dos critérios da ficha. Rápidos: rodam a cada commit. |
-| Contratos e arquitetura | Garantem que os módulos conversam como combinado e que só a pasta `ia/` fala com o LLM. Quebrou a regra, a CI avisa. |
-| Jornadas E2E | Um extrato falso é gerado a partir de um razão conhecido, então o gabarito já nasce junto. O Excel final é comparado com ele. |
+| Camada | O que cobre | Status |
+|---|---|---|
+| Módulo | Testes por feature, escritos antes do código a partir dos critérios da ficha. Rodam no `hx verify` e no `hx feature verify` | Implementado |
+| Contratos e arquitetura | Garantem que os módulos conversam como combinado e que só a pasta `ia/` fala com o LLM | Planejado: o `hx verify` mostra "Arquitetura: PULADO"; sem ficha |
+| Jornadas E2E | Um extrato falso é gerado a partir de um razão conhecido, então o gabarito já nasce junto. O Excel final é comparado com ele | Planejado: o gerador vem da ficha HAR-03 (em revisão); o `hx verify` mostra "E2E: PULADO" |
 
 Para a IA: provedor falso nos testes (sem custo e sem rede) e um conjunto fixo de 40 a 60 casos, com cerca de 20% reservado como prova final.
 
-Fontes: Fluxo de desenvolvimento do Lastro, seções 05 e 06; Lastro: guia do harness v0.1.
+Fontes: `tools/harness.py`, `.claude/commands/planejar.md`, `.github/pull_request_template.md` e `features/HAR-02.json` (branch `developer`, 18/11/2026); `docs/decisoes/DECISIONS.md` (18/11/2026); Fluxo de desenvolvimento do Lastro, seções 05 e 06.

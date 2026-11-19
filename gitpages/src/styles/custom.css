@@ -35,7 +35,8 @@ table {
   width: 100%;
   margin: 1rem 0;
   border-radius: 8px;
-  overflow: hidden;
+  /* auto (não hidden): tabela larga rola na horizontal em vez de cortar colunas. */
+  overflow: auto;
   border: 1px solid var(--sl-color-gray-5);
 }
 
@@ -531,4 +532,62 @@ table tbody tr:last-child td {
   height: 100%;
   border: none;
   border-radius: 10px;
+}
+
+/* ==========================================================================
+   Requisitos: cores por prioridade e selos (NOVO, AJUSTADO, D-xx)
+   ========================================================================== */
+:root {
+  --lastro-indigo: #4F46E5;
+  --lastro-gray: #6B7280;
+}
+
+:root[data-theme='dark'] {
+  --lastro-indigo: #818CF8;
+  --lastro-gray: #9CA3AF;
+}
+
+.req-prio--must   { --req-cor: var(--lastro-red); }
+.req-prio--should { --req-cor: var(--lastro-blue); }
+.req-prio--could  { --req-cor: var(--lastro-green); }
+.req-prio--wont   { --req-cor: var(--lastro-gray); }
+
+.req-selo {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #ffffff;
+  vertical-align: middle;
+}
+
+/* Cores escuras o bastante para texto branco nos dois temas. */
+.req-selo--novo     { background-color: #047857; }
+.req-selo--ajustado { background-color: #B45309; }
+.req-selo--decisao  { background-color: #4338CA; }
+.req-selo--definir  { background-color: #374151; }
+
+/* O selo de decisão é um link: não herda o azul e o sublinhado de .sl-markdown-content a. */
+.sl-markdown-content a.req-selo,
+a.req-selo {
+  color: #ffffff;
+  border-bottom: none;
+  text-decoration: none;
+}
+
+.sl-markdown-content a.req-selo:hover,
+a.req-selo:hover {
+  border-bottom: none;
+  filter: brightness(1.15);
+}
+
+/* Linha de requisito alvo de um link (#rf-...). */
+tr:target,
+details:target {
+  outline: 2px solid var(--lastro-indigo);
+  outline-offset: -2px;
 }

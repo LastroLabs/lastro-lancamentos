@@ -48,3 +48,6 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Exceção: o modelo de variáveis de ambiente é versionado
+!.env.example

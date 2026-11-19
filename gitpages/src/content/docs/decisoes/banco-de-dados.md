@@ -5,9 +5,9 @@ description: PostgreSQL relacional, isolamento por escritório e carteira, centa
 
 | Status | Data | Fonte |
 |---|---|---|
-| Aprovada | 18/11/2026 (estudo de 10/11/2026) | Banco de dados para o Lastro, v1.0 |
+| Aprovada (BD-01 a BD-08) | Estudo de 10/11/2026; aprovação em 18/11/2026 | Banco de dados para o Lastro, v1.0; `docs/decisoes/DECISIONS.md`, seção 1 |
 
-O documento apresenta a escolha como "decisão recomendada" e diz que as escolhas são "propostas concretas deste estudo". A líder aprovou a decisão em 18/11/2026 (ver `docs/decisoes/DECISIONS.md`).
+O estudo apresentava a escolha como "decisão recomendada". A líder aprovou BD-01 a BD-08 em 18/11/2026, o que destrava migrações e isolamento (fichas NUC-01 e NUC-03, em revisão).
 
 ## Contexto
 
@@ -55,11 +55,12 @@ O banco precisa sustentar a confiança no fluxo: explicar de onde veio cada suge
 
 | Pendência | Encaminhamento do estudo |
 |---|---|
-| D-01, D-02, D-04 | Leitores extensíveis, regra de adquirente desativada, terceiro banco parametrizado |
-| D-03, D-06 | Pseudonimizar nomes por padrão; propor 7 dias e 20 MiB e medir no piloto |
-| D-05 | Layout provisório; o banco guarda versões sem inventar colunas definitivas do Domínio |
-| D-07, D-09 | Carteira individual; vários vínculos no modelo, um responsável ativo no início |
-| D-08 e precedência (RF-CLA-09 [definir]) | Calibrar com o gabarito; registrar e testar a precedência proposta |
+| D-01 | Pendente: leitores extensíveis |
+| D-02, D-04 | Aprovadas (provisórias) em 18/11: regra de adquirente desativada, terceiro banco parametrizado |
+| D-03, D-06 | Aprovadas em 18/11: todo nome de contraparte pseudonimizado; 7 dias e 20 MiB, configuráveis e medidos no piloto |
+| D-05 | Aprovada (provisória) em 18/11: layout provisório; o banco guarda versões sem inventar colunas definitivas do Domínio |
+| D-07, D-09 | Aprovadas (provisórias) em 18/11: carteira individual; vários vínculos no modelo, um responsável ativo |
+| D-08 e precedência (RF-CLA-09 [definir]) | Pendentes: calibrar com o gabarito; registrar e testar a precedência proposta |
 | Retenção (sem ID) | Proposta de 90 dias para originais e 30 dias para logs técnicos, até acordo com os pilotos |
 | Provedor do piloto (sem ID) | Escolher pelo backup verificável e pela região; não há dados para fixar valor mensal |
 
