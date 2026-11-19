@@ -1,6 +1,6 @@
 # Lastro — SECURITY.md (v0.1, 13/11/2026)
 
-Dados, segredos e uso de LLM. Leia antes de mexer em fixtures, em `ia/` ou em qualquer workflow da CI.
+Dados, segredos e uso de LLM. Leia antes de mexer em fixtures, em `ai/` ou em qualquer workflow da CI.
 
 > **Premissa:** o repositório é **público** (decisão provável, ainda sem confirmação). Tudo o que for commitado, comentado em PR ou anexado a uma issue deve poder ser lido por qualquer pessoa. Se a decisão mudar para privado, a seção 1 muda; as demais continuam valendo.
 >
@@ -48,7 +48,7 @@ Qualquer uso de extrato real, mesmo anonimizado, fica **fora do Git**. Só a est
 
 ## 5. Uso de LLM
 
-- **Só `src/lastro/ia/` fala com o provedor de LLM.** Nenhum outro módulo importa o SDK. A checagem de arquitetura deve acusar o contrário.
+- **Só `src/lastro/ai/` fala com o provedor de LLM.** Nenhum outro módulo importa o SDK. A checagem de arquitetura deve acusar o contrário.
 - **Antes de qualquer envio, `anonimizar()`** remove CPF, CNPJ, agência e conta.
 - **Nomes de contrapartes: proibido enviar** até a decisão D-03.
 - O LLM nunca recebe o extrato inteiro se a tarefa pede uma linha. Enviar o mínimo.
@@ -108,7 +108,7 @@ Aja nesta ordem. Não espere para "ver se alguém notou".
 - [ ] `hx check-clean` verde, com `LASTRO_NOMES_PROIBIDOS` definida na sua máquina
 - [ ] Nenhuma fixture escrita à mão; CPF/CNPJ de teste com DV inválido
 - [ ] Nada de dado real em descrição, comentário ou captura de tela
-- [ ] Chamadas a LLM só por `src/lastro/ia/`, depois de `anonimizar()`
+- [ ] Chamadas a LLM só por `src/lastro/ai/`, depois de `anonimizar()`
 - [ ] Nenhum segredo, `.env` ou chave nos arquivos nem nos logs
 
 ## Em aberto neste documento

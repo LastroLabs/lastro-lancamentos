@@ -66,22 +66,22 @@ Restrição de prazo: os Must precisam caber no cronograma. Isso exclui microsse
 
 ## Módulos
 
-Um monorepo, com os mesmos módulos que o harness nomeia em `docs/modulos/`.
+Um monorepo, com os mesmos módulos que o harness nomeia em `docs/modules/`.
 
 | Pasta | Responsabilidade |
 |---|---|
-| `src/lastro/nucleo/` | Config, sessão, permissões, contexto RLS, dinheiro (centavos) |
-| `src/lastro/acesso/` | Escritório, usuário, papel, atribuição, link do cliente |
-| `src/lastro/cadastro/` | Cliente, contas bancárias, sócios, plano de contas, configuração |
-| `src/lastro/envio/` | Upload, quarentena, status por cliente e mês |
-| `src/lastro/leitura/` | Detecção de formato, leitores OFX e PDF por banco |
-| `src/lastro/validacao/` | Saldo, continuidade, cobertura do mês (só código) |
-| `src/lastro/classificacao/` | Regras, histórico, parecidas (`pg_trgm`), chamada à IA |
-| `src/lastro/perguntas/` | Agrupamento, página do cliente, respostas |
-| `src/lastro/revisao/` | Três grupos, aceitar/trocar/pendente, aprendizado |
-| `src/lastro/exportacao/` | Fotografia, planilha Domínio, conciliação |
-| `src/lastro/ia/` | Único lugar que chama LLM: `anonimizar()`, schemas, custo |
-| `src/lastro/observabilidade/` | Registro de decisões e métricas do piloto |
+| `src/lastro/core/` | Config, sessão, permissões, contexto RLS, dinheiro (centavos) |
+| `src/lastro/access/` | Escritório, usuário, papel, atribuição, link do cliente |
+| `src/lastro/registry/` | Cliente, contas bancárias, sócios, plano de contas, configuração |
+| `src/lastro/uploads/` | Upload, quarentena, status por cliente e mês |
+| `src/lastro/parsing/` | Detecção de formato, leitores OFX e PDF por banco |
+| `src/lastro/validation/` | Saldo, continuidade, cobertura do mês (só código) |
+| `src/lastro/classification/` | Regras, histórico, parecidas (`pg_trgm`), chamada à IA |
+| `src/lastro/questions/` | Agrupamento, página do cliente, respostas |
+| `src/lastro/review/` | Três grupos, aceitar/trocar/pendente, aprendizado |
+| `src/lastro/export/` | Fotografia, planilha Domínio, conciliação |
+| `src/lastro/ai/` | Único lugar que chama LLM: `anonimizar()`, schemas, custo |
+| `src/lastro/observability/` | Registro de decisões e métricas do piloto |
 | `src/lastro/api/` | Rotas FastAPI finas: autorização e chamada ao serviço |
 | `src/lastro/worker/` | Tarefas Procrastinate |
 
@@ -96,13 +96,13 @@ Hoje o `hx verify` roda só `ruff check .` e `pytest -q` e mostra "Arquitetura: 
 :::
 
 1. `api/` e `worker/` chamam serviços dos módulos; nunca acessam tabela direto.
-2. Um módulo chama outro só pela interface pública (`servico.py` e `contratos.py`), nunca pelos modelos internos.
-3. Só `ia/` importa SDK de provedor de LLM. Só `envio/` e `exportacao/` falam com o armazenamento de arquivos.
-4. `validacao/` não importa `ia/`: a conferência de saldo nunca depende de modelo.
+2. Um módulo chama outro só pela interface pública (`service.py` e `contracts.py`), nunca pelos modelos internos.
+3. Só `ai/` importa SDK de provedor de LLM. Só `uploads/` e `export/` falam com o armazenamento de arquivos.
+4. `validation/` não importa `ai/`: a conferência de saldo nunca depende de modelo.
 
 ## Contratos entre módulos
 
-Dataclasses imutáveis em `contratos.py`. Mudar um contrato exige issue `contrato:` e um PR que atualize os dois lados e o `docs/modulos/`.
+Dataclasses imutáveis em `contracts.py`. Mudar um contrato exige issue `contrato:` e um PR que atualize os dois lados e o `docs/modules/`.
 
 | De → para | Contrato | Campos essenciais |
 |---|---|---|

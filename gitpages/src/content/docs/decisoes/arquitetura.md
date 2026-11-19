@@ -20,7 +20,7 @@ Os 56 Must da v0.2 precisam caber em pouco tempo, com um time pequeno e sem infr
 - Sessão no servidor, não JWT (ARQ-03).
 - Fila no próprio PostgreSQL, com Procrastinate (ARQ-04).
 - Cliente da API gerado do OpenAPI (ARQ-05).
-- Um único gateway de IA em `src/lastro/ia/`, atrás de uma interface (ARQ-06).
+- Um único gateway de IA em `src/lastro/ai/`, atrás de uma interface (ARQ-06).
 - SeaweedFS no desenvolvimento e S3 gerenciado no piloto (ARQ-07).
 - Python 3.14 e FastAPI com versão menor fixada (ARQ-08).
 
@@ -31,7 +31,7 @@ Os 56 Must da v0.2 precisam caber em pouco tempo, com um time pequeno e sem infr
 | ARQ-03 | Sessão no servidor, não JWT | JWT impede a revogação imediata de RF-AUT-04 |
 | ARQ-04 | Fila no PostgreSQL (Procrastinate) | Celery + Redis: mais um serviço para operar e monitorar |
 | ARQ-05 | Cliente da API gerado do OpenAPI | Tipos escritos à mão: divergem do backend sem aviso |
-| ARQ-06 | Um único gateway de IA (`src/lastro/ia/`) atrás de interface | Chamar o SDK de dentro de cada módulo: vaza dado e prende a um provedor |
+| ARQ-06 | Um único gateway de IA (`src/lastro/ai/`) atrás de interface | Chamar o SDK de dentro de cada módulo: vaza dado e prende a um provedor |
 | ARQ-07 | SeaweedFS no dev, S3 gerenciado no piloto | MinIO: edição comunitária arquivada em 2026 |
 | ARQ-08 | Python 3.14, FastAPI com versão menor fixada | Python 3.15: lançado em out/2026, ecossistema ainda atrasado |
 
@@ -49,7 +49,7 @@ Os 56 Must da v0.2 precisam caber em pouco tempo, com um time pequeno e sem infr
 
 **Destrava:**
 
-- a estrutura do repositório (`src/lastro/<modulo>/`), com um dono por módulo, como o harness pede;
+- a estrutura do repositório (`src/lastro/<module>/`), com um dono por módulo, como o harness pede;
 - contratos imutáveis entre módulos, conferidos pelo `hx verify` com `import-linter` (planejado: hoje o `hx verify` mostra "Arquitetura: PULADO (ainda não implementado)", em `tools/harness.py`);
 - a ordem de construção semana a semana, com uma jornada E2E demonstrável ao fim de cada semana;
 - tipos do frontend gerados do backend: mudou o contrato, o front deixa de compilar no PR.

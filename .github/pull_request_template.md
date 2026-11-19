@@ -26,7 +26,7 @@ Resumo da saída do `feature verify` (sem dado real):
 ## Segurança (docs/SECURITY.md)
 - [ ] Nenhum dado real, nome de cliente ou escritório, nem segredo (inclusive em print e log)
 - [ ] Fixtures sintéticas, CPF/CNPJ de teste com dígito verificador inválido
-- [ ] LLM só por `src/lastro/ia/`, depois de `anonimizar()` (ou: não se aplica)
+- [ ] LLM só por `src/lastro/ai/`, depois de `anonimizar()` (ou: não se aplica)
 
 ## Escopo e contratos
 - [ ] Mexi só na pasta do meu módulo (ou: explique)
