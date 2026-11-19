@@ -8,9 +8,7 @@
   "essencial": false,
   "estado": "not_started",
   "responsavel": "caio-nascime",
-  "depende_de": [
-    "HX-09"
-  ],
+  "depende_de": [],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
   "criterios": [
