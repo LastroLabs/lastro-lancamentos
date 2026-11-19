@@ -1,7 +1,7 @@
 {
   "id": "CAD-04",
   "titulo": "Informar as contas bancárias do cliente com banco e apelido",
-  "modulo": "cadastro",
+  "modulo": "registry",
   "requisitos": [
     "RF-CAD-02"
   ],
@@ -45,15 +45,15 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/cadastro/test_contas_bancarias.py::test_contador_informa_contas_com_banco_e_apelido -q"
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contador_informa_contas_com_banco_e_apelido -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/cadastro/test_contas_bancarias.py::test_conta_sem_banco_ou_apelido_recusada -q"
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_conta_sem_banco_ou_apelido_recusada -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/cadastro/test_contas_bancarias.py::test_contas_negadas_a_outra_carteira_e_escritorio -q"
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contas_negadas_a_outra_carteira_e_escritorio -q"
     }
   ],
   "evidencia": null

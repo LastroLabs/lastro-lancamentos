@@ -16,7 +16,7 @@ Uma linguagem por lado: **TypeScript no frontend e Python no backend, no worker 
 | Frontend | React 19.2 + TypeScript, Vite 8, TanStack Router e Query, Tailwind 4 + shadcn/ui, fonte Inter; cliente da API gerado do OpenAPI |
 | Backend | Python 3.14, FastAPI (versão menor fixada), Pydantic 2, SQLAlchemy 2 + Alembic, sessão no servidor |
 | Processamento | Worker Procrastinate; ofx-br / ofxparse para OFX, pdfplumber para PDF de BB e Inter; conferência só em código |
-| IA | `src/lastro/ia/` como único ponto de chamada, saída com schema, contas do cliente como únicas respostas válidas |
+| IA | `src/lastro/ai/` como único ponto de chamada, saída com schema, contas do cliente como únicas respostas válidas |
 | Dados | PostgreSQL 18 (RLS, `pg_trgm`), centavos em BIGINT; arquivos em S3 privado |
 | Infra | Docker Compose no dev (Postgres + SeaweedFS); piloto em São Paulo (Postgres gerenciado + PaaS); GitHub Actions |
 

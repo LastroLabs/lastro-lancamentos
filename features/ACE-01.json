@@ -1,7 +1,7 @@
 {
   "id": "ACE-01",
   "titulo": "Entrar com login individual e encerrar a sessão",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-AUT-01"
   ],
@@ -60,23 +60,23 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_login.py::test_login_valido_abre_sessao_identificada -q"
+      "comando": "pytest tests/access/test_login.py::test_login_valido_abre_sessao_identificada -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q"
+      "comando": "pytest tests/access/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q"
+      "comando": "pytest tests/access/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_login.py::test_sair_encerra_a_sessao -q"
+      "comando": "pytest tests/access/test_login.py::test_sair_encerra_a_sessao -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q"
+      "comando": "pytest tests/access/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q"
     }
   ],
   "evidencia": null

@@ -33,22 +33,24 @@ Cada regra traz `[origem]`. Sem `vale` ou `expira`, ela vale sempre e não expir
 6. **Nada é exportado sem revisão do contador.** Pendentes saem na conta transitória, marcados. [RF-REV-04, RF-EXP-02 · vale em exportação]
 7. **Isolamento no servidor, em toda requisição:** escritório não vê outro escritório; contador só vê clientes atribuídos; link do cliente é imprevisível e expira. [RF-SEG-01/02, RF-AUT-02 · vale em API e telas]
 8. **Dinheiro em centavos, inteiro.** Nunca float. [erro de arredondamento]
-9. **Escopo é o de `docs/produto/requisitos_funcionais_v0.2.md`.** Não implemente o que é Won't. Mudou o escopo? Primeiro em `docs/` e na ficha, depois no código. [regra do time · expira: ao virar v1.0]
+9. **Escopo é o de `docs/requisitos/requisitos_lastro.json`** (requisitos v0.2). Não implemente o que é Won't. Mudou o escopo? Primeiro em `docs/` e na ficha, depois no código. [regra do time · expira: ao virar v1.0]
 10. **Uma feature por pessoa e por sessão.** Termine (testes verdes, `progress/<ID>.md` atualizado) antes de abrir outra. [WIP=1 · expira: se o time mudar o fluxo]
 11. **Contratos entre módulos estão em versão 0.** Mudou? Abra issue `contrato:` e avise o dono do módulo. [contratos não congelados · expira: após o esqueleto de ponta a ponta]
 12. **Algo indefinido? Pare e pergunte.** Não invente requisito, número ou regra (use `[definir]`) e não escolha stack, banco ou provedor por conta própria: registre em `DECISIONS.md`. **Biblioteca nova pode ser escolhida** quando a tarefa exigir: compare 2 a 3 opções (licença, manutenção, Python 3.12), prefira a mais simples e já comum no ecossistema, registre a escolha e o motivo no `plan.md` (ou em `DECISIONS.md`, se afetar mais de uma feature) e adicione a dependência ao arquivo de requisitos. [sessões anteriores inventando detalhes · biblioteca liberada em 17/11/2026]
 
 ## 4. Onde achar o resto (leia só quando a tarefa pedir)
 
+- `ARCHITECTURE.md`: mapa das pastas, dependências e invariantes. Leia antes de criar arquivo ou importar outro módulo.
+- `CODING_STANDARDS.md`: padrão e boas práticas de codificação, e escrita de documentos e textos gerais. Leia antes de iniciar a escrita de códigos ou textos.
 - `features/<ID>.json`: o que entregar e como provar. Leia ao começar uma feature.
 - `progress/<ID>.md`: de onde parou. Leia ao retomar; atualize ao terminar.
 - `planos/<ID>/plan.md` e `tasks.md`: o que decidir e o que fazer. Leia ao implementar ou escrever testes; as tasks mandam. Só um humano marca o plan como aprovado.
-- `docs/produto/requisitos_funcionais_v0.2.md`: requisitos RF-xxx e decisões D-01 a D-09. Leia antes de qualquer feature.
-- `docs/produto/proposta_v2.md`: visão, pilotos e plano até 07/12. Leia se faltar contexto de produto.
-- `docs/produto/simulacao_fluxo_usuarios.md`: fluxo tela a tela dos 3 papéis e dúvidas Q-xx. Leia ao mexer em telas ou fluxo.
-- `docs/ia/boas_praticas_llm.md`: como a IA entra no fluxo e formato do prompt. Leia antes de mexer em `ia/` ou chamar LLM.
+- `docs/requisitos/requisitos_lastro.json`: requisitos RF-xxx (MoSCoW) e decisões D-01 a D-09; gerado, a fonte legível é `gitpages/src/data/fonte/requisitos-v0.2.md`. Leia antes de qualquer feature.
+- `gitpages/src/content/docs/visao/` (cenário, solução, escopo do MVP, cronograma): visão, pilotos e plano até 07/12. Leia se faltar contexto de produto.
+- Fluxo tela a tela dos 3 papéis e dúvidas Q-xx: ainda não existe no repositório [definir]. Ao mexer em telas ou fluxo, pergunte.
+- `gitpages/src/content/docs/arquitetura/ia.md` e `decisoes/avaliacao-llm.md`: como a IA entra no fluxo. Leia antes de mexer em `ai/` ou chamar LLM.
 - `docs/decisoes/DECISIONS.md`: decisões D-xx e arquitetura. Leia se algo parecer indefinido.
 - `docs/SECURITY.md`: dados, anonimização, LGPD. Leia antes de mexer em fixtures ou chamar LLM.
-- `docs/modulos/<modulo>.md`: regras do módulo. Leia antes de mexer nele. Regra específica de módulo vai lá, não aqui.
+- `docs/modules/<module>.md` (a criar): regras do módulo. Leia antes de mexer nele. Regra específica de módulo vai lá, não aqui.
 - `docs/design/` (a criar: DESIGN.md, microcopy.md): identidade, tokens e textos. Leia antes de mexer no front. Mensagens ao usuário: o que aconteceu + o que fazer, em português simples (RF-AVI-02).
 - `docs/rubrica-revisao.md`: leia ao revisar um PR.

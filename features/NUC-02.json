@@ -1,7 +1,7 @@
 {
   "id": "NUC-02",
   "titulo": "Decidir o acesso por escritório, papel e carteira",
-  "modulo": "nucleo",
+  "modulo": "core",
   "requisitos": ["BD-02"],
   "prioridade": "must",
   "onda": 1,
@@ -54,11 +54,11 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_chefe_acessa_todos_do_escritorio -q"},
-    {"criterio": "c2", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"},
-    {"criterio": "c3", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"},
-    {"criterio": "c4", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"},
-    {"criterio": "c5", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"}
+    {"criterio": "c1", "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_todos_do_escritorio -q"},
+    {"criterio": "c2", "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"},
+    {"criterio": "c3", "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"},
+    {"criterio": "c4", "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"},
+    {"criterio": "c5", "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"}
   ],
   "evidencia": null
 }
