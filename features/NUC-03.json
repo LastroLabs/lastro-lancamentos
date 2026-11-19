@@ -1,0 +1,77 @@
+{
+  "id": "NUC-03",
+  "titulo": "Isolar no banco os dados de cada escritório",
+  "modulo": "nucleo",
+  "requisitos": [
+    "RF-SEG-02",
+    "BD-02"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [
+    "NUC-01",
+    "CAD-03"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Uma consulta sem filtro ao cadastro de clientes (criado pela CAD-03), feita em nome de um escritório, devolve só os clientes desse escritório",
+      "exemplo": {
+        "entrada": "banco com ESC-1 (clientes EMP-1 e EMP-2) e ESC-2 (cliente EMP-9); transação aberta em nome de ESC-1; consulta todos os clientes sem nenhum filtro",
+        "saida": "2 clientes: EMP-1 e EMP-2; EMP-9 não aparece"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Uma consulta sem escritório definido não devolve nenhum cliente",
+      "exemplo": {
+        "entrada": "mesmo banco de c1; transação aberta sem escritório definido; consulta todos os clientes sem filtro",
+        "saida": "0 clientes, sem erro"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Em nome de um escritório não se grava nem se altera cliente de outro",
+      "exemplo": {
+        "entrada": "mesmo banco de c1; transação em nome de ESC-1 tenta (a) gravar um cliente EMP-10 marcado como de ESC-2 e (b) alterar o nome de EMP-9",
+        "saida": "(a) recusado e EMP-10 não existe depois; (b) 0 clientes alterados e o nome de EMP-9 continua o mesmo, conferido em transação de ESC-2"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "O escritório de uma transação não vaza para a transação seguinte na mesma conexão",
+      "exemplo": {
+        "entrada": "mesmo banco de c1; na mesma conexão, transação 1 em nome de ESC-1 consulta os clientes e termina; transação 2 começa sem escritório definido e consulta os clientes",
+        "saida": "transação 1: EMP-1 e EMP-2; transação 2: 0 clientes"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q"
+    }
+  ],
+  "evidencia": null
+}

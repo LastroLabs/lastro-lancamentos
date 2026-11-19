@@ -1,0 +1,74 @@
+{
+  "id": "CAD-05",
+  "titulo": "Carregar o plano de contas do cliente por planilha",
+  "modulo": "cadastro",
+  "requisitos": [
+    "RF-CAD-03"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "marrathomaz",
+  "depende_de": [
+    "CAD-02",
+    "HAR-03",
+    "ACE-02",
+    "NUC-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O plano sintético do piloto é carregado no cliente com código e nome de cada conta",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e contador_a (sessão aberta); EMP-1 atribuída a contador_a, sem plano; contador_a envia a planilha do plano de EMP-1 gerada por hx fixtures build com a semente padrão (o arquivo indicado em plano_planilha de EMP-1 em fixtures/cadastro.json, formato da HAR-03 c6); depois pede o plano de EMP-1",
+        "saida": "carga aceita; a resposta informa quantas contas entraram, igual ao número de itens de plano de EMP-1 em fixtures/cadastro.json; o plano de EMP-1 lista os mesmos codigo e nome, na mesma ordem; 0 erros"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Na carga, a linha inválida é informada com o número dela e as demais contas entram",
+      "exemplo": {
+        "entrada": "mesmo estado inicial de c1; contador_a envia uma planilha com cabeçalho 'código' e 'nome' na linha 1, as contas '1.1.01' 'Caixa', '2.1.05' 'Fornecedores' e '9.9.99' 'Transitória' nas linhas 2 a 4 e, na linha 5, nome 'Bancos' sem código",
+        "saida": "carga aceita com 3 contas; a resposta traz o erro 'Linha 5: falta o código da conta.'; o plano de EMP-1 tem 3 contas"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O plano de um cliente não é lido nem carregado por outra carteira ou outro escritório, e não aparece em outro cliente",
+      "exemplo": {
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, sem plano; ESC-2 com chefe_2 (sessão aberta); contador_b pede o plano de EMP-2; contador_b e chefe_2 tentam, cada um, ler o plano de EMP-1 e enviar uma planilha para EMP-1",
+        "saida": "plano de EMP-2 com 0 contas; nas 4 tentativas sobre EMP-1: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, e nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Uma nova carga substitui o plano anterior do cliente (P-11)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com o plano do gabarito); contador_a envia para EMP-1 uma planilha com cabeçalho 'código' e 'nome' na linha 1 e 2 contas: '1.1.01' 'Caixa' e '9.9.99' 'Transitória'; depois pede o plano de EMP-1",
+        "saida": "carga aceita com 2 contas; o plano de EMP-1 tem exatamente 2 contas: 1.1.01 Caixa e 9.9.99 Transitória; nenhuma conta do plano anterior continua"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/cadastro/test_plano_de_contas.py::test_plano_do_gabarito_carregado_com_codigo_e_nome -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/cadastro/test_plano_de_contas.py::test_carga_informa_linha_invalida_e_aceita_demais -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/cadastro/test_plano_de_contas.py::test_plano_isolado_por_cliente_carteira_e_escritorio -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/cadastro/test_plano_de_contas.py::test_nova_carga_substitui_plano_anterior -q"
+    }
+  ],
+  "evidencia": null
+}

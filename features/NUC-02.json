@@ -1,0 +1,64 @@
+{
+  "id": "NUC-02",
+  "titulo": "Decidir o acesso por escritório, papel e carteira",
+  "modulo": "nucleo",
+  "requisitos": ["BD-02"],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O chefe tem acesso a todos os clientes do próprio escritório, atribuídos ou não",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b; EMP-1 atribuída a contador_a, EMP-2 a contador_b, EMP-3 sem responsável; decide o acesso de chefe_1 a EMP-1, EMP-2 e EMP-3",
+        "saida": "permitido nos 3 casos"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O contador tem acesso só aos clientes atribuídos a ele",
+      "exemplo": {
+        "entrada": "mesmo estado de c1; decide o acesso de contador_a a EMP-1, EMP-2 e EMP-3",
+        "saida": "EMP-1 permitido; EMP-2 negado; EMP-3 negado"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Ninguém tem acesso a cliente de outro escritório, nem o chefe",
+      "exemplo": {
+        "entrada": "estado de c1 mais ESC-2 com chefe_2 e contador_x, e EMP-9 atribuída a contador_x; decide o acesso de chefe_2 e contador_x a EMP-1, e de chefe_1 a EMP-9",
+        "saida": "negado nos 3 casos"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Usuário sem escritório ou sem papel conhecido é negado em tudo",
+      "exemplo": {
+        "entrada": "estado de c3; usuario_sem_escritorio (sem escritório) e usuario_sem_papel (em ESC-1, sem papel); decide o acesso de cada um a EMP-1 e EMP-3",
+        "saida": "negado nos 4 casos"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Filtrar uma lista de clientes devolve só os que o usuário pode ver",
+      "exemplo": {
+        "entrada": "estado de c3; filtra a lista [EMP-1, EMP-2, EMP-3, EMP-9] para contador_a, para chefe_1 e para chefe_2",
+        "saida": "contador_a: [EMP-1]; chefe_1: [EMP-1, EMP-2, EMP-3]; chefe_2: [EMP-9]"
+      }
+    }
+  ],
+  "verificacao": [
+    {"criterio": "c1", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_chefe_acessa_todos_do_escritorio -q"},
+    {"criterio": "c2", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"},
+    {"criterio": "c3", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"},
+    {"criterio": "c4", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"},
+    {"criterio": "c5", "comando": "pytest tests/nucleo/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"}
+  ],
+  "evidencia": null
+}

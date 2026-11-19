@@ -1,0 +1,1490 @@
+{
+	"_aviso": "Arquivo gerado por scripts/gerar-requisitos.mjs. Não edite à mão: altere as fontes e rode o script de novo.",
+	"versaoRequisitos": "v0.2 (07/11/2026)",
+	"fontes": {
+		"requisitos": "src/data/fonte/requisitos-v0.2.md",
+		"decisoes": "src/content/docs/decisoes/index.md",
+		"cenario": "src/content/docs/visao/cenario.md",
+		"equipe": "src/content/docs/home/equipe.mdx",
+		"arquitetura": "src/content/docs/arquitetura/visao-geral.mdx"
+	},
+	"notas": {
+		"criterio": "Nos Won't, o campo criterio guarda o Motivo.",
+		"modulo": "Mapeamento proposto (não decidido): por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won't sem módulo.",
+		"frente": "Pela tabela de frentes da equipe; prefixos que a tabela não cita ficam com frente null.",
+		"area": "Must: subtítulo da seção. Demais: área Must do mesmo prefixo ou rótulo tirado do texto do requisito."
+	},
+	"contagem": {
+		"Must": 56,
+		"Should": 11,
+		"Could": 6,
+		"Won't": 12,
+		"total": 85
+	},
+	"decisoes": [
+		{
+			"id": "D-01",
+			"decisao": "Foto e print entram no MVP?",
+			"afeta": [
+				"RF-LEI-06"
+			],
+			"recomendacao": "Aceitar foto como baixa confiança, sempre com conferência de saldo, se der tempo depois do Must. Hoje está em Should"
+		},
+		{
+			"id": "D-02",
+			"decisao": "A regra mínima de maquininha entra no MVP?",
+			"afeta": [
+				"RF-MAQ-01"
+			],
+			"recomendacao": "Sim. Sem ela, créditos de cartão viram perguntas inúteis ao cliente. A v2 deixa a maquininha toda fora, então precisa de aprovação"
+		},
+		{
+			"id": "D-03",
+			"decisao": "Nomes de contrapartes podem ser enviados ao serviço de IA?",
+			"afeta": [
+				"RF-SEG-03"
+			],
+			"recomendacao": "Precisa de decisão da equipe e do termo de uso com os pilotos. Sem nomes, a IA classifica pior"
+		},
+		{
+			"id": "D-04",
+			"decisao": "Qual é o terceiro banco do MVP?",
+			"afeta": [
+				"RF-LEI-03"
+			],
+			"recomendacao": "Sicoob ou Nubank, conforme o que aparecer nos extratos dos pilotos. BB e Inter aparecem nos dois escritórios"
+		},
+		{
+			"id": "D-05",
+			"decisao": "Qual é o layout exato de importação do Domínio?",
+			"afeta": [
+				"RF-EXP-01"
+			],
+			"recomendacao": "Pedir um exemplo aos dois escritórios e testar a importação na semana 1"
+		},
+		{
+			"id": "D-06",
+			"decisao": "Qual o tamanho máximo de arquivo e a validade do link?",
+			"afeta": [
+				"RF-ENV-02",
+				"RF-SEG-01"
+			],
+			"recomendacao": "Definir antes de programar o envio"
+		},
+		{
+			"id": "D-07",
+			"decisao": "Contadores do mesmo escritório compartilham carteira?",
+			"afeta": [
+				"RF-AUT-02"
+			],
+			"recomendacao": "Hoje cada contador vê só a sua. Perguntar nos pilotos se isso atende"
+		},
+		{
+			"id": "D-08",
+			"decisao": "Qual o limite de confiança para perguntar ao cliente?",
+			"afeta": [
+				"RF-CLA-06",
+				"RF-CLA-07"
+			],
+			"recomendacao": "Calibrar com os dados do gabarito, não por palpite"
+		},
+		{
+			"id": "D-09",
+			"decisao": "O chefe também revisa e exporta? Um cliente pode ter mais de um contador ao mesmo tempo?",
+			"afeta": [
+				"RF-AUT-02",
+				"RF-AUT-03",
+				"RF-AUT-04"
+			],
+			"recomendacao": "Perguntar à colega do grupo e aos pilotos. Enquanto isso, modelar a atribuição para aceitar mais de um contador por cliente, que custa pouco"
+		}
+	],
+	"dores": [
+		{
+			"dor": "Extrato incompleto descoberto só no fechamento",
+			"relatou": "Esc.1, Esc.2",
+			"resposta": "Conferência de saldo e de cobertura no envio (RF-VAL-01 a 04, RF-AVI-01)",
+			"requisitos": [
+				"RF-VAL-01",
+				"RF-VAL-02",
+				"RF-VAL-03",
+				"RF-VAL-04",
+				"RF-AVI-01"
+			]
+		},
+		{
+			"dor": "Cobrar o cliente várias vezes",
+			"relatou": "Esc.2",
+			"resposta": "Link de envio por cliente e mês e status na carteira (RF-ENV-01, RF-ENV-03, RF-PAI-01)",
+			"requisitos": [
+				"RF-ENV-01",
+				"RF-ENV-03",
+				"RF-PAI-01"
+			]
+		},
+		{
+			"dor": "Cadastro de layout por banco",
+			"relatou": "Esc.2",
+			"resposta": "Detecção automática de formato e OFX de qualquer banco (RF-LEI-01, RF-LEI-02)",
+			"requisitos": [
+				"RF-LEI-01",
+				"RF-LEI-02"
+			]
+		},
+		{
+			"dor": "Perguntas repetidas ao cliente",
+			"relatou": "Esc.1",
+			"resposta": "Aprendizado por cliente e perguntas agrupadas, respondidas com um toque (RF-APR, RF-PER)",
+			"requisitos": [
+				"RF-APR-01",
+				"RF-APR-02",
+				"RF-APR-03",
+				"RF-PER-01",
+				"RF-PER-02",
+				"RF-PER-03",
+				"RF-PER-04",
+				"RF-PER-05",
+				"RF-PER-06"
+			]
+		},
+		{
+			"dor": "Desconfiança da automação",
+			"relatou": "Esc.2",
+			"resposta": "Origem e confiança em cada sugestão; nada é exportado sem revisão (RF-CLA-06, RF-REV-04)",
+			"requisitos": [
+				"RF-CLA-06",
+				"RF-REV-04"
+			]
+		},
+		{
+			"dor": "Retirada de sócio confundida com despesa",
+			"relatou": "Esc.2",
+			"resposta": "Regra de sócio por prefixo de nome, marcada \"a confirmar\" (RF-CLA-02c)",
+			"requisitos": [
+				"RF-CLA-02c"
+			]
+		},
+		{
+			"dor": "Digitação no Domínio",
+			"relatou": "Esc.1, Esc.2",
+			"resposta": "Planilha no layout de importação, conciliada com o extrato (RF-EXP-01, RF-EXP-03)",
+			"requisitos": [
+				"RF-EXP-01",
+				"RF-EXP-03"
+			]
+		}
+	],
+	"frentes": [
+		{
+			"frente": "Plataforma e arquitetura",
+			"prefixos": [
+				"AUT",
+				"SEG",
+				"CAD",
+				"ENV",
+				"REV",
+				"EXP"
+			]
+		},
+		{
+			"frente": "Frontend",
+			"prefixos": []
+		},
+		{
+			"frente": "Leitura e conferência (bancos)",
+			"prefixos": [
+				"LEI",
+				"VAL"
+			]
+		},
+		{
+			"frente": "Classificação e IA",
+			"prefixos": [
+				"CLA",
+				"PER",
+				"APR"
+			]
+		}
+	],
+	"modulos": [
+		"nucleo",
+		"acesso",
+		"cadastro",
+		"envio",
+		"leitura",
+		"validacao",
+		"classificacao",
+		"perguntas",
+		"revisao",
+		"exportacao",
+		"ia",
+		"observabilidade",
+		"api",
+		"worker"
+	],
+	"requisitos": [
+		{
+			"id": "RF-AUT-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve permitir que cada contador acesse com login individual.",
+			"criterio": "Dois contadores do mesmo escritório entram com credenciais diferentes e o sistema identifica quem fez cada ação.",
+			"origem": "v2, Esc.1",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-AUT-02",
+			"selo": "AJUSTADO",
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve mostrar a cada contador apenas os clientes atribuídos a ele, e ao chefe todos os clientes do escritório, aplicando essa regra no servidor em toda requisição.",
+			"criterio": "O contador A não vê, nem por endereço direto, clientes atribuídos só ao contador B. O chefe vê todos os clientes do escritório e nenhum de outro escritório.",
+			"origem": "v2, Equipe",
+			"decisoes": [
+				"D-07",
+				"D-09"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-AUT-03",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve ter o papel de chefe, que cadastra contadores e clientes e atribui clientes a contadores.",
+			"criterio": "Um usuário chefe cria um contador, cria um cliente e atribui o cliente a esse contador. Um contador sem o papel de chefe não vê essas ações.",
+			"origem": "Equipe",
+			"decisoes": [
+				"D-09"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-AUT-04",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve encerrar o acesso do contador anterior e conceder o acesso ao novo, imediatamente, quando o chefe reatribuir um cliente.",
+			"criterio": "Depois de trocar as empresas 1 e 2 entre os contadores A e B, A recebe \"sem acesso\" ao abrir a empresa 1, mesmo com sessão aberta e por endereço direto, e B abre a empresa 1 sem novo login. Dados e aprendizado do cliente permanecem com o cliente.",
+			"origem": "Equipe",
+			"decisoes": [
+				"D-09"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-SEG-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve gerar o link do cliente com um código imprevisível e com validade, e permitir que o contador o invalide.",
+			"criterio": "Link expirado ou invalidado mostra mensagem de link inválido e não dá acesso a nenhum dado. O prazo de validade fica em configuração [definir].",
+			"origem": "Proposta, v2",
+			"decisoes": [
+				"D-06"
+			],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-SEG-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve isolar os dados de cada escritório.",
+			"criterio": "Um usuário de um escritório não consegue ler dados de outro escritório por nenhuma tela nem endereço.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "nucleo"
+		},
+		{
+			"id": "RF-SEG-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve remover CPF, CNPJ e números de agência e conta das descrições antes de enviá-las a um serviço externo de IA.",
+			"criterio": "Teste com extratos que contêm esses dados: a requisição enviada ao serviço de IA não contém nenhum deles. Ver decisão D-03 sobre nomes.",
+			"origem": "v2 (riscos, regras do harness)",
+			"decisoes": [
+				"D-03"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "ia"
+		},
+		{
+			"id": "RF-CAD-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder cadastrar um cliente com nome e CNPJ.",
+			"criterio": "O cliente aparece na carteira do contador depois de salvo.",
+			"origem": "v2 (F04)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-CAD-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder informar os bancos (e as contas) do cliente.",
+			"criterio": "O cliente guarda uma ou mais contas, cada uma com banco e apelido.",
+			"origem": "v2 (passo 1)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-CAD-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder carregar o plano de contas do cliente por planilha.",
+			"criterio": "O plano de contas do piloto é carregado com código e nome de cada conta. Linha inválida é rejeitada com a linha indicada.",
+			"origem": "Esc.1, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-CAD-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder indicar qual conta do plano é a conta transitória do cliente.",
+			"criterio": "A conta escolhida precisa existir no plano. Sem ela, o sistema não permite exportar.",
+			"origem": "Esc.1, Esc.2, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-CAD-06",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder cadastrar os sócios do cliente (nome).",
+			"criterio": "Os sócios aparecem na ficha do cliente e são usados pela regra RF-CLA-02c.",
+			"origem": "Esc.2 (retirada de lucro), Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-ENV-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Envio e coleta",
+			"requisito": "O contador deve poder gerar um link de envio para um cliente e um mês.",
+			"criterio": "O link abre uma página de envio, no celular, sem pedir login, ligada ao cliente e ao mês escolhidos.",
+			"origem": "v2 (passo 2), Ata",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Cobrar o cliente várias vezes"
+			],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-ENV-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Envio e coleta",
+			"requisito": "O cliente deve poder enviar um ou mais arquivos PDF ou OFX pelo link.",
+			"criterio": "Dois PDFs escolhidos no celular são aceitos numa única ação. Arquivo de outro tipo é recusado com mensagem. Tamanho máximo [definir].",
+			"origem": "v2 (passo 3), Esc.1",
+			"decisoes": [
+				"D-06"
+			],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-ENV-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Envio e coleta",
+			"requisito": "O sistema deve mostrar ao contador, por cliente e mês, se o extrato foi enviado (não enviado, parcial, enviado).",
+			"criterio": "Antes do envio o status é \"não enviado\". Depois do primeiro arquivo, \"parcial\" ou \"enviado\", conforme a conferência de cobertura do mês.",
+			"origem": "Esc.2 (cobra cerca de 3 vezes), v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Cobrar o cliente várias vezes"
+			],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-ENV-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Envio e coleta",
+			"requisito": "O cliente deve poder enviar um arquivo complementar quando o sistema avisar que falta algo, e o sistema deve refazer a conferência.",
+			"criterio": "Após o envio de um arquivo que cobre o trecho faltante, o aviso desaparece e o status muda.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-LEI-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Leitura",
+			"requisito": "O sistema deve detectar sozinho o formato do arquivo (OFX ou PDF digital), sem o usuário escolher configuração.",
+			"criterio": "Os arquivos do gabarito são reconhecidos sem nenhuma seleção manual. Formato não suportado gera aviso (ver RF-AVI-02).",
+			"origem": "v2, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Cadastro de layout por banco"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-LEI-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Leitura",
+			"requisito": "O sistema deve ler OFX de qualquer banco, sem cadastro prévio por banco.",
+			"criterio": "Em cada OFX do gabarito, o número de movimentações lidas é igual ao número de transações do arquivo e data, valor e descrição de cada uma batem.",
+			"origem": "v2, Esc.2 (reclama do cadastro por OFX)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Cadastro de layout por banco"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-LEI-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Leitura",
+			"requisito": "O sistema deve ler PDF digital de extrato do Inter e do Banco do Brasil.",
+			"criterio": "Em cada PDF do gabarito, as movimentações lidas (data, descrição, valor) coincidem 100% com o gabarito. Ver decisão D-04 sobre o terceiro banco.",
+			"origem": "v2, Esc.1, Esc.2",
+			"decisoes": [
+				"D-04"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-LEI-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Leitura",
+			"requisito": "O sistema deve identificar o banco e o período coberto por cada arquivo lido.",
+			"criterio": "O período identificado (primeira e última data) aparece na tela e é usado pela conferência de cobertura (RF-VAL-04).",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-LEI-05",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Leitura",
+			"requisito": "O sistema deve evitar movimentações duplicadas quando o mesmo período é enviado mais de uma vez.",
+			"criterio": "Reenviar o mesmo extrato não duplica linhas quando a transação tem identificador. Sem identificador, linhas idênticas no mesmo dia não são removidas e o sistema avisa o contador.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-VAL-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Conferência de valores",
+			"requisito": "O sistema deve conferir se saldo inicial mais a soma das movimentações é igual ao saldo final, por cálculo em código, sem usar IA.",
+			"criterio": "Um extrato íntegro passa. O mesmo extrato com uma linha removida, um valor alterado ou um sinal invertido falha.",
+			"origem": "v2, Esc.1 (erro só aparece no fechamento)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Extrato incompleto descoberto só no fechamento"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "validacao"
+		},
+		{
+			"id": "RF-VAL-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Conferência de valores",
+			"requisito": "O sistema deve conferir o saldo no nível mais fino que o extrato permitir (linha a linha, senão dia a dia).",
+			"criterio": "Em extrato com saldo por linha, a linha onde o saldo deixa de fechar é indicada. Em extrato só com saldo diário, o dia é indicado.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Extrato incompleto descoberto só no fechamento"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "validacao"
+		},
+		{
+			"id": "RF-VAL-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Conferência de valores",
+			"requisito": "O sistema deve conferir se o saldo inicial do mês é igual ao saldo final do mês anterior da mesma conta, quando o mês anterior já estiver no sistema.",
+			"criterio": "Mês que começa com saldo diferente do final do anterior gera aviso com os dois valores.",
+			"origem": "v2 (passo 4)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Extrato incompleto descoberto só no fechamento"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "validacao"
+		},
+		{
+			"id": "RF-VAL-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Conferência de valores",
+			"requisito": "O sistema deve avisar quando o período do extrato não vai até o último dia do mês.",
+			"criterio": "Extrato que termina antes do último dia do mês gera aviso indicando a última data presente.",
+			"origem": "Esc.2 (falta o último dia)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Extrato incompleto descoberto só no fechamento"
+			],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "validacao"
+		},
+		{
+			"id": "RF-VAL-05",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Conferência de valores",
+			"requisito": "O sistema não deve incluir na exportação as movimentações de um extrato reprovado na conferência sem confirmação explícita do contador.",
+			"criterio": "Extrato reprovado fica bloqueado para exportação. O contador pode liberar escolhendo uma ação que fica registrada.",
+			"origem": "Proposta, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "validacao"
+		},
+		{
+			"id": "RF-AVI-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Avisos",
+			"requisito": "O sistema deve avisar o cliente, no momento do envio, quando a conferência falhar ou faltar período, dizendo o que falta.",
+			"criterio": "Após enviar um extrato com saldo inicial diferente do final anterior, a tela mostra os dois valores e o que fazer (exemplo: \"Outubro começa em R$ 7.900, mas setembro terminou em R$ 8.200. Falta alguma coisa.\").",
+			"origem": "v2 (passo 4)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Extrato incompleto descoberto só no fechamento"
+			],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-AVI-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Avisos",
+			"requisito": "O sistema deve escrever todas as mensagens de erro e aviso em português simples, sem termos técnicos.",
+			"criterio": "Uma contadora lê a lista completa de mensagens e não encontra termo que não entenda. Cada mensagem diz o que aconteceu e o que fazer.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-CLA-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve sugerir, para cada movimentação, apenas uma conta existente no plano de contas do cliente, ou \"não sei\".",
+			"criterio": "Em teste com todo o gabarito, nenhuma sugestão fica fora do plano de contas.",
+			"origem": "v2 (passo 5)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-02a",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve classificar por palavra-chave as movimentações de tarifa bancária, IOF, impostos e encargos (DAS, DARF, GPS, FGTS) e aplicação ou resgate, usando a conta de destino configurada para o cliente.",
+			"criterio": "Cada tipo tem uma lista de palavras-chave e uma conta de destino por cliente. Movimentação que casa recebe a conta e a origem \"regra\". Cobertura das palavras-chave validada no gabarito.",
+			"origem": "Esc.1, Esc.2, Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-02b",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve classificar como transferência entre contas próprias a movimentação que corresponde a uma conta cadastrada do mesmo cliente.",
+			"criterio": "Uma saída e uma entrada de mesmo valor e mesma data entre duas contas do cliente são marcadas como transferência interna, sem contar como receita nem despesa. Pix para terceiro não é marcado.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-02c",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve classificar como movimento de sócio a movimentação cuja contraparte coincide, inclusive por prefixo do nome, com um sócio cadastrado, distinguindo saída de entrada.",
+			"criterio": "Nome truncado no extrato casa com o sócio cadastrado. Saída recebe a conta padrão de retiradas e entrada recebe a conta padrão de aporte ou empréstimo de sócio, ambas configuráveis e marcadas \"a confirmar pelo contador\". Entrada de sócio nunca entra como receita.",
+			"origem": "Esc.2 (retirada de lucro), Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Retirada de sócio confundida com despesa"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve usar o histórico do cliente: uma contraparte já classificada antes recebe a mesma conta.",
+			"criterio": "Movimentação cuja contraparte (texto normalizado) já foi aceita pelo contador antes sai com a mesma conta e a origem \"histórico\".",
+			"origem": "v2 (passo 5)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve sugerir conta com base em movimentações parecidas do mesmo cliente quando não houver correspondência exata.",
+			"criterio": "Em teste com descrições do gabarito que variam (números, datas), a sugestão aponta para a conta das parecidas e a origem é \"parecidas\".",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-05",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve usar IA para sugerir conta apenas nas movimentações que as regras, o histórico e as parecidas não resolveram.",
+			"criterio": "O registro de cada extrato mostra que nenhuma movimentação já resolvida por regra ou histórico foi enviada à IA.",
+			"origem": "v2, Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-06",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve registrar e mostrar, em cada sugestão, o motivo (origem) e o nível de confiança (alta, média, baixa).",
+			"criterio": "Toda sugestão exibe origem e confiança na revisão. Os critérios de cada nível ficam documentados [definir].",
+			"origem": "v2, Esc.2 (confia após cerca de 3 meses)",
+			"decisoes": [
+				"D-08"
+			],
+			"aDefinir": true,
+			"dores": [
+				"Desconfiança da automação"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-07",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema não deve aplicar sugestão cuja confiança esteja abaixo do limite, e deve transformá-la em pergunta ao cliente.",
+			"criterio": "Movimentação abaixo do limite não recebe conta e aparece nas perguntas. O limite inicial é [definir] com dados do piloto.",
+			"origem": "v2, Proposta",
+			"decisoes": [
+				"D-08"
+			],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-09",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve seguir uma ordem de precedência quando mais de uma regra casar com a mesma movimentação.",
+			"criterio": "Com duas regras que casam, vence a de maior precedência e o motivo mostra qual regra foi usada. A ordem fica documentada [definir].",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-CLA-10",
+			"selo": "NOVO",
+			"prioridade": "Must",
+			"area": "Classificação",
+			"requisito": "O sistema deve passar a movimentação para a camada seguinte da classificação quando o tipo for reconhecido mas o cliente não tiver conta configurada para ele.",
+			"criterio": "Movimentação de tipo sem conta configurada segue para histórico, parecidas e IA, e o contador vê um aviso de que falta configurar a conta.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-MAQ-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Maquininha (mínimo)",
+			"requisito": "O sistema deve reconhecer créditos de adquirentes (Cielo, Stone, Getnet, Rede, PagBank, Mercado Pago) e classificá-los como \"recebimento de cartão\", sem abrir as vendas.",
+			"criterio": "Créditos com o nome de uma adquirente recebem a conta configurada para cartão e não viram pergunta ao cliente.",
+			"origem": "Proposta (a v2 deixa a maquininha toda fora; ver D-02), Esc.1, Esc.2",
+			"decisoes": [
+				"D-02"
+			],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-PER-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Perguntas ao cliente",
+			"requisito": "O sistema deve agrupar as movimentações sem classificação por contraparte e gerar uma pergunta por grupo.",
+			"criterio": "Sete movimentações com a mesma contraparte geram uma única pergunta que lista as sete.",
+			"origem": "v2 (passo 6), Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-PER-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Perguntas ao cliente",
+			"requisito": "O cliente deve poder responder cada pergunta escolhendo uma opção em uma lista, com um toque, ou escrever um texto livre na opção \"outro\".",
+			"criterio": "Cada pergunta tem opções predefinidas (por exemplo fornecedor, retirada pessoal, funcionário, outro). Escolher uma opção registra a resposta sem passo extra.",
+			"origem": "v2 (passo 6), Esc.1 (resposta em 1 a 2 dias)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-PER-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Perguntas ao cliente",
+			"requisito": "O sistema deve mostrar, em cada pergunta, a data, o valor e a descrição de cada movimentação do grupo.",
+			"criterio": "A pergunta exibe todas as linhas do grupo com esses três campos.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-PER-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Perguntas ao cliente",
+			"requisito": "O cliente deve poder responder \"não sei\", e a movimentação deve continuar pendente.",
+			"criterio": "Resposta \"não sei\" não gera sugestão de conta e mantém a movimentação como pendente.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-PER-05",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Perguntas ao cliente",
+			"requisito": "O sistema deve transformar a resposta do cliente em uma conta sugerida, marcada como \"confirmada pelo cliente\", para o contador revisar.",
+			"criterio": "A resposta escolhida é convertida em conta por um mapeamento configurável pelo contador. O resultado aparece na revisão no grupo \"confirmadas pelo cliente\".",
+			"origem": "v2 (passos 6 e 8)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-APR-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Aprendizado",
+			"requisito": "O sistema deve registrar como regra do cliente a resposta do cliente depois que o contador a aceitar.",
+			"criterio": "No mês seguinte, a mesma contraparte vem classificada com a origem \"histórico\".",
+			"origem": "v2 (passo 7)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-APR-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Aprendizado",
+			"requisito": "O sistema deve registrar como aprendizado a correção feita pelo contador, substituindo a sugestão anterior.",
+			"criterio": "Após o contador trocar a conta de uma contraparte, a próxima ocorrência usa a nova conta.",
+			"origem": "v2 (passo 8)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-APR-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Aprendizado",
+			"requisito": "O sistema deve manter o aprendizado separado por cliente.",
+			"criterio": "Uma regra aprendida num cliente não altera a sugestão de outro cliente nem de outro escritório.",
+			"origem": "v2, Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-REV-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Revisão",
+			"requisito": "O sistema deve mostrar ao contador as movimentações do mês em três grupos: prontas, confirmadas pelo cliente e pendentes.",
+			"criterio": "Cada movimentação está em exatamente um grupo, e o total de cada grupo aparece na tela.",
+			"origem": "v2 (passo 8)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-REV-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Revisão",
+			"requisito": "O contador deve poder, em cada movimentação, aceitar a sugestão, trocar a conta ou marcá-la como pendente, e aceitar um grupo inteiro de uma vez.",
+			"criterio": "Cada ação muda o estado da movimentação e fica registrada com data e usuário. \"Aceitar grupo\" afeta apenas o grupo visível.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-REV-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Revisão",
+			"requisito": "O sistema deve mostrar na revisão o resultado da conferência de saldo do extrato.",
+			"criterio": "A tela de revisão mostra aprovado ou reprovado e, se reprovado, o motivo (RF-VAL).",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-REV-04",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Revisão",
+			"requisito": "O sistema não deve exportar uma movimentação que não tenha sido revisada pelo contador, exceto as pendentes, que saem na conta transitória.",
+			"criterio": "Movimentação não revisada e não pendente impede a exportação, com aviso de quantas faltam.",
+			"origem": "v2 (\"nada importa sem revisão\")",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Desconfiança da automação"
+			],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-EXP-01",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Exportação",
+			"requisito": "O sistema deve gerar uma planilha Excel no layout de importação do Domínio, com número do documento, fornecedor, valor, data, cliente e a conta.",
+			"criterio": "Uma planilha gerada a partir de um extrato do piloto é importada no Domínio por uma contadora sem erro e sem edição manual. Layout exato em D-05.",
+			"origem": "Esc.1, Esc.2, v2",
+			"decisoes": [
+				"D-05"
+			],
+			"aDefinir": false,
+			"dores": [
+				"Digitação no Domínio"
+			],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "exportacao"
+		},
+		{
+			"id": "RF-EXP-02",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Exportação",
+			"requisito": "O sistema deve exportar as movimentações pendentes na conta transitória do cliente, identificadas como pendentes.",
+			"criterio": "Toda pendente aparece na planilha na conta transitória e com marca que a diferencia das demais.",
+			"origem": "Esc.1, Esc.2, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "exportacao"
+		},
+		{
+			"id": "RF-EXP-03",
+			"selo": null,
+			"prioridade": "Must",
+			"area": "Exportação",
+			"requisito": "O sistema deve garantir que a planilha concilia com o extrato.",
+			"criterio": "Antes do download, o sistema mostra a quantidade de linhas e o total de entradas e saídas exportados, e eles são iguais aos do extrato.",
+			"origem": "Esc.2 (\"tudo conferindo com o extrato\")",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Digitação no Domínio"
+			],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "exportacao"
+		},
+		{
+			"id": "RF-EXP-04",
+			"selo": "AJUSTADO",
+			"prioridade": "Must",
+			"area": "Exportação",
+			"requisito": "O contador deve poder salvar as opções de exportação por cliente, e elas devem permanecer com o cliente quando o responsável mudar.",
+			"criterio": "Uma opção salva (por exemplo conta do banco e conta transitória) é reaplicada na exportação seguinte. Após reatribuir o cliente, o novo contador exporta com as opções já salvas, sem reconfigurar.",
+			"origem": "v2, Equipe",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "exportacao"
+		},
+		{
+			"id": "RF-LEI-06",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Leitura",
+			"requisito": "O sistema deve ler foto e print de extrato, marcando as movimentações como de baixa confiança e exigindo a conferência de saldo. Sujeito à decisão D-01.",
+			"criterio": "Em fotos do gabarito, o sistema extrai as linhas e a conferência de saldo detecta as leituras com valor errado. Taxa mínima de leitura [definir].",
+			"origem": "Esc.2, v2",
+			"decisoes": [
+				"D-01"
+			],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-CAD-05",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Cadastro",
+			"requisito": "O contador deve poder importar lançamentos de meses anteriores do cliente para alimentar a classificação.",
+			"criterio": "Depois de importar os lançamentos de um cliente do piloto, movimentações já conhecidas saem classificadas com origem \"histórico\" já no primeiro mês.",
+			"origem": "v2 (passo 1), Esc.2 (confiança leva cerca de 3 meses)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "cadastro"
+		},
+		{
+			"id": "RF-PAI-01",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Carteira",
+			"requisito": "O contador deve poder ver a carteira em uma tela única, com o status de cada cliente (sem envio, parcial, perguntas abertas, em revisão, exportado).",
+			"criterio": "A lista mostra um status por cliente e permite filtrar por status.",
+			"origem": "Esc.2 (cobra cerca de 3 vezes), v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Cobrar o cliente várias vezes"
+			],
+			"frente": null,
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-PER-06",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Perguntas ao cliente",
+			"requisito": "O cliente deve poder responder parte das perguntas e continuar depois, pelo mesmo link.",
+			"criterio": "As respostas dadas ficam salvas. Reabrir o link mostra só as perguntas restantes.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [
+				"Perguntas repetidas ao cliente"
+			],
+			"frente": "Classificação e IA",
+			"modulo": "perguntas"
+		},
+		{
+			"id": "RF-REV-05",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Revisão",
+			"requisito": "O sistema deve permitir ordenar as movimentações da revisão pela menor confiança.",
+			"criterio": "A lista pode ser ordenada, e as de confiança baixa aparecem primeiro.",
+			"origem": "Proposta, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-REG-01",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Regras",
+			"requisito": "O contador deve poder ver, editar e desativar as regras aprendidas e criar regras manuais por palavra-chave.",
+			"criterio": "Regra desativada deixa de ser usada na próxima classificação. Regra manual criada é aplicada em seguida.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-DOC-01",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Arquivos originais",
+			"requisito": "O sistema deve guardar os arquivos originais enviados e listá-los por cliente e mês.",
+			"criterio": "O contador baixa o arquivo original de qualquer envio a partir da lista do cliente.",
+			"origem": "Ata (bloco 5)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-OBS-01",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Observabilidade",
+			"requisito": "O sistema deve registrar, para cada extrato processado, o formato detectado, o leitor usado, o saldo calculado contra o informado, a confiança e o motivo de cada sugestão, as chamadas à IA e o tempo gasto.",
+			"criterio": "Para um extrato processado, o registro permite reconstruir cada decisão do sistema.",
+			"origem": "v2 (observabilidade)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": "observabilidade"
+		},
+		{
+			"id": "RF-AUT-05",
+			"selo": "NOVO",
+			"prioridade": "Should",
+			"area": "Acesso e segurança",
+			"requisito": "O sistema deve guardar o histórico de atribuições de cada cliente (contador responsável, início e fim).",
+			"criterio": "Após duas reatribuições, o histórico lista os três responsáveis com as datas.",
+			"origem": "Equipe, Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "acesso"
+		},
+		{
+			"id": "RF-CLA-02d",
+			"selo": "NOVO",
+			"prioridade": "Should",
+			"area": "Classificação",
+			"requisito": "O sistema deve marcar como \"possível parcelamento, a confirmar\" a movimentação com sinal de parcela (texto como \"PARC\" ou \"n/m\") ou com valor igual repetido todo mês para a mesma contraparte.",
+			"criterio": "Em casos do gabarito com parcela recorrente, a movimentação aparece marcada e vira pergunta ao contador ou ao cliente, sem receber conta automática.",
+			"origem": "Esc.1, Esc.2, Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-OBS-02",
+			"selo": null,
+			"prioridade": "Should",
+			"area": "Observabilidade",
+			"requisito": "O sistema deve calcular as métricas do piloto: extratos que fecham saldo sem intervenção, acerto por linha contra o gabarito, parte das sugestões aceitas sem edição, tempo e taxa de resposta dos clientes.",
+			"criterio": "Um relatório lista as quatro métricas por período, a partir dos registros de RF-OBS-01. Metas [definir].",
+			"origem": "v2 (como medir)",
+			"decisoes": [],
+			"aDefinir": true,
+			"dores": [],
+			"frente": null,
+			"modulo": "observabilidade"
+		},
+		{
+			"id": "RF-LEI-07",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Leitura",
+			"requisito": "O sistema deve ler extrato em CSV.",
+			"criterio": "Um CSV do gabarito é lido com o mesmo critério do RF-LEI-02.",
+			"origem": "Proposta (nenhum entrevistado citou CSV)",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Leitura e conferência (bancos)",
+			"modulo": "leitura"
+		},
+		{
+			"id": "RF-ENV-05",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Envio e coleta",
+			"requisito": "O sistema deve oferecer uma mensagem de cobrança pronta, para o contador copiar e enviar ao cliente.",
+			"criterio": "O texto inclui o link e o mês e pode ser copiado com um clique.",
+			"origem": "Proposta, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "envio"
+		},
+		{
+			"id": "RF-CLA-08",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Classificação",
+			"requisito": "O sistema deve alertar o contador sobre pagamento duplicado e fornecedor novo de valor alto.",
+			"criterio": "Dois pagamentos iguais em poucos dias geram alerta. O limite de \"valor alto\" é [definir].",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": true,
+			"dores": [],
+			"frente": "Classificação e IA",
+			"modulo": "classificacao"
+		},
+		{
+			"id": "RF-AVI-03",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Avisos",
+			"requisito": "O sistema deve avisar o contador, dentro do sistema, quando um cliente enviar arquivo ou responder perguntas.",
+			"criterio": "Ao concluir um envio, o contador vê um indicador na carteira.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-REV-06",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Revisão",
+			"requisito": "O sistema deve mostrar, em cada sugestão, as movimentações parecidas que a embasaram.",
+			"criterio": "Para uma sugestão de origem \"parecidas\", a tela lista os exemplos usados.",
+			"origem": "Proposta, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "revisao"
+		},
+		{
+			"id": "RF-EXP-05",
+			"selo": null,
+			"prioridade": "Could",
+			"area": "Exportação",
+			"requisito": "O sistema deve exportar também em CSV genérico.",
+			"criterio": "O arquivo traz as mesmas colunas do RF-EXP-01.",
+			"origem": "Proposta",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": "exportacao"
+		},
+		{
+			"id": "RF-MAQ-02",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Maquininha",
+			"requisito": "Importar o relatório da maquininha e lançar venda bruta e tarifa.",
+			"criterio": "Próximo módulo prioritário. Cada adquirente tem um relatório diferente.",
+			"origem": "v2, Esc.1, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-MAQ-03",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Maquininha",
+			"requisito": "Conciliar vendas, taxa e recebido até zerar a operação.",
+			"criterio": "Depende de RF-MAQ-02.",
+			"origem": "Esc.2, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-AVI-04",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Avisos",
+			"requisito": "Enviar lembretes automáticos por WhatsApp e e-mail.",
+			"criterio": "Adição futura.",
+			"origem": "Ata, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-REL-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Resumo mensal",
+			"requisito": "Resumo ou dashboard mensal para o cliente.",
+			"criterio": "O Esc.2 disse que o cliente não leria. Só voltaria se outros escritórios pedirem.",
+			"origem": "v2, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-EXP-06",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Exportação",
+			"requisito": "Exportar para outros sistemas contábeis (Questor, Alterdata).",
+			"criterio": "Os dois pilotos usam Domínio.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": "Plataforma e arquitetura",
+			"modulo": null
+		},
+		{
+			"id": "RF-IMP-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Impostos e parcelamentos",
+			"requisito": "Conciliar impostos e parcelamentos (separar principal, juros e multa e baixar o saldo devedor).",
+			"criterio": "Exige conhecimento fiscal que a equipe não tem.",
+			"origem": "Esc.1, v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-BAN-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Open Finance",
+			"requisito": "Conectar direto ao banco do cliente (Open Finance).",
+			"criterio": "Fora do escopo declarado.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-CHAT-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Chatbot",
+			"requisito": "Chatbot para tirar dúvidas.",
+			"criterio": "A ata cita, a v2 não inclui e nenhum entrevistado pediu.",
+			"origem": "Ata",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-COB-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Cobrança",
+			"requisito": "Cobrança e assinatura dentro do sistema.",
+			"criterio": "O modelo é por faixa de carteira, a cobrança é tratada fora do sistema nesta fase.",
+			"origem": "v2, Esc.2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-CON-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Consultoria",
+			"requisito": "Consultoria sobre gastos e análise de movimentações suspeitas.",
+			"criterio": "Ideia futura da ata.",
+			"origem": "Ata",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-INF-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Informais",
+			"requisito": "Uso por trabalhadores informais.",
+			"criterio": "Muda o público e não foi validado.",
+			"origem": "Ata",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		},
+		{
+			"id": "RF-TRI-01",
+			"selo": null,
+			"prioridade": "Won't",
+			"area": "Tributação",
+			"requisito": "Decidir ou sugerir tributação, ou tratar a Reforma Tributária.",
+			"criterio": "Fora do produto. O contador decide.",
+			"origem": "v2",
+			"decisoes": [],
+			"aDefinir": false,
+			"dores": [],
+			"frente": null,
+			"modulo": null
+		}
+	]
+}
