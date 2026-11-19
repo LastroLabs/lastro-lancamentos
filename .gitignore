@@ -7,6 +7,13 @@ gitpages/.astro/
 # Qualquer node_modules em outra pasta
 node_modules/
 
+# Build do front (web/, React + Vite)
+web/dist/
+
+# Saída do `hx fixtures build` (cadastro, OFX, planilhas e gabarito sintéticos).
+# Gerada de novo pela semente fixa; o gabarito gerado não é versionado.
+/fixtures/
+
 # Documentos de referência privados: nunca vão para o repositório público
 referencias/
 
