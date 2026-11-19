@@ -1,7 +1,7 @@
 {
   "id": "CAD-01",
   "titulo": "Validar CNPJ numérico e alfanumérico do cliente",
-  "modulo": "cadastro",
+  "modulo": "registry",
   "requisitos": ["RF-CAD-01"],
   "prioridade": "must",
   "onda": 1,
@@ -46,11 +46,11 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_numerico_valido_aceito_com_e_sem_mascara -q"},
-    {"criterio": "c2", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_com_digito_errado_recusado -q"},
-    {"criterio": "c3", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_alfanumerico_valido_aceito -q"},
-    {"criterio": "c3", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_alfanumerico_com_digito_errado_recusado -q"},
-    {"criterio": "c4", "comando": "pytest tests/cadastro/test_cnpj.py::test_cnpj_vazio_ou_fora_do_padrao_recusado -q"}
+    {"criterio": "c1", "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_numerico_valido_aceito_com_e_sem_mascara -q"},
+    {"criterio": "c2", "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_com_digito_errado_recusado -q"},
+    {"criterio": "c3", "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_alfanumerico_valido_aceito -q"},
+    {"criterio": "c3", "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_alfanumerico_com_digito_errado_recusado -q"},
+    {"criterio": "c4", "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_vazio_ou_fora_do_padrao_recusado -q"}
   ],
   "evidencia": null
 }

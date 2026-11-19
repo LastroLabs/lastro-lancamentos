@@ -1,7 +1,7 @@
 {
   "id": "NUC-03",
   "titulo": "Isolar no banco os dados de cada escritório",
-  "modulo": "nucleo",
+  "modulo": "core",
   "requisitos": [
     "RF-SEG-02",
     "BD-02"
@@ -54,23 +54,23 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q"
     }
   ],
   "evidencia": null

@@ -1,7 +1,7 @@
 {
   "id": "ACE-03",
   "titulo": "Mostrar a cada contador só os clientes da sua carteira",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-AUT-02",
     "RF-SEG-02"
@@ -62,23 +62,23 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_carteira.py::test_contador_lista_so_clientes_atribuidos -q"
+      "comando": "pytest tests/access/test_carteira.py::test_contador_lista_so_clientes_atribuidos -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_carteira.py::test_contador_endereco_direto_negado_igual_inexistente -q"
+      "comando": "pytest tests/access/test_carteira.py::test_contador_endereco_direto_negado_igual_inexistente -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_carteira.py::test_chefe_lista_todo_o_escritorio -q"
+      "comando": "pytest tests/access/test_carteira.py::test_chefe_lista_todo_o_escritorio -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_carteira.py::test_chefe_nao_abre_cliente_de_outro_escritorio -q"
+      "comando": "pytest tests/access/test_carteira.py::test_chefe_nao_abre_cliente_de_outro_escritorio -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_carteira.py::test_contador_sem_clientes_recebe_lista_vazia -q"
+      "comando": "pytest tests/access/test_carteira.py::test_contador_sem_clientes_recebe_lista_vazia -q"
     }
   ],
   "evidencia": null

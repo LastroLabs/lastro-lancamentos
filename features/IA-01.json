@@ -1,7 +1,7 @@
 {
   "id": "IA-01",
   "titulo": "Remover CPF, CNPJ, agência, conta e nomes de descrições",
-  "modulo": "ia",
+  "modulo": "ai",
   "requisitos": [
     "RF-SEG-03"
   ],
@@ -58,31 +58,31 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q"
     },
     {
       "criterio": "c1",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_cnpj_alfanumerico_removido -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_cnpj_alfanumerico_removido -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_agencia_e_conta_removidas -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_agencia_e_conta_removidas -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_de_pessoas_viram_pseudonimos_estaveis -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_nomes_de_pessoas_viram_pseudonimos_estaveis -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_nomes_de_empresas_viram_pseudonimo_de_empresa -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_nomes_de_empresas_viram_pseudonimo_de_empresa -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_pseudonimizacao_de_nomes_configuravel -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_pseudonimizacao_de_nomes_configuravel -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/ia/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q"
+      "comando": "pytest tests/ai/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q"
     }
   ],
   "evidencia": null

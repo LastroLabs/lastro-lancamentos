@@ -1,7 +1,7 @@
 {
   "id": "ACE-02",
   "titulo": "Cadastrar contador e atribuir cliente pelo chefe",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-AUT-03"
   ],
@@ -61,23 +61,23 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_cadastra_contador_que_consegue_entrar -q"
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_cadastra_contador_que_consegue_entrar -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_atribui_cliente_com_um_responsavel_ativo -q"
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_atribui_cliente_com_um_responsavel_ativo -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_cadastro_contador.py::test_contador_sem_papel_de_chefe_recusado -q"
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_contador_sem_papel_de_chefe_recusado -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_cadastro_contador.py::test_chefe_de_outro_escritorio_nao_atribui_cliente -q"
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_de_outro_escritorio_nao_atribui_cliente -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_cadastro_contador.py::test_atribuir_a_contador_de_outro_escritorio_recusado -q"
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_atribuir_a_contador_de_outro_escritorio_recusado -q"
     }
   ],
   "evidencia": null

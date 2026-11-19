@@ -1,7 +1,7 @@
 {
   "id": "ACE-04",
   "titulo": "Revogar acesso do contador anterior ao reatribuir cliente",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-AUT-04"
   ],
@@ -61,23 +61,23 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_revoga_sessao_aberta -q"
+      "comando": "pytest tests/access/test_reatribuicao.py::test_reatribuicao_revoga_sessao_aberta -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_reatribuicao.py::test_reatribuicao_novo_responsavel_sem_login -q"
+      "comando": "pytest tests/access/test_reatribuicao.py::test_reatribuicao_novo_responsavel_sem_login -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_reatribuicao.py::test_troca_cruzada_aplica_aos_dois -q"
+      "comando": "pytest tests/access/test_reatribuicao.py::test_troca_cruzada_aplica_aos_dois -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_reatribuicao.py::test_dados_cadastrais_permanecem_com_cliente -q"
+      "comando": "pytest tests/access/test_reatribuicao.py::test_dados_cadastrais_permanecem_com_cliente -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_reatribuicao.py::test_chefe_de_outro_escritorio_nao_reatribui -q"
+      "comando": "pytest tests/access/test_reatribuicao.py::test_chefe_de_outro_escritorio_nao_reatribui -q"
     }
   ],
   "evidencia": null
