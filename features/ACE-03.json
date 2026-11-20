@@ -10,7 +10,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "RaissaOliveira19",
+  "responsavel": "arthurlleite",
   "depende_de": [
     "ACE-02",
     "NUC-02"

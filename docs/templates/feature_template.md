@@ -86,7 +86,7 @@ O saldo por código é a regra 4 do `AGENTS.md`. Confira o ID do requisito na ve
 |---|---|---|
 | `id` | Identificador curto com prefixo do módulo (`VAL-01`). Igual ao nome do arquivo. | Quem planeja |
 | `titulo` | O comportamento em uma frase, verificável. | Quem planeja |
-| `modulo` | core, access, registry, uploads, parsing, validation, classification, questions, review, export, ai, observability, api, worker, harness, ci. Define dono, revisor e pasta permitida. | Quem planeja |
+| `modulo` | core, access, registry, uploads, parsing, validation, classification, questions, review, export, ai, observability, api, worker, web (front-end, `web/src/`), harness, ci. Define dono, revisor e pasta permitida. | Quem planeja |
 | `requisitos` | IDs RF-xxx atendidos. Liga a ficha ao documento de requisitos. | Quem planeja |
 | `prioridade`, `onda` | `must` ou `should`; onda 1 ou 2. Orienta o corte quando a meta falha. | Líder |
 | `essencial` | `true` nas 4 funcionalidades que nunca saem. | Líder |

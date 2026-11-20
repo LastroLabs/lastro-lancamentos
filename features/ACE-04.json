@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "arthurlleite",
+  "responsavel": "marrathomaz",
   "depende_de": [
     "ACE-02",
     "ACE-03"
