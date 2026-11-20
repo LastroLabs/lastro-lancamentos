@@ -11,7 +11,7 @@
   "onda": 1,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "caio-nascime",
+  "responsavel": "guin409",
   "depende_de": [
     "NUC-01"
   ],

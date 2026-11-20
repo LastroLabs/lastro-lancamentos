@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "camposs04",
+  "responsavel": "caio-nascime",
   "depende_de": [
     "ACE-01",
     "CAD-03",

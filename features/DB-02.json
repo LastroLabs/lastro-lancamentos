@@ -13,7 +13,7 @@
   "onda": 1,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "guin409",
+  "responsavel": "RaissaOliveira19",
   "depende_de": [
     "DB-01"
   ],
