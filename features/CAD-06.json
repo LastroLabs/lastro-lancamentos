@@ -1,7 +1,7 @@
 {
   "id": "CAD-06",
   "titulo": "Indicar a conta transitória do cliente dentre as do plano",
-  "modulo": "cadastro",
+  "modulo": "registry",
   "requisitos": [
     "RF-CAD-04"
   ],
@@ -60,27 +60,27 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_contador_indica_transitoria_do_plano -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_contador_indica_transitoria_do_plano -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_fora_do_plano_recusada -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_conta_fora_do_plano_recusada -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_cliente_sem_plano_recusa_transitoria -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_cliente_sem_plano_recusa_transitoria -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_conta_de_outro_cliente_recusada -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_conta_de_outro_cliente_recusada -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_transitoria_negada_a_outra_carteira_e_escritorio -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_transitoria_negada_a_outra_carteira_e_escritorio -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/cadastro/test_conta_transitoria.py::test_nova_carga_sem_a_conta_limpa_transitoria -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_nova_carga_sem_a_conta_limpa_transitoria -q"
     }
   ],
   "evidencia": null

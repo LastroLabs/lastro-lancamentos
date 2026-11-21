@@ -1,7 +1,7 @@
 {
   "id": "ACE-05",
   "titulo": "Gerar link do cliente com validade e permitir invalidar",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-SEG-01"
   ],
@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "arthurlleite",
+  "responsavel": "camposs04",
   "depende_de": [
     "ACE-02",
     "NUC-02"
@@ -61,31 +61,31 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_gerado_tem_codigo_imprevisivel -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_gerado_tem_codigo_imprevisivel -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_vale_ate_sete_dias_exatos -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_vale_ate_sete_dias_exatos -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_expira_um_segundo_depois -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_expira_um_segundo_depois -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_respeita_validade_configurada -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_respeita_validade_configurada -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_link_invalidado_e_inexistente_mesma_recusa -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_invalidado_e_inexistente_mesma_recusa -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_contador_de_outra_carteira_nao_gera_nem_invalida -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_contador_de_outra_carteira_nao_gera_nem_invalida -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_link_cliente.py::test_outro_escritorio_nao_gera_nem_invalida -q"
+      "comando": "pytest tests/access/test_link_cliente.py::test_outro_escritorio_nao_gera_nem_invalida -q"
     }
   ],
   "evidencia": null

@@ -1,7 +1,7 @@
 {
   "id": "IA-02",
   "titulo": "Enviar ao serviço de IA só descrições anonimizadas",
-  "modulo": "ia",
+  "modulo": "ai",
   "requisitos": [
     "RF-SEG-03"
   ],
@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "camposs04",
+  "responsavel": "caio-nascime",
   "depende_de": [
     "IA-01",
     "HAR-03"
@@ -53,19 +53,19 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/ia/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q"
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/ia/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q"
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/ia/test_gateway_vazamento.py::test_cada_requisicao_leva_um_unico_cliente -q"
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_cada_requisicao_leva_um_unico_cliente -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/ia/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q"
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q"
     }
   ],
   "evidencia": null

@@ -1,7 +1,7 @@
 {
   "id": "NUC-03",
   "titulo": "Isolar no banco os dados de cada escritório",
-  "modulo": "nucleo",
+  "modulo": "core",
   "requisitos": [
     "RF-SEG-02",
     "BD-02"
@@ -10,10 +10,12 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "RaissaOliveira19",
+  "responsavel": "guin409",
   "depende_de": [
     "NUC-01",
-    "CAD-03"
+    "CAD-03",
+    "DB-01",
+    "ACE-01"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -49,28 +51,64 @@
         "entrada": "mesmo banco de c1; na mesma conexão, transação 1 em nome de ESC-1 consulta os clientes e termina; transação 2 começa sem escritório definido e consulta os clientes",
         "saida": "transação 1: EMP-1 e EMP-2; transação 2: 0 clientes"
       }
+    },
+    {
+      "id": "c5",
+      "descricao": "O isolamento vale em todas as tabelas da DB-01 que têm escritório, e não só em cliente",
+      "exemplo": {
+        "entrada": "banco com ESC-1 (chefe_1, contador_a, 1 sessão, 1 convite pendente, EMP-1 atribuída a contador_a) e ESC-2 (chefe_2, contador_x, 1 sessão, 1 convite, EMP-9 atribuída a contador_x); como usuário da aplicação: (1) transação em nome de ESC-1 consulta escritorio, membro, sessao, convite, cliente e atribuicao sem filtro; (2) transação sem escritório faz as mesmas consultas",
+        "saida": "(1) cada tabela devolve só as linhas de ESC-1 (escritorio: 1; membro: 2; sessao: 1; convite: 1; cliente: 1; atribuicao: 1); (2) 0 linhas em todas, sem erro; as 6 tabelas têm ROW LEVEL SECURITY ligado e forçado (FORCE), e o usuário da aplicação não é dono delas; usuario não tem RLS porque não pertence a um escritório, e o usuário da aplicação não lê credencial_hash de usuario de outro escritório por consulta da API"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "As três buscas feitas antes de se saber o escritório (sessão pelo token, vínculos de um usuário no login e convite pelo código) passam por funções do banco que devolvem só o mínimo",
+      "exemplo": {
+        "entrada": "mesmo banco de c5; transação sem escritório; o usuário da aplicação (1) consulta sessao e convite direto pelo hash; (2) chama as funções do banco com: (a) o hash da sessão de contador_a; (b) o id do usuário contador_a; (c) o hash do convite pendente de ESC-1; (d) hashes inexistentes; (e) o hash de um convite vencido, de um usado e de um cancelado; (f) tenta alterar ou apagar uma função",
+        "saida": "(1) 0 linhas; (2a) 1 linha: escritório, membro, expira_em e encerrada_em; (2b) 1 linha por vínculo ativo: escritório, membro e papel; (2c) 1 linha: escritório, convite e membro; (2d) e (2e) 0 linhas, sem erro; nenhuma função devolve nome, credencial_hash ou hash_token; as funções são SECURITY DEFINER, com search_path fixo, pertencem ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão. O link do cliente (DB-03, ACE-05) usa o mesmo padrão em ficha própria"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "Com o isolamento ligado, a entrada e a identificação da ACE-01 continuam funcionando pela API",
+      "exemplo": {
+        "entrada": "banco de c5 com o RLS ligado; contador_a entra pela rota de login com a própria senha, pede a identificação, sai e pede de novo",
+        "saida": "entrada aceita; a identificação devolve contador_a, papel contador, ESC-1; depois de sair, status 401 com 'Sua sessão terminou. Entre de novo.'; a resolução da sessão e o login usam as funções de c6, não consultas diretas às tabelas"
+      }
     }
   ],
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/nucleo/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q"
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_rls_em_todas_as_tabelas_da_db01 -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_buscas_sem_escritorio_por_funcoes_restritas -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_login_continua_funcionando_com_rls -q"
     }
   ],
   "evidencia": null

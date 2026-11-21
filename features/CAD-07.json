@@ -1,7 +1,7 @@
 {
   "id": "CAD-07",
   "titulo": "Cadastrar os sócios do cliente e mostrá-los na ficha",
-  "modulo": "cadastro",
+  "modulo": "registry",
   "requisitos": [
     "RF-CAD-06"
   ],
@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "marrathomaz",
+  "responsavel": "jvsauma",
   "depende_de": [
     "ACE-02",
     "NUC-02"
@@ -53,19 +53,19 @@
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/cadastro/test_socios.py::test_contador_cadastra_socios_que_aparecem_na_ficha -q"
+      "comando": "pytest tests/registry/test_socios.py::test_contador_cadastra_socios_que_aparecem_na_ficha -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/cadastro/test_socios.py::test_socio_sem_nome_recusado -q"
+      "comando": "pytest tests/registry/test_socios.py::test_socio_sem_nome_recusado -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/cadastro/test_socios.py::test_cliente_sem_socios_lista_vazia -q"
+      "comando": "pytest tests/registry/test_socios.py::test_cliente_sem_socios_lista_vazia -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/cadastro/test_socios.py::test_socios_negados_a_outra_carteira_e_escritorio -q"
+      "comando": "pytest tests/registry/test_socios.py::test_socios_negados_a_outra_carteira_e_escritorio -q"
     }
   ],
   "evidencia": null

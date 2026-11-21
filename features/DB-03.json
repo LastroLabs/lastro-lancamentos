@@ -1,0 +1,73 @@
+{
+  "id": "DB-03",
+  "titulo": "Criar as tabelas de competência e de link do cliente",
+  "modulo": "access",
+  "requisitos": [
+    "BD-02",
+    "RF-SEG-01",
+    "RF-ENV-01"
+  ],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "camposs04",
+  "depende_de": [
+    "DB-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Uma única migração Alembic cria competencia, com uma competência por cliente e mês e o mês sempre no primeiro dia; o modelo fica em src/lastro/access/models.py",
+      "exemplo": {
+        "entrada": "banco com as migrações da NUC-01 e da DB-01; ESC-1 com EMP-1 e EMP-2; gravação direta: (a) competência de EMP-1 com mes 2026-10-01; (b) outra de EMP-1 com mes 2026-10-01; (c) de EMP-2 com mes 2026-10-01; (d) de EMP-1 com mes 2026-10-15",
+        "saida": "a tabela é competencia(escritorio_id, cliente_id, id, mes date not null CHECK mes = date_trunc('month', mes), versao_conjunto integer not null default 0 CHECK >= 0, criada_em timestamptz not null default now(); PK (escritorio_id, cliente_id, id); UNIQUE (escritorio_id, cliente_id, mes); FK (escritorio_id, cliente_id) → cliente(escritorio_id, id)); (a) e (c) aceitas; (b) recusada pela unicidade; (d) recusada pelo CHECK do primeiro dia"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A mesma migração cria link_cliente, que guarda só o hash do código, nunca o código, com validade e revogação",
+      "exemplo": {
+        "entrada": "o teste lê o catálogo do banco e grava um link de EMP-1, competência 10/2026, com hash_token de 64 caracteres hexadecimais, expira_em = criado_em + 7 dias, revogado_em nulo",
+        "saida": "a tabela é link_cliente(escritorio_id, cliente_id, id, competencia_id uuid not null, hash_token text not null UNIQUE CHECK hash_token ~ '^[0-9a-f]{64}$', criado_por uuid not null, criado_em timestamptz not null default now(), expira_em timestamptz not null, revogado_em timestamptz null; PK (escritorio_id, cliente_id, id); CHECK expira_em > criado_em; CHECK revogado_em is null or revogado_em >= criado_em); não existe coluna chamada codigo, token ou parecida; a gravação é aceita; um índice permite buscar o link pelo hash_token sem saber o escritório"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O link não aponta para competência de outro cliente nem é criado por membro de outro escritório",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, EMP-1 (competência 10/2026) e EMP-2 (competência 10/2026); ESC-2 com contador_x; gravação direta: (a) link de EMP-1 com competencia_id da competência de EMP-2; (b) link de EMP-1 com criado_por = membro contador_x; (c) dois links com o mesmo hash_token; (d) link com expira_em igual a criado_em",
+        "saida": "nos 4 casos: recusado por restrição do banco e nada é gravado; as FKs são (escritorio_id, cliente_id, competencia_id) → competencia(escritorio_id, cliente_id, id) e (escritorio_id, criado_por) → membro(escritorio_id, id)"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A migração da DB-03 reverte sem quebrar as anteriores",
+      "exemplo": {
+        "entrada": "banco na última migração, com dados em escritorio, cliente e competencia; reverte a migração da DB-03 e aplica de novo",
+        "saida": "ao reverter, competencia e link_cliente somem e as tabelas da DB-01 (e da DB-02, se já existir) continuam com os mesmos dados; ao aplicar de novo, as duas tabelas voltam como em c1 e c2. Políticas de RLS ficam fora desta ficha"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_period_link_schema.py::test_migracao_db03_cria_competencia_unica_por_cliente_e_mes -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/access/test_period_link_schema.py::test_migracao_db03_cria_link_que_guarda_so_o_hash -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/access/test_period_link_schema.py::test_db03_link_nao_cruza_cliente_nem_escritorio -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/access/test_period_link_schema.py::test_db03_migracao_reversivel -q"
+    }
+  ],
+  "evidencia": null
+}

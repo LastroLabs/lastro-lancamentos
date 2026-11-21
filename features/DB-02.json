@@ -1,0 +1,75 @@
+{
+  "id": "DB-02",
+  "titulo": "Criar as tabelas de cadastro e plano de contas: conta bancária, sócio, plano de contas e conta contábil",
+  "modulo": "registry",
+  "requisitos": [
+    "BD-02",
+    "RF-CAD-02",
+    "RF-CAD-03",
+    "RF-CAD-04",
+    "RF-CAD-06"
+  ],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [
+    "DB-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Uma única migração Alembic cria as 4 tabelas, todas ligadas ao cliente pelo par (escritorio_id, cliente_id), com as colunas da modelagem; os modelos ficam em src/lastro/registry/models.py",
+      "exemplo": {
+        "entrada": "banco com as migrações da NUC-01 e da DB-01; aplica a migração da DB-02; o teste lê o catálogo do banco",
+        "saida": "existem conta_bancaria(escritorio_id, cliente_id, id, banco text not null, apelido text not null, identificacao_protegida text null, moeda text not null default 'BRL', conta_contabil_id uuid null, cobertura_inicio date null, cobertura_fim date null; CHECK cobertura_fim is null or cobertura_inicio is null or cobertura_fim >= cobertura_inicio); socio(escritorio_id, cliente_id, id, nome text not null, nome_normalizado text not null, ativo boolean not null default true); plano_contas(escritorio_id, cliente_id, id, versao integer not null CHECK versao > 0, importado_por uuid not null, importado_em timestamptz not null, publicado_em timestamptz null, situacao text not null CHECK situacao in ('importado','publicado','substituido'); UNIQUE (escritorio_id, cliente_id, versao)); conta_contabil(escritorio_id, cliente_id, id, plano_id uuid not null, codigo text not null, nome text not null, pai_id uuid null, ativo boolean not null default true; UNIQUE (escritorio_id, cliente_id, plano_id, codigo)); nas 4: PK (escritorio_id, cliente_id, id) e FK (escritorio_id, cliente_id) → cliente(escritorio_id, id); plano_contas.importado_por → membro(escritorio_id, id) pelo par (escritorio_id, importado_por)"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A conta contábil pertence a um plano do mesmo cliente, o pai pertence ao mesmo plano, e a conta bancária só aponta para conta contábil do próprio cliente",
+      "exemplo": {
+        "entrada": "ESC-1 com EMP-1 (plano P1, versão 1, com a conta 1.1.01) e EMP-2 (plano P2, versão 1, com a conta 9.9.99); gravação direta: (a) conta contábil de EMP-1 com plano_id = P2; (b) conta 1.1.01.001 em P1 com pai_id = a conta 9.9.99 de P2; (c) conta bancária de EMP-1 com conta_contabil_id = 9.9.99 de EMP-2; (d) segunda conta '1.1.01' em P1; (e) conta '1.1.01' na versão 2 do plano de EMP-1",
+        "saida": "(a), (b), (c) e (d) recusadas por restrição do banco e nada é gravado; (e) aceita: o código é único só dentro da mesma versão do plano. As FKs são (escritorio_id, cliente_id, plano_id) → plano_contas(escritorio_id, cliente_id, id), (escritorio_id, cliente_id, plano_id, pai_id) → conta_contabil(escritorio_id, cliente_id, plano_id, id) e (escritorio_id, cliente_id, conta_contabil_id) → conta_contabil(escritorio_id, cliente_id, id)"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O cliente ganha o plano atual e as contas de configuração (transitória, entrada de sócio e saída de sócio), sempre do plano atual do próprio cliente; trocar o plano exige limpar ou trocar a transitória na mesma transação (P-11)",
+      "exemplo": {
+        "entrada": "EMP-1 com os planos P1 (contas 1.1.01 e 9.9.99) e P2 (só 1.1.01, com outro id); EMP-2 com o plano P3; gravação direta em cliente: (a) plano_atual_id de EMP-1 = P3; (b) plano_atual_id = P1 e conta_transitoria_id = 9.9.99 de P1; (c) com o estado de (b), troca plano_atual_id para P2 mantendo a transitória; (d) troca para P2 e limpa a transitória na mesma transação; (e) plano_atual_id nulo com conta_transitoria_id preenchida",
+        "saida": "a migração acrescenta a cliente as colunas plano_atual_id, conta_transitoria_id, conta_entrada_socio_id e conta_saida_socio_id, todas uuid null; (a) recusada; (b) aceita; (c) recusada, e EMP-1 continua com P1 e a transitória 9.9.99; (d) aceita: EMP-1 fica com P2 e sem transitória; (e) recusada. As FKs são (escritorio_id, id, plano_atual_id) → plano_contas(escritorio_id, cliente_id, id) e (escritorio_id, id, plano_atual_id, conta_x) → conta_contabil(escritorio_id, cliente_id, plano_id, id) para cada conta de configuração, mais CHECK de que conta de configuração preenchida exige plano_atual_id preenchido"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Códigos guardados como texto, sem perder zeros nem pontos, e a migração da DB-02 reverte sem quebrar a DB-01",
+      "exemplo": {
+        "entrada": "EMP-1 com plano P1; grava a conta de código '01.002.0003' e nome 'CONTA TESTE', e a conta bancária com banco '001' e apelido 'Conta movimento'; lê de volta; depois reverte a migração da DB-02 e aplica de novo",
+        "saida": "a leitura devolve exatamente '01.002.0003' e '001'; ao reverter, as 4 tabelas somem, as 4 colunas novas de cliente somem e as tabelas da DB-01 continuam com os mesmos dados; ao aplicar de novo, tudo volta como em c1. Políticas de RLS ficam fora desta ficha"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_registry_schema.py::test_migracao_db02_cria_tabelas_de_cadastro_com_colunas_e_chaves -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_registry_schema.py::test_db02_conta_contabil_nao_cruza_cliente_nem_plano -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_registry_schema.py::test_db02_contas_de_configuracao_sao_do_plano_atual -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_registry_schema.py::test_db02_codigos_em_texto_e_migracao_reversivel -q"
+    }
+  ],
+  "evidencia": null
+}

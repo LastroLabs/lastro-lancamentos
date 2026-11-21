@@ -51,7 +51,7 @@ Mudanças sugeridas na ficha (o humano aplica em PR): incluir um critério/exemp
 - **Reaproveitar:** `ESTADOS`, `HarnessErro`/`mostrar_erro`, `_carregar_fichas_validas`, `_chave_natural`, helpers de teste `ficha_valida`, `gravar`, `rodar_state` em `tests/harness/test_fase_a.py` (importar ou replicar; hoje não há `conftest` — conferir na T1).
 - **Não criar:** segundo formatador de tabela, segunda lista de estados, novo tipo de erro.
 - **Testes existentes que protegem c4:** `test_fase_a.py` (~220-249) verifica linha Resumo e tabela; `test_fase0.py` chama `main(["state"])`.
-- **Docs:** não há `docs/modulos/harness.md`. `tools/` exige aprovação do dono (CODEOWNERS, SECURITY.md §7).
+- **Docs:** não há `docs/modules/harness.md`. `tools/` exige aprovação do dono (CODEOWNERS, SECURITY.md §7).
 - **Pesquisa externa:** sem pesquisa externa necessária.
 
 ## 5. Decisões (já resolvidas)

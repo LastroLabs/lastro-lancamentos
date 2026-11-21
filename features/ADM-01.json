@@ -1,0 +1,72 @@
+{
+  "id": "ADM-01",
+  "titulo": "Criar um escritório e o seu chefe por comando, para o primeiro acesso",
+  "modulo": "access",
+  "requisitos": [
+    "RF-AUT-03"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "camposs04",
+  "depende_de": [
+    "DB-01",
+    "ACE-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Um comando cria o escritório e o chefe na mesma transação, e o chefe consegue entrar pela rota de login da ACE-01 com a senha informada",
+      "exemplo": {
+        "entrada": "banco vazio com as migrações aplicadas; variável LASTRO_SENHA_CHEFE com a senha 'senha-teste-123'; roda: python -m lastro.access.admin criar-escritorio --escritorio 'ESCRITORIO TESTE 1' --usuario chefe_1 --nome 'CHEFE TESTE 1'; depois chefe_1 entra pela rota de login com essa senha e pede a identificação de quem está conectado",
+        "saida": "código de saída 0; a saída é 'Escritório ESCRITORIO TESTE 1 criado. O chefe chefe_1 já pode entrar.'; o banco tem 1 escritório, 1 usuário e 1 membro com papel chefe, ativo; credencial_hash é gerado pela mesma função de senha da ACE-01 e é diferente da senha; a entrada é aceita e a identificação devolve usuário chefe_1, papel chefe e escritório ESCRITORIO TESTE 1; a senha não aparece na saída, nos logs nem em nenhuma coluna em texto"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Usuário que já existe é recusado sem alterar nada, nem a senha, e sem criar escritório",
+      "exemplo": {
+        "entrada": "estado final de c1; LASTRO_SENHA_CHEFE com 'outra-senha'; roda o comando com --escritorio 'ESCRITORIO TESTE 2' --usuario chefe_1 --nome 'CHEFE TESTE 1'; depois chefe_1 tenta entrar com 'senha-teste-123'",
+        "saida": "código de saída 1; a saída é 'O usuário chefe_1 já existe. Nada foi alterado.'; o banco continua com 1 escritório, 1 usuário e 1 membro; a entrada com 'senha-teste-123' continua aceita"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Dado faltando ou senha na linha de comando são recusados com mensagem em português simples, e nada é gravado",
+      "exemplo": {
+        "entrada": "banco vazio; roda o comando (a) com --escritorio vazio; (b) com --usuario vazio; (c) sem a variável LASTRO_SENHA_CHEFE e sem terminal interativo; (d) com LASTRO_SENHA_CHEFE vazia; (e) com o argumento --senha 'senha-teste-123'",
+        "saida": "nos 5 casos: código de saída 2 e 0 escritórios, 0 usuários e 0 membros no banco; mensagens: (a) 'Informe o nome do escritório.'; (b) 'Informe o usuário do chefe.'; (c) e (d) 'Defina a senha do chefe na variável LASTRO_SENHA_CHEFE.'; (e) 'Não escreva a senha no comando. Use a variável LASTRO_SENHA_CHEFE.'; em (e) a senha não aparece na saída"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Dois escritórios criados pelo comando ficam separados: cada chefe se identifica no próprio escritório",
+      "exemplo": {
+        "entrada": "banco vazio; cria ESCRITORIO TESTE 1 com chefe_1 e ESCRITORIO TESTE 2 com chefe_2, cada um com a própria senha; cada chefe entra e pede a identificação",
+        "saida": "2 escritórios, cada um com 1 membro chefe; chefe_1 se identifica em ESCRITORIO TESTE 1 e chefe_2 em ESCRITORIO TESTE 2; o comando não cria contador nem cliente"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_office_admin.py::test_adm01_cria_escritorio_e_chefe_que_consegue_entrar -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/access/test_office_admin.py::test_adm01_usuario_existente_recusado_sem_alterar -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/access/test_office_admin.py::test_adm01_dado_faltando_ou_senha_no_comando_recusados -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/access/test_office_admin.py::test_adm01_dois_escritorios_ficam_separados -q"
+    }
+  ],
+  "evidencia": null
+}

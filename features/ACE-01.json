@@ -1,7 +1,7 @@
 {
   "id": "ACE-01",
   "titulo": "Entrar com login individual e encerrar a sessão",
-  "modulo": "acesso",
+  "modulo": "access",
   "requisitos": [
     "RF-AUT-01"
   ],
@@ -11,7 +11,8 @@
   "estado": "not_started",
   "responsavel": "arthurlleite",
   "depende_de": [
-    "NUC-01"
+    "NUC-01",
+    "DB-01"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -55,28 +56,40 @@
         "entrada": "ESC-1 com contador_a; nenhuma sessão; cliente HTTP pede a identificação de quem está conectado sem enviar sessão",
         "saida": "status 401; mensagem 'Entre para continuar.'; nenhum dado de usuário ou de escritório na resposta"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "Usuário que ainda não criou a senha pelo convite recebe a mesma recusa de senha errada e não abre sessão",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_c, este com convite pendente e credencial_hash nulo; nenhuma sessão; contador_c tenta entrar com usuário contador_c e (a) a senha 'senha-teste-123' e (b) senha vazia",
+        "saida": "nos dois casos: status 401, mensagem 'Usuário ou senha incorretos.', corpo idêntico ao de c2; nenhuma sessão aberta; a resposta não diz que existe convite pendente"
+      }
     }
   ],
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/acesso/test_login.py::test_login_valido_abre_sessao_identificada -q"
+      "comando": "pytest tests/access/test_login.py::test_login_valido_abre_sessao_identificada -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/acesso/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q"
+      "comando": "pytest tests/access/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/acesso/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q"
+      "comando": "pytest tests/access/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/acesso/test_login.py::test_sair_encerra_a_sessao -q"
+      "comando": "pytest tests/access/test_login.py::test_sair_encerra_a_sessao -q"
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/acesso/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q"
+      "comando": "pytest tests/access/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_login.py::test_usuario_sem_senha_recebe_mesma_recusa -q"
     }
   ],
   "evidencia": null

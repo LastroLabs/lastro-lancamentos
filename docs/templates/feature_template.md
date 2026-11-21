@@ -12,7 +12,7 @@ Copie, troque os valores e remova o que não se aplica. JSON não aceita coment�
 {
   "id": "MOD-00",
   "titulo": "Verbo + comportamento verificável",
-  "modulo": "leitura",
+  "modulo": "parsing",
   "requisitos": ["RF-XXX-00"],
   "prioridade": "must",
   "onda": 1,
@@ -30,7 +30,7 @@ Copie, troque os valores e remova o que não se aplica. JSON não aceita coment�
     }
   ],
   "verificacao": [
-    { "criterio": "c1", "comando": "pytest tests/modules/<modulo>/test_<arquivo>.py::test_<nome>" }
+    { "criterio": "c1", "comando": "pytest tests/<module>/test_<arquivo>.py::test_<nome>" }
   ],
   "evidencia": null
 }
@@ -44,7 +44,7 @@ O saldo por código é a regra 4 do `AGENTS.md`. Confira o ID do requisito na ve
 {
   "id": "VAL-01",
   "titulo": "Conferir o saldo do extrato por cálculo",
-  "modulo": "validacao",
+  "modulo": "validation",
   "requisitos": ["RF-VAL-01"],
   "prioridade": "must",
   "onda": 1,
@@ -73,8 +73,8 @@ O saldo por código é a regra 4 do `AGENTS.md`. Confira o ID do requisito na ve
     }
   ],
   "verificacao": [
-    { "criterio": "c1", "comando": "pytest tests/modules/validacao/test_saldo.py::test_saldo_fecha" },
-    { "criterio": "c2", "comando": "pytest tests/modules/validacao/test_saldo.py::test_saldo_nao_fecha" }
+    { "criterio": "c1", "comando": "pytest tests/validation/test_saldo.py::test_saldo_fecha" },
+    { "criterio": "c2", "comando": "pytest tests/validation/test_saldo.py::test_saldo_nao_fecha" }
   ],
   "evidencia": null
 }
@@ -86,7 +86,7 @@ O saldo por código é a regra 4 do `AGENTS.md`. Confira o ID do requisito na ve
 |---|---|---|
 | `id` | Identificador curto com prefixo do módulo (`VAL-01`). Igual ao nome do arquivo. | Quem planeja |
 | `titulo` | O comportamento em uma frase, verificável. | Quem planeja |
-| `modulo` | leitura, validacao, classificacao, perguntas, revisao, exportacao, front, ia, harness. Define dono, revisor e pasta permitida. | Quem planeja |
+| `modulo` | core, access, registry, uploads, parsing, validation, classification, questions, review, export, ai, observability, api, worker, web (front-end, `web/src/`), harness, ci. Define dono, revisor e pasta permitida. | Quem planeja |
 | `requisitos` | IDs RF-xxx atendidos. Liga a ficha ao documento de requisitos. | Quem planeja |
 | `prioridade`, `onda` | `must` ou `should`; onda 1 ou 2. Orienta o corte quando a meta falha. | Líder |
 | `essencial` | `true` nas 4 funcionalidades que nunca saem. | Líder |

@@ -1,13 +1,13 @@
 {
   "id": "CAD-02",
   "titulo": "Ler a planilha do plano de contas e apontar linha inválida",
-  "modulo": "cadastro",
+  "modulo": "registry",
   "requisitos": ["RF-CAD-03"],
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "camposs04",
+  "responsavel": "marrathomaz",
   "depende_de": [],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -46,11 +46,11 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/cadastro/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas -q"},
-    {"criterio": "c2", "comando": "pytest tests/cadastro/test_planilha_plano.py::test_linha_incompleta_rejeitada_com_numero -q"},
-    {"criterio": "c3", "comando": "pytest tests/cadastro/test_planilha_plano.py::test_codigo_repetido_rejeitado_com_as_duas_linhas -q"},
-    {"criterio": "c4", "comando": "pytest tests/cadastro/test_planilha_plano.py::test_planilha_sem_contas_recusada -q"},
-    {"criterio": "c4", "comando": "pytest tests/cadastro/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q"}
+    {"criterio": "c1", "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas -q"},
+    {"criterio": "c2", "comando": "pytest tests/registry/test_planilha_plano.py::test_linha_incompleta_rejeitada_com_numero -q"},
+    {"criterio": "c3", "comando": "pytest tests/registry/test_planilha_plano.py::test_codigo_repetido_rejeitado_com_as_duas_linhas -q"},
+    {"criterio": "c4", "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_sem_contas_recusada -q"},
+    {"criterio": "c4", "comando": "pytest tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q"}
   ],
   "evidencia": null
 }
