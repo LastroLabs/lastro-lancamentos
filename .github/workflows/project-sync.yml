@@ -1,0 +1,88 @@
+# Espelha features/*.json no Project da organização com tools/project_sync.py (HX-11).
+# Ficha: features/HX-12.json · Plano: planos/HX-12/plan.md · Módulo: docs/modulos/ci.md
+name: Project sync
+
+# Só dois gatilhos, ambos sobre código já revisado:
+# - push em developer: sync completo a partir das fichas (--origem developer);
+# - schedule a cada 15 min: roda o YAML e o script da branch padrão e só consulta
+#   branches feat/<ID>-* e PRs pela API (--origem agendada), sem baixar o código delas.
+# Nunca usar pull_request, pull_request_target nem workflow_dispatch: dariam a chave do App
+# a código de branch de feature, de fork ou a uma execução manual.
+on:
+  push:
+    branches: [developer]
+  schedule:
+    - cron: "*/15 * * * *"
+
+# Só leitura: o GITHUB_TOKEN não altera o repositório. A escrita no Project usa o token do App.
+permissions:
+  contents: read
+
+# Um sync por vez: dois juntos podem duplicar issue ou mover card fora de ordem.
+# Grupo fixo e sem cancelar o que já está rodando.
+concurrency:
+  group: project-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-developer:
+    name: sync (developer)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A chave privada do App só existe neste Environment, restrito a main e developer.
+    environment: project-sync
+    steps:
+      # Sem ref: baixa o commit do push em developer.
+      - name: Checkout do repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Só esta action lê a chave. O token sai mascarado e é revogado no fim do job.
+      - name: Token do GitHub App
+        id: token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+
+      # PROJECT_SYNC_DRY_RUN = 'true' no primeiro uso: só lista o que mudaria.
+      - name: Sync completo a partir das fichas
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
+        run: |
+          ARGS=""
+          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          python3 tools/project_sync.py --origem developer $ARGS
+
+  sync-agendada:
+    name: sync (agendada)
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: project-sync
+    steps:
+      # Sem ref nem repository: só o código da branch padrão. Branches de feature
+      # são lidas pela API, nunca baixadas.
+      - name: Checkout da branch padrão
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Token do GitHub App
+        id: token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+
+      - name: Sync das branches e PRs pela API
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
+        run: |
+          ARGS=""
+          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          python3 tools/project_sync.py --origem agendada $ARGS

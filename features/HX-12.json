@@ -1,0 +1,97 @@
+{
+  "id": "HX-12",
+  "titulo": "Workflow do sync do Project sem expor a chave do GitHub App",
+  "modulo": "ci",
+  "requisitos": [],
+  "prioridade": "should",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "HX-11"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Só o push em developer e a execução agendada disparam o workflow; nenhum evento de branch de feature ou de PR o dispara",
+      "exemplo": {
+        "entrada": "o YAML de .github/workflows/project-sync.yml lido por um teste",
+        "saida": "on contém push só com branches [developer] e schedule com cron de 15 minutos; não contém push em '**', pull_request, pull_request_target nem workflow_dispatch com acesso ao segredo"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A chave do App só é lida em jobs presos ao Environment project-sync, e nenhum job faz checkout de código vindo de branch de feature ou de PR",
+      "exemplo": {
+        "entrada": "o YAML com os 2 gatilhos",
+        "saida": "todo job que usa APP_PRIVATE_KEY declara environment: project-sync; o job agendado não faz checkout de feat/* (só da branch padrão, se fizer); o segredo não aparece em run: nem em echo"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Permissões mínimas, concurrency que serializa execuções e ações fixadas por versão",
+      "exemplo": {
+        "entrada": "o YAML completo",
+        "saida": "permissions: contents: read no topo; concurrency com group fixo e cancel-in-progress falso; actions/create-github-app-token em versão fixa (@v3) com client-id de vars.APP_CLIENT_ID"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Cada gatilho chama o project_sync com a origem certa e o primeiro uso aceita --dry-run",
+      "exemplo": {
+        "entrada": "o YAML e o comando de cada job",
+        "saida": "push em developer chama 'project_sync --origem developer'; schedule chama 'project_sync --origem agendada', que consulta branches e PRs por API; um input ou variável permite rodar com --dry-run no primeiro uso"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_gatilhos_permitidos -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_sem_push_em_branch_de_feature -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_sem_pull_request_nem_pull_request_target -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_chave_so_com_environment -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_agendada_nao_faz_checkout_de_branch -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_segredo_nao_vai_para_log -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_permissoes_minimas -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_concurrency_serializa -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_acoes_fixadas -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_cada_gatilho_chama_a_origem_certa -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_project_sync_workflow.py::test_dry_run_disponivel_no_primeiro_uso -q"
+    }
+  ],
+  "evidencia": null
+}
