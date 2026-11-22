@@ -33,6 +33,13 @@ ENVIRONMENT = "project-sync"
 CHAVE = "APP_PRIVATE_KEY"
 ACAO_APP = "actions/create-github-app-token"
 CRON = "*/15 * * * *"
+REPOSITORIO = "lastro-lancamentos"
+PERMISSOES = {
+    "permission-issues": "write",
+    "permission-pull-requests": "read",
+    "permission-contents": "read",
+    "permission-organization-projects": "write",
+}
 ORIGEM_POR_EVENTO = {"push": "developer", "schedule": "agendada"}
 FILTROS_DE_PUSH = ("branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore")
 
@@ -63,14 +70,26 @@ jobs:
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+          repositories: lastro-lancamentos
+          permission-issues: write
+          permission-pull-requests: read
+          permission-contents: read
+          permission-organization-projects: write
       - name: Sync completo
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
           DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
         run: |
-          ARGS=""
-          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser true ou false"
+              exit 1
+              ;;
+          esac
           python3 tools/project_sync.py --origem developer $ARGS
   sync-agendada:
     if: github.event_name == 'schedule'
@@ -86,14 +105,26 @@ jobs:
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+          repositories: lastro-lancamentos
+          permission-issues: write
+          permission-pull-requests: read
+          permission-contents: read
+          permission-organization-projects: write
       - name: Sync das branches
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
           DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
         run: |
-          ARGS=""
-          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser true ou false"
+              exit 1
+              ;;
+          esac
           python3 tools/project_sync.py --origem agendada $ARGS
 """.replace("__SHA__", SHA_FALSO)
 
@@ -272,6 +303,29 @@ def conferir_dry_run(texto):
         assert "--dry-run" in runs, f"job {nome}: o comando não aceita --dry-run"
         linhas = [l for l in runs.splitlines() if "project_sync.py" in l]
         assert any("--dry-run" not in l for l in linhas), f"job {nome}: dry-run fixo; deve ser opcional"
+        # Só `false` explícito escreve: vazio ou ausente fica em dry-run e outro valor falha.
+        assert not re.search(r'=\s*"true"\s*\]', runs), f"job {nome}: só `true` ligaria o dry-run; vazio escreveria"
+        assert re.search(r'false\)\s*ARGS=""', runs), f"job {nome}: só `false` explícito pode escrever"
+        assert re.search(r'true\s*\|\s*""\)\s*ARGS="--dry-run"', runs), (
+            f"job {nome}: `true` e vazio devem ficar em dry-run"
+        )
+        assert re.search(r"\*\)[\s\S]*?exit 1", runs), f"job {nome}: valor inválido deve falhar (exit 1)"
+
+
+# --- c5: token do App restrito ----------------------------------------------------------------
+
+
+def conferir_token_restrito(texto):
+    passos = [p for j in _jobs(_carregar(texto)).values() for p in _passos(j) if _usa(p, ACAO_APP)]
+    assert passos, f"falta {ACAO_APP}"
+    for p in passos:
+        com = p.get("with") or {}
+        assert com.get("repositories") == REPOSITORIO, (
+            f"o token deve valer só para `{REPOSITORIO}`; veio {com.get('repositories')!r}"
+        )
+        permissoes = {k: v for k, v in com.items() if k.startswith("permission-")}
+        assert permissoes, "sem permission-*, o token herda todas as permissões do App"
+        assert permissoes == PERMISSOES, f"permissões do token: esperado {PERMISSOES}; veio {permissoes}"
 
 
 # --- testes da ficha, aplicados ao arquivo real -----------------------------------------------
@@ -327,6 +381,10 @@ def test_dry_run_disponivel_no_primeiro_uso(real):
     conferir_dry_run(real)
 
 
+def test_token_do_app_restrito_ao_repositorio_e_as_permissoes(real):
+    conferir_token_restrito(real)
+
+
 # --- as regras recusam texto inválido (e aceitam o válido) ------------------------------------
 
 REGRAS = [
@@ -341,6 +399,7 @@ REGRAS = [
     conferir_acoes_fixadas,
     conferir_origem_por_gatilho,
     conferir_dry_run,
+    conferir_token_restrito,
 ]
 
 PASSO_DE_SYNC = "      - name: Sync completo\n"
@@ -350,6 +409,17 @@ TOKEN = f"actions/create-github-app-token@{SHA_FALSO} # v3.4.0"
 TIMEOUT = "    timeout-minutes: 10\n"
 LINHA_ARGS = '          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi\n'
 DRY_ENV = "          DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}\n"
+CASE_DRY_RUN = (
+    '          case "$DRY_RUN" in\n'
+    '            false) ARGS="" ;;\n'
+    '            true | "") ARGS="--dry-run" ;;\n'
+    "            *)\n"
+    '              echo "::error::PROJECT_SYNC_DRY_RUN deve ser true ou false"\n'
+    "              exit 1\n"
+    "              ;;\n"
+    "          esac\n"
+)
+LINHA_REPOS = "          repositories: lastro-lancamentos\n"
 
 
 def _com_checkout(extra):
@@ -401,9 +471,9 @@ INVALIDOS = {
         VALIDO.replace("secrets.APP_PRIVATE_KEY", "secrets.OUTRA_CHAVE_FALSA"),
     ],
     conferir_permissoes_minimas: [
-        VALIDO.replace("contents: read", "contents: write"),
+        VALIDO.replace("permissions:\n  contents: read\n", "permissions:\n  contents: write\n"),
         VALIDO.replace("permissions:\n  contents: read\n", ""),
-        VALIDO.replace("contents: read", "contents: read\n  issues: write"),
+        VALIDO.replace("permissions:\n  contents: read\n", "permissions:\n  contents: read\n  issues: write\n"),
         VALIDO.replace(TIMEOUT, TIMEOUT + "    permissions:\n      issues: write\n", 1),
     ],
     conferir_concurrency: [
@@ -433,6 +503,24 @@ INVALIDOS = {
         VALIDO.replace('ARGS="--dry-run"', 'ARGS="--verboso"'),
         VALIDO.replace("$ARGS", "--dry-run"),
         VALIDO.replace("vars.PROJECT_SYNC_DRY_RUN", "vars.PROJECT_NUMBER"),
+        # Padrão antigo: vazio ou valor inválido escreveria.
+        VALIDO.replace(CASE_DRY_RUN, LINHA_ARGS),
+        # Valor inválido não falha.
+        VALIDO.replace("              exit 1\n", "              ARGS=''\n"),
+        # Vazio escreveria.
+        VALIDO.replace('true | "")', "true)"),
+        # `true` não ficaria em dry-run.
+        VALIDO.replace('false) ARGS="" ;;', 'false) ARGS="--dry-run" ;;'),
+    ],
+    conferir_token_restrito: [
+        VALIDO.replace(LINHA_REPOS, ""),
+        VALIDO.replace(LINHA_REPOS, "", 1),
+        VALIDO.replace("repositories: lastro-lancamentos", "repositories: outro-repo"),
+        VALIDO.replace("          permission-issues: write\n", ""),
+        VALIDO.replace("permission-issues: write", "permission-issues: read"),
+        VALIDO.replace("permission-contents: read", "permission-contents: write"),
+        VALIDO.replace("          permission-organization-projects: write\n", "", 1),
+        VALIDO.replace("          permission-contents: read\n", "          permission-contents: read\n          permission-members: read\n", 1),
     ],
 }
 

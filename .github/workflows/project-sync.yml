@@ -45,16 +45,30 @@ jobs:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: LastroLabs
+          # Token só deste repositório e só com o que o script usa (menor privilégio).
+          repositories: lastro-lancamentos
+          permission-issues: write # criar/editar issues, responsáveis e bloqueios
+          permission-pull-requests: read # listar PRs (sync agendado)
+          permission-contents: read # listar branches (sync agendado)
+          permission-organization-projects: write # itens e colunas do Project
 
-      # PROJECT_SYNC_DRY_RUN = 'true' no primeiro uso: só lista o que mudaria.
+      # PROJECT_SYNC_DRY_RUN: 'true' (ou vazio) só lista o que mudaria; 'false' escreve.
+      # Só mude para 'false' depois de conferir a lista do primeiro dry-run.
       - name: Sync completo a partir das fichas
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
           DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
         run: |
-          ARGS=""
-          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          # Só `false` explícito escreve; vazio ou ausente fica em dry-run; outro valor falha.
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser 'true' ou 'false'; veio '$DRY_RUN'. Corrija a variável do repositório."
+              exit 1
+              ;;
+          esac
           python3 tools/project_sync.py --origem developer $ARGS
 
   sync-agendada:
@@ -76,6 +90,12 @@ jobs:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: LastroLabs
+          # Token só deste repositório e só com o que o script usa (menor privilégio).
+          repositories: lastro-lancamentos
+          permission-issues: write # criar/editar issues, responsáveis e bloqueios
+          permission-pull-requests: read # listar PRs (sync agendado)
+          permission-contents: read # listar branches (sync agendado)
+          permission-organization-projects: write # itens e colunas do Project
 
       - name: Sync das branches e PRs pela API
         env:
@@ -83,6 +103,13 @@ jobs:
           PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
           DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
         run: |
-          ARGS=""
-          if [ "$DRY_RUN" = "true" ]; then ARGS="--dry-run"; fi
+          # Só `false` explícito escreve; vazio ou ausente fica em dry-run; outro valor falha.
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser 'true' ou 'false'; veio '$DRY_RUN'. Corrija a variável do repositório."
+              exit 1
+              ;;
+          esac
           python3 tools/project_sync.py --origem agendada $ARGS
