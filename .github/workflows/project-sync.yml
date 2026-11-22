@@ -1,0 +1,115 @@
+# Espelha features/*.json no Project da organização com tools/project_sync.py (HX-11).
+# Ficha: features/HX-12.json · Plano: planos/HX-12/plan.md · Módulo: docs/modulos/ci.md
+name: Project sync
+
+# Só dois gatilhos, ambos sobre código já revisado:
+# - push em developer: sync completo a partir das fichas (--origem developer);
+# - schedule a cada 15 min: roda o YAML e o script da branch padrão e só consulta
+#   branches feat/<ID>-* e PRs pela API (--origem agendada), sem baixar o código delas.
+# Nunca usar pull_request, pull_request_target nem workflow_dispatch: dariam a chave do App
+# a código de branch de feature, de fork ou a uma execução manual.
+on:
+  push:
+    branches: [developer]
+  schedule:
+    - cron: "*/15 * * * *"
+
+# Só leitura: o GITHUB_TOKEN não altera o repositório. A escrita no Project usa o token do App.
+permissions:
+  contents: read
+
+# Um sync por vez: dois juntos podem duplicar issue ou mover card fora de ordem.
+# Grupo fixo e sem cancelar o que já está rodando.
+concurrency:
+  group: project-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-developer:
+    name: sync (developer)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A chave privada do App só existe neste Environment, restrito a main e developer.
+    environment: project-sync
+    steps:
+      # Sem ref: baixa o commit do push em developer.
+      - name: Checkout do repositório
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Só esta action lê a chave. O token sai mascarado e é revogado no fim do job.
+      - name: Token do GitHub App
+        id: token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+          # Token só deste repositório e só com o que o script usa (menor privilégio).
+          repositories: lastro-lancamentos
+          permission-issues: write # criar/editar issues, responsáveis e bloqueios
+          permission-pull-requests: read # listar PRs (sync agendado)
+          permission-contents: read # listar branches (sync agendado)
+          permission-organization-projects: write # itens e colunas do Project
+
+      # PROJECT_SYNC_DRY_RUN: 'true' (ou vazio) só lista o que mudaria; 'false' escreve.
+      # Só mude para 'false' depois de conferir a lista do primeiro dry-run.
+      - name: Sync completo a partir das fichas
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
+        run: |
+          # Só `false` explícito escreve; vazio ou ausente fica em dry-run; outro valor falha.
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser 'true' ou 'false'; veio '$DRY_RUN'. Corrija a variável do repositório."
+              exit 1
+              ;;
+          esac
+          python3 tools/project_sync.py --origem developer $ARGS
+
+  sync-agendada:
+    name: sync (agendada)
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: project-sync
+    steps:
+      # Sem ref nem repository: só o código da branch padrão. Branches de feature
+      # são lidas pela API, nunca baixadas.
+      - name: Checkout da branch padrão
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Token do GitHub App
+        id: token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: LastroLabs
+          # Token só deste repositório e só com o que o script usa (menor privilégio).
+          repositories: lastro-lancamentos
+          permission-issues: write # criar/editar issues, responsáveis e bloqueios
+          permission-pull-requests: read # listar PRs (sync agendado)
+          permission-contents: read # listar branches (sync agendado)
+          permission-organization-projects: write # itens e colunas do Project
+
+      - name: Sync das branches e PRs pela API
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          DRY_RUN: ${{ vars.PROJECT_SYNC_DRY_RUN }}
+        run: |
+          # Só `false` explícito escreve; vazio ou ausente fica em dry-run; outro valor falha.
+          case "$DRY_RUN" in
+            false) ARGS="" ;;
+            true | "") ARGS="--dry-run" ;;
+            *)
+              echo "::error::PROJECT_SYNC_DRY_RUN deve ser 'true' ou 'false'; veio '$DRY_RUN'. Corrija a variável do repositório."
+              exit 1
+              ;;
+          esac
+          python3 tools/project_sync.py --origem agendada $ARGS
