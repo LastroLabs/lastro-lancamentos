@@ -47,7 +47,7 @@ Associação do usuário ao escritório, com papel de chefe ou contador e situa�
 
 **Atributos:** `id; escritorio_id; usuario_id; papel; ativo`
 
-**Integridade:** UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. P-09 continua pendente para outras ações sem atribuição.
+**Integridade:** UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. Pela P-09, o chefe pode ser o responsável de um cliente, e acessar o cliente exige ser o responsável ativo, seja chefe ou contador.
 
 **Relacionamentos:** Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, ATRIBUICAO e pelos eventos de revisão.
 
@@ -159,7 +159,7 @@ Autorização sem login para envio e respostas de um cliente e mês.
 
 **Atributos:** `id; escritorio_id; cliente_id; competencia_id; hash_token; criado_por; criado_em; expira_em; revogado_em`
 
-**Integridade:** Token imprevisível; armazenar apenas hash. Padrão atual de 7 dias, configurável. Revalidar revogação e competência no envio e na resposta. Permissão de emissão pelo chefe sem atribuição permanece em P-09.
+**Integridade:** Token imprevisível; armazenar apenas hash. Padrão atual de 7 dias, configurável. Revalidar revogação e competência no envio e na resposta. Só o responsável ativo emite e invalida o link; o chefe não atribuído recebe 403 (P-09).
 
 **Relacionamentos:** Referencia COMPETENCIA e MEMBRO emissor. ARQUIVO e RESPOSTA referenciam o link autorizador.
 

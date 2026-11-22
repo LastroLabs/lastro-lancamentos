@@ -57,6 +57,30 @@
         "entrada": "mesmo estado de c1 mais contador_c em ESC-1, sem clientes atribuídos e com sessão aberta; contador_c pede a lista de clientes",
         "saida": "sucesso; 0 clientes"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "A lista do chefe traz de cada cliente só id, nome, CNPJ e responsável ativo (P-09)",
+      "exemplo": {
+        "entrada": "mesmo estado de c1; chefe_1 pede a lista de clientes",
+        "saida": "sucesso; cada item tem exatamente os campos id, nome, CNPJ e responsável (o teste confere o conjunto de chaves); responsável de EMP-1: id, nome e usuário de contador_a; de EMP-2: id, nome e usuário de contador_b; de EMP-3: nulo; nenhum item traz contas, plano, transitória, sócios, links, extratos ou movimentações"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "O chefe do mesmo escritório não abre cliente que não está atribuído a ele, e a recusa é 403 (P-09)",
+      "exemplo": {
+        "entrada": "mesmo estado de c1; chefe_1 abre pelo endereço direto (GET /api/v1/clientes/{id}) (a) EMP-1, de contador_a, e (b) EMP-3, sem responsável",
+        "saida": "nos 2 casos: status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2; nenhum dado de EMP-1 nem de EMP-3 na resposta, nem o nome"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "O chefe abre o cliente atribuído a ele",
+      "exemplo": {
+        "entrada": "mesmo estado de c1 mais EMP-4 em ESC-1 atribuída a chefe_1; chefe_1 abre EMP-4 pelo endereço direto e depois pede a lista de clientes",
+        "saida": "EMP-4: sucesso, com nome e CNPJ de EMP-4; a lista de chefe_1 tem 4 clientes, e EMP-4 aparece com responsável chefe_1"
+      }
     }
   ],
   "verificacao": [
@@ -79,6 +103,18 @@
     {
       "criterio": "c5",
       "comando": "pytest tests/access/test_carteira.py::test_contador_sem_clientes_recebe_lista_vazia -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_carteira.py::test_lista_do_chefe_traz_so_dados_primarios_e_responsavel -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/access/test_carteira.py::test_chefe_nao_atribuido_abre_cliente_recebe_403 -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/access/test_carteira.py::test_chefe_abre_cliente_atribuido_a_si -q"
     }
   ],
   "evidencia": null

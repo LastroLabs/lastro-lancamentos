@@ -50,6 +50,14 @@
         "entrada": "estado final de c1 (EMP-1 com o plano do gabarito); contador_a envia para EMP-1 uma planilha com cabeçalho 'código' e 'nome' na linha 1 e 2 contas: '1.1.01' 'Caixa' e '9.9.99' 'Transitória'; depois pede o plano de EMP-1",
         "saida": "carga aceita com 2 contas; o plano de EMP-1 tem exatamente 2 contas: 1.1.01 Caixa e 9.9.99 Transitória; nenhuma conta do plano anterior continua"
       }
+    },
+    {
+      "id": "c5",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não lê nem carrega o plano do cliente (403); atribuído a si, carrega como o contador (P-09)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com o plano do gabarito, atribuída a contador_a); ESC-1 também com EMP-4 atribuída a chefe_1, sem plano; chefe_1 (sessão aberta) tenta (a) ler o plano de EMP-1 e (b) enviar para EMP-1 uma planilha com cabeçalho 'código' e 'nome' na linha 1 e a conta '1.1.01' 'Caixa'; depois envia a mesma planilha para EMP-4 e pede o plano de EMP-4",
+        "saida": "(a) e (b): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2, sem nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1; EMP-4: carga aceita com 1 conta e o plano de EMP-4 tem 1.1.01 Caixa"
+      }
     }
   ],
   "verificacao": [
@@ -68,6 +76,10 @@
     {
       "criterio": "c4",
       "comando": "pytest tests/registry/test_plano_de_contas.py::test_nova_carga_substitui_plano_anterior -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_chefe_nao_atribuido_403_e_atribuido_carrega -q"
     }
   ],
   "evidencia": null

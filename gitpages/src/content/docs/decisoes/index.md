@@ -85,7 +85,7 @@ Decisões tomadas na revisão do primeiro lote de fichas. Fonte: `DECISIONS.md`,
 | P-10 | Assumida | 18/11/2026 | Planilha do plano de contas: cabeçalho `código` e `nome` na linha 1 (suposição, a confirmar com os pilotos) |
 | P-11 | Assumida | 18/11/2026 | Nova carga do plano substitui o anterior; se a transitória não estiver no plano novo, o cliente fica sem transitória |
 | P-12 | Assumida em parte | 18/11/2026 | Criada a HAR-04 (alinhamento do validador e do `check-clean`); o banco de teste no ambiente de verificação entra na NUC-01 |
-| P-09 | **Pendente** | — | O chefe edita o cadastro de um cliente e gera link mesmo sem estar atribuído? |
+| P-09 | Aprovada | 22/11/2026 | O chefe vê na lista todos os clientes do escritório (id, nome, CNPJ e responsável); abrir, alterar, gerar link, revisar e exportar é só do responsável ativo. O chefe pode se atribuir um cliente; sem ser o responsável, recebe **403** |
 | P-13 | **Pendente** | — | Status HTTP da recusa por dado inválido: 400 ou 422? As fichas usam `[definir P-13]` |
 
 ## Pendências em aberto, sem ID
@@ -116,4 +116,4 @@ Fontes: `docs/decisoes/DECISIONS.md` (18/11/2026); Requisitos funcionais v0.2; L
 
 ## Relação com a modelagem
 
-A [modelagem](/lastro-lancamentos/modelagem/) apresenta o impacto das decisões na persistência. A página [Premissas e decisões](/lastro-lancamentos/modelagem/decisoes/) reaproveita os status D-01 a D-09 desta tabela, identifica P-09/P-13 pendentes e relaciona entidades e requisitos. O esquema detalhado é uma proposta, sem aprovação automática decorrente de ARQ e BD.
+A [modelagem](/lastro-lancamentos/modelagem/) apresenta o impacto das decisões na persistência. A página [Premissas e decisões](/lastro-lancamentos/modelagem/decisoes/) reaproveita os status D-01 a D-09 desta tabela, identifica a P-13 pendente e relaciona entidades e requisitos. O esquema detalhado é uma proposta, sem aprovação automática decorrente de ARQ e BD.

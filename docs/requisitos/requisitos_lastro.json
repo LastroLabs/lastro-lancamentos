@@ -242,8 +242,8 @@
 			"selo": "AJUSTADO",
 			"prioridade": "Must",
 			"area": "Acesso e segurança",
-			"requisito": "O sistema deve mostrar a cada contador apenas os clientes atribuídos a ele, e ao chefe todos os clientes do escritório, aplicando essa regra no servidor em toda requisição.",
-			"criterio": "O contador A não vê, nem por endereço direto, clientes atribuídos só ao contador B. O chefe vê todos os clientes do escritório e nenhum de outro escritório.",
+			"requisito": "O sistema deve mostrar a cada contador apenas os clientes atribuídos a ele, e ao chefe a lista de todos os clientes do escritório e o detalhe só dos atribuídos a ele, aplicando essa regra no servidor em toda requisição. (Ajustado em 22/11: no v0.2 o chefe via todos os clientes, sem separar lista e detalhe; ver decisão P-09.)",
+			"criterio": "O contador A não vê, nem por endereço direto, clientes atribuídos só ao contador B. O chefe vê na lista todos os clientes do escritório e nenhum de outro escritório, e só abre os atribuídos a ele. (Ajustado em 22/11, ver decisão P-09.)",
 			"origem": "v2, Equipe",
 			"decisoes": [
 				"D-07",
@@ -259,8 +259,8 @@
 			"selo": "NOVO",
 			"prioridade": "Must",
 			"area": "Acesso e segurança",
-			"requisito": "O sistema deve ter o papel de chefe, que cadastra contadores e clientes e atribui clientes a contadores.",
-			"criterio": "Um usuário chefe cria um contador, cria um cliente e atribui o cliente a esse contador. Um contador sem o papel de chefe não vê essas ações.",
+			"requisito": "O sistema deve ter o papel de chefe, que cadastra contadores e clientes e atribui clientes a contadores ou a si mesmo. (Ajustado em 22/11: no v0.2 o chefe atribuía só a contadores; ver decisão P-09.)",
+			"criterio": "Um usuário chefe cria um contador, cria um cliente e atribui o cliente a esse contador ou a si mesmo. Um contador sem o papel de chefe não vê essas ações. (Ajustado em 22/11, ver decisão P-09.)",
 			"origem": "Equipe",
 			"decisoes": [
 				"D-09"
