@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from lastro.ai.service import load_name_protection_level
 from lastro.api import routes
 from lastro.core.config import Settings, get_settings
 from lastro.core.db import Database
@@ -29,8 +30,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     Returns:
         The FastAPI app. `app.state.settings` and `app.state.database` hold the settings and
         the lazy `Database` used by the routes.
+
+    Raises:
+        InvalidNameProtectionLevelError: if `NAME_PROTECTION_LEVEL` is not a known level; the
+            app does not start without name protection (IA-01, c4).
     """
     settings = settings or get_settings()
+    name_protection_level = load_name_protection_level()
     database = Database(settings.database_url)
 
     @asynccontextmanager
@@ -41,5 +47,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="Lastro", lifespan=lifespan)
     app.state.settings = settings
     app.state.database = database
+    app.state.name_protection_level = name_protection_level
     app.include_router(routes.router, prefix=API_V1_PREFIX)
     return app

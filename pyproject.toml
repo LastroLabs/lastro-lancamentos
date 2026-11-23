@@ -10,6 +10,8 @@ dependencies = [
     "psycopg[binary]>=3.3",
     "pydantic>=2.12",
     "pydantic-settings>=2.12",
+    # IA-01, plan D7: preservation lists of the anonymization (src/lastro/ai/).
+    "pyyaml>=6.0",
     "sqlalchemy[asyncio]>=2.0.44",
     "uvicorn>=0.38",
 ]
@@ -18,7 +20,6 @@ dependencies = [
 dev = [
     "httpx>=0.28",
     "pytest>=9.2",
-    "pyyaml>=6.0",
     "ruff>=0.14",
     "testcontainers[postgres]>=4.15",
 ]
@@ -36,3 +37,10 @@ ignore = ["EXE002"]
 # Estilo do teste da fase E (dict(...), `# fmt: skip` em expressão, dict mutável na classe do
 # git falso). O teste é a prova e não se edita ao implementar (AGENTS.md, regra 3).
 "tests/harness/test_fase_e.py" = ["C408", "RUF012", "RUF028"]
+# IA-01: o teste foi escrito antes de existir src/lastro/ai/ e o ruff ainda via `lastro` como
+# pacote de terceiros (import sem linha em branco). Mesma regra 3 acima; a causa está no isort abaixo.
+"tests/ai/test_anonimizar.py" = ["I001"]
+
+[tool.ruff.lint.isort]
+# `lastro` é sempre o pacote do projeto, mesmo antes de o módulo importado existir.
+known-first-party = ["lastro"]
