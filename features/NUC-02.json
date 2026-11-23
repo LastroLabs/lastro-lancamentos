@@ -2,11 +2,13 @@
   "id": "NUC-02",
   "titulo": "Decidir o acesso por escritório, papel e carteira",
   "modulo": "core",
-  "requisitos": ["BD-02"],
+  "requisitos": [
+    "BD-02"
+  ],
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -14,51 +16,147 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "O chefe tem acesso a todos os clientes do próprio escritório, atribuídos ou não",
+      "descricao": "O chefe vê na lista todos os clientes do próprio escritório, atribuídos ou não (P-09)",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1, contador_a e contador_b; EMP-1 atribuída a contador_a, EMP-2 a contador_b, EMP-3 sem responsável; decide o acesso de chefe_1 a EMP-1, EMP-2 e EMP-3",
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b; EMP-1 atribuída a contador_a, EMP-2 a contador_b, EMP-3 sem responsável; decide a ação 'ver na lista' de chefe_1 para EMP-1, EMP-2 e EMP-3",
         "saida": "permitido nos 3 casos"
       }
     },
     {
       "id": "c2",
-      "descricao": "O contador tem acesso só aos clientes atribuídos a ele",
+      "descricao": "O contador vê na lista e acessa só os clientes atribuídos a ele",
       "exemplo": {
-        "entrada": "mesmo estado de c1; decide o acesso de contador_a a EMP-1, EMP-2 e EMP-3",
-        "saida": "EMP-1 permitido; EMP-2 negado; EMP-3 negado"
+        "entrada": "mesmo estado de c1; decide as ações 'ver na lista' e 'acessar' de contador_a para EMP-1, EMP-2 e EMP-3",
+        "saida": "nas 2 ações: EMP-1 permitido; EMP-2 negado como inexistente; EMP-3 negado como inexistente"
       }
     },
     {
       "id": "c3",
       "descricao": "Ninguém tem acesso a cliente de outro escritório, nem o chefe",
       "exemplo": {
-        "entrada": "estado de c1 mais ESC-2 com chefe_2 e contador_x, e EMP-9 atribuída a contador_x; decide o acesso de chefe_2 e contador_x a EMP-1, e de chefe_1 a EMP-9",
-        "saida": "negado nos 3 casos"
+        "entrada": "estado de c1 mais ESC-2 com chefe_2 e contador_x, e EMP-9 atribuída a contador_x; decide as ações 'ver na lista' e 'acessar' de chefe_2 e contador_x para EMP-1, e de chefe_1 para EMP-9",
+        "saida": "negado como inexistente nos 3 casos, nas 2 ações"
       }
     },
     {
       "id": "c4",
       "descricao": "Usuário sem escritório ou sem papel conhecido é negado em tudo",
       "exemplo": {
-        "entrada": "estado de c3; usuario_sem_escritorio (sem escritório) e usuario_sem_papel (em ESC-1, sem papel); decide o acesso de cada um a EMP-1 e EMP-3",
-        "saida": "negado nos 4 casos"
+        "entrada": "estado de c3; usuario_sem_escritorio (sem escritório) e usuario_sem_papel (em ESC-1, sem papel); decide as ações 'ver na lista' e 'acessar' de cada um para EMP-1 e EMP-3",
+        "saida": "negado como inexistente nos 4 casos, nas 2 ações"
       }
     },
     {
       "id": "c5",
-      "descricao": "Filtrar uma lista de clientes devolve só os que o usuário pode ver",
+      "descricao": "Filtrar uma lista de clientes pela ação 'ver na lista' devolve só os que o usuário pode ver",
       "exemplo": {
         "entrada": "estado de c3; filtra a lista [EMP-1, EMP-2, EMP-3, EMP-9] para contador_a, para chefe_1 e para chefe_2",
         "saida": "contador_a: [EMP-1]; chefe_1: [EMP-1, EMP-2, EMP-3]; chefe_2: [EMP-9]"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "O chefe acessa só os clientes atribuídos a ele; cliente sem responsável não é acessado nem pelo chefe (P-09)",
+      "exemplo": {
+        "entrada": "estado de c1 mais EMP-4 em ESC-1 atribuída a chefe_1; decide a ação 'acessar' de chefe_1 para EMP-1, EMP-3 e EMP-4",
+        "saida": "EMP-1 (de contador_a): negado por falta de atribuição; EMP-3 (sem responsável): negado por falta de atribuição; EMP-4: permitido"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "Só o chefe do mesmo escritório recebe a recusa por falta de atribuição; os demais recebem a recusa de inexistente",
+      "exemplo": {
+        "entrada": "estado de c6 mais ESC-2 com chefe_2 e contador_x; decide a ação 'acessar' de (a) chefe_1 para EMP-2, (b) contador_a para EMP-2, (c) chefe_2 para EMP-1 e (d) chefe_1 para um identificador de cliente que não existe",
+        "saida": "(a) negado por falta de atribuição; (b), (c) e (d): negado como inexistente, o mesmo resultado nos 3"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "Gerir a atribuição de um cliente (atribuir, consultar o responsável e reatribuir) exige ser chefe do mesmo escritório, sem ser o responsável (P-09)",
+      "exemplo": {
+        "entrada": "estado de c7; decide a ação 'gerir atribuição' de chefe_1 para EMP-1, EMP-3 e EMP-4, de contador_a para EMP-1 e de chefe_2 para EMP-1",
+        "saida": "chefe_1: permitido nos 3; contador_a: negado pelo papel, mesmo sendo o responsável de EMP-1; chefe_2: negado como inexistente"
+      }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_todos_do_escritorio -q"},
-    {"criterio": "c2", "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"},
-    {"criterio": "c3", "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"},
-    {"criterio": "c4", "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"},
-    {"criterio": "c5", "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_ve_todos_na_lista -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_so_atribuidos_a_ele -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_recusa_por_falta_de_atribuicao_so_para_chefe -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q"
+    }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T00:51:55Z",
+    "commit": "e983eebc356e",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_ve_todos_na_lista -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_so_atribuidos_a_ele -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_recusa_por_falta_de_atribuicao_so_para_chefe -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

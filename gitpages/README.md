@@ -14,7 +14,7 @@ A especificação em Markdown/MDX fica em `src/content/docs/modelagem/`. Ela nã
 
 Ao alterar uma entidade, mantenha coerentes a descrição, as chaves e os diagramas. Ao alterar um vínculo, atualize `modelagem.json` e confira a prioridade do requisito. Vínculo documentado não significa `passing`; as fichas e evidências continuam sob controle do harness. Não copie para a documentação dados ou identificadores reais.
 
-As regras vigentes de 18/11 são tratadas separadamente do esquema proposto. D-08, P-09, P-13 e a precedência das regras não recebem valores inventados. O registro `docs/decisoes/DECISIONS.md` estava vazio no checkout de origem; os status publicados foram obtidos das páginas de decisões do site.
+As regras vigentes de 18/11 são tratadas separadamente do esquema proposto. D-08, P-13 e a precedência das regras não recebem valores inventados. O registro `docs/decisoes/DECISIONS.md` estava vazio no checkout de origem; os status publicados foram obtidos das páginas de decisões do site.
 
 ## Comandos
 

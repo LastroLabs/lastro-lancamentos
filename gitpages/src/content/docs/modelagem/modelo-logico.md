@@ -31,7 +31,7 @@ Login individual identifica a autoria. Segredo de autenticação não é armazen
 
 Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, ATRIBUICAO e pelos eventos de revisão.
 
-UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. P-09 continua pendente para outras ações sem atribuição.
+UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. Pela P-09, o chefe pode ser o responsável de um cliente, e acessar o cliente exige ser o responsável ativo, seja chefe ou contador.
 
 [Descrição e atributos](/lastro-lancamentos/modelagem/entidades/#membro) · [Requisitos vinculados](/lastro-lancamentos/modelagem/rastreabilidade/?entidade=membro).
 
@@ -103,7 +103,7 @@ Uma competência por cliente/mês. O mês usa o primeiro dia. Status de envio e 
 
 Referencia COMPETENCIA e MEMBRO emissor. ARQUIVO e RESPOSTA referenciam o link autorizador.
 
-Token imprevisível; armazenar apenas hash. Padrão atual de 7 dias, configurável. Revalidar revogação e competência no envio e na resposta. Permissão de emissão pelo chefe sem atribuição permanece em P-09.
+Token imprevisível; armazenar apenas hash. Padrão atual de 7 dias, configurável. Revalidar revogação e competência no envio e na resposta. Só o responsável ativo emite e invalida o link; o chefe não atribuído recebe 403 (P-09).
 
 [Descrição e atributos](/lastro-lancamentos/modelagem/entidades/#link_cliente) · [Requisitos vinculados](/lastro-lancamentos/modelagem/rastreabilidade/?entidade=link_cliente).
 

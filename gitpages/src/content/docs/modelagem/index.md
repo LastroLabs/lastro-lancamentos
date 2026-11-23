@@ -30,7 +30,7 @@ As prioridades, o texto e os critérios de aceitação vêm do [catálogo de req
 
 ## Regras incorporadas de 18/11
 
-O **chefe cadastra clientes**, conforme P-02/P-02a. A conta entra na carteira do contador após a atribuição. A nova carga do plano **substitui a versão vigente** e deixa o cliente sem transitória se a conta não estiver no novo plano, conforme P-11, assumida. A política do chefe para editar cadastros ou gerar links sem atribuição permanece pendente em P-09.
+O **chefe cadastra clientes**, conforme P-02/P-02a. A conta entra na carteira do contador após a atribuição. A nova carga do plano **substitui a versão vigente** e deixa o cliente sem transitória se a conta não estiver no novo plano, conforme P-11, assumida. Pela P-09, o chefe vê a lista do escritório e só edita cadastros ou gera links dos clientes atribuídos a ele; pode se atribuir um cliente.
 
 Pelos padrões atuais, o link tem validade de **7 dias**, o arquivo tem limite de **20 MiB**, a carteira é individual e há **um responsável ativo por cliente**. Esses padrões são configuráveis e provisórios. A pseudonimização de todos os nomes de contrapartes decorre da D-03 aprovada. A regra mínima de adquirentes permanece desligada até confirmação; o layout do Domínio continua provisório até homologação real.
 

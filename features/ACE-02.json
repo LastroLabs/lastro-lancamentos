@@ -24,7 +24,7 @@
       "descricao": "O chefe cadastra um contador com nome e usuário; o sistema cria a conta sem senha e devolve, uma única vez, o link de convite com validade",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; chefe_1 envia POST /api/v1/contadores com nome 'CONTADOR TESTE C' e usuário contador_c; depois pede a lista GET /api/v1/contadores",
-        "saida": "status 201; a resposta traz id, nome 'CONTADOR TESTE C', usuário contador_c, papel contador, situação 'convite_pendente', o código do convite, o endereço '/convite/<código>' e a data de validade (48 horas depois, ajuste LASTRO_CONVITE_HORAS); o código tem pelo menos 43 caracteres e vem de gerador criptográfico; no banco: 1 usuario novo com credencial_hash nulo, 1 membro contador ativo em ESC-1 e 1 convite pendente cujo hash_token é o SHA-256 do código; o código não está gravado em nenhuma coluna nem nos logs; a lista tem 3 pessoas, contador_c com situação 'convite_pendente', e não traz código nem hash"
+        "saida": "status 201; a resposta traz id, nome 'CONTADOR TESTE C', usuário contador_c, papel contador, situação 'convite_pendente', o código do convite, o endereço '/convite/<código>' e a data de validade (48 horas depois, ajuste LASTRO_CONVITE_HORAS); o código tem pelo menos 43 caracteres e vem de gerador criptográfico; no banco: 1 usuario novo com credencial_hash nulo, 1 membro contador ativo em ESC-1 e 1 convite pendente cujo hash_token é o SHA-256 do código; o código não está gravado em nenhuma coluna nem nos logs; a lista tem 3 pessoas, chefe_1 (papel chefe, situação 'ativo'), contador_a e contador_c, este com situação 'convite_pendente', e não traz código nem hash; o chefe aparece na lista para poder se escolher como responsável (P-09)"
       }
     },
     {
@@ -61,10 +61,10 @@
     },
     {
       "id": "c6",
-      "descricao": "O chefe atribui um cliente sem responsável a um contador do escritório e o cliente passa a ter esse contador como único responsável ativo",
+      "descricao": "O chefe atribui um cliente sem responsável a um membro ativo do escritório, inclusive a si mesmo, e o cliente passa a ter esse membro como único responsável ativo",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_a e contador_c; EMP-1 cadastrada em ESC-1, sem responsável; chefe_1 atribui EMP-1 a contador_c (POST /api/v1/clientes/{id}/atribuicao com o id do contador) e consulta o responsável (GET /api/v1/clientes/{id}/atribuicao)",
-        "saida": "atribuição aceita com status 201; a consulta mostra 1 responsável ativo: contador_c; o banco tem 1 linha de atribuicao de EMP-1 com fim nulo e atribuido_por igual ao membro de chefe_1; contador com convite ainda pendente também pode receber cliente"
+        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_a e contador_c; EMP-1 cadastrada em ESC-1, sem responsável; chefe_1 atribui EMP-1 a contador_c (POST /api/v1/clientes/{id}/atribuicao com o id do membro) e consulta o responsável (GET /api/v1/clientes/{id}/atribuicao); depois atribui EMP-2, também cadastrada em ESC-1 e sem responsável, a si mesmo (o id do próprio membro) e consulta o responsável de EMP-2",
+        "saida": "atribuição aceita com status 201; a consulta mostra 1 responsável ativo: contador_c; o banco tem 1 linha de atribuicao de EMP-1 com fim nulo e atribuido_por igual ao membro de chefe_1; contador com convite ainda pendente também pode receber cliente; EMP-2: atribuição aceita com status 201 e 1 responsável ativo: chefe_1, com atribuido_por igual ao próprio membro de chefe_1"
       }
     },
     {
@@ -88,7 +88,7 @@
       "descricao": "O chefe não mexe em cliente nem em contador de outro escritório, e a recusa é igual à de registro inexistente",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1, contador_a, contador_c (convite pendente) e EMP-1 sem responsável; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta (a) atribuir EMP-1 a contador_x; (b) atribuir a contador_x um cliente que não existe; (c) atribuir um cliente de ESC-2 a contador_a; (d) atribuir um cliente de ESC-2 a um contador que não existe; (e) gerar convite para contador_c",
-        "saida": "(a) e (b): status 404, mensagem 'Você não tem acesso a este cliente.', corpo idêntico; (c), (d) e (e): status 404, mensagem 'Contador não encontrado no seu escritório.', corpo idêntico; nenhum dado de ESC-1 nas respostas; nada muda em ESC-1"
+        "saida": "(a) e (b): status 404, mensagem 'Você não tem acesso a este cliente.', corpo idêntico; (c) e (d): status 404, mensagem 'Responsável não encontrado no seu escritório.', corpo idêntico nos dois; (e): status 404, mensagem 'Contador não encontrado no seu escritório.'; nenhum dado de ESC-1 nas respostas; nada muda em ESC-1"
       }
     }
   ],
@@ -136,6 +136,10 @@
     {
       "criterio": "c9",
       "comando": "pytest tests/access/test_cadastro_contador.py::test_atribuir_a_contador_de_outro_escritorio_recusado -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_atribui_cliente_a_si_mesmo -q"
     }
   ],
   "evidencia": null

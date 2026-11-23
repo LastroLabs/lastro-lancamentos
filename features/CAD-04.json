@@ -73,6 +73,14 @@
         "entrada": "estado final de c6; contador_a altera a conta 001 'Conta movimento' de EMP-1 (rota PATCH com o id da conta): (1) apelido para 'Conta principal'; (2) último mês '2026-11' (encerrar); tenta ainda (a) trocar o banco para 237; (b) apelido 'Conta digital', que já existe em EMP-1; (c) último mês '2025-01' com primeiro mês '2026-01'; (d) contador_b altera a mesma conta; (e) contador_a altera uma conta de EMP-2 usando o caminho de EMP-1; depois pede a lista",
         "saida": "(1) e (2) aceitas; a lista mostra 'Conta principal' com último mês '2026-11' e as outras contas iguais; (a) status de dado inválido [definir P-13], mensagem 'O banco de uma conta não pode ser trocado. Cadastre uma nova conta.'; (b) status 409 com a mensagem de c5; (c) a mensagem de c6 para último mês antes do primeiro; (d) e (e): status 404, corpo idêntico ao de c3 (conta de outro cliente conta como inexistente); nos casos recusados nada muda; não existe rota de apagar conta e a contagem de linhas de conta_bancaria nunca diminui"
       }
+    },
+    {
+      "id": "c8",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não lê nem informa contas do cliente (403); atribuído a si, informa como o contador (P-09)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com 2 contas, atribuída a contador_a); ESC-1 também com EMP-4 atribuída a chefe_1, sem contas; chefe_1 (sessão aberta) tenta, em EMP-1, (a) ler as contas, (b) informar banco 341 apelido 'Outra' e (c) informar apelido 'Sem banco' sem banco; depois informa em EMP-4 banco 001 apelido 'Conta movimento' e pede as contas de EMP-4",
+        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum dado de EMP-1 nem das contas; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; EMP-1 continua com 2 contas; EMP-4: conta aceita e a lista de EMP-4 tem 1 conta, 001 'Conta movimento'"
+      }
     }
   ],
   "verificacao": [
@@ -103,6 +111,10 @@
     {
       "criterio": "c7",
       "comando": "pytest tests/registry/test_contas_bancarias.py::test_contador_altera_e_encerra_conta_sem_apagar -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contas_chefe_nao_atribuido_403_e_atribuido_informa -q"
     }
   ],
   "evidencia": null

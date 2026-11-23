@@ -55,6 +55,14 @@
         "entrada": "estado final de c1 (EMP-1 com a transitória 9.9.99); contador_a carrega para EMP-1 um plano novo só com 1.1.01 Caixa e 2.1.05 Fornecedores; depois consulta EMP-1",
         "saida": "carga aceita com 2 contas; EMP-1 sem conta transitória"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não consulta nem altera a transitória do cliente (403); atribuído a si, indica como o contador (P-09)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com a transitória 9.9.99, atribuída a contador_a); ESC-1 também com chefe_1 (sessão aberta) e EMP-4 atribuída a chefe_1, com plano 1.1.01 Caixa e 9.9.99 Transitória e sem transitória; chefe_1 tenta, em EMP-1, (a) consultar o cliente, (b) indicar 1.1.01 como transitória e (c) indicar 8.8.88, que não está no plano; depois indica 9.9.99 em EMP-4 e consulta EMP-4",
+        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum dado de EMP-1; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; EMP-1 continua com a transitória 9.9.99; EMP-4: indicação aceita e conta transitória 9.9.99 Transitória"
+      }
     }
   ],
   "verificacao": [
@@ -81,6 +89,10 @@
     {
       "criterio": "c5",
       "comando": "pytest tests/registry/test_conta_transitoria.py::test_nova_carga_sem_a_conta_limpa_transitoria -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_transitoria_chefe_nao_atribuido_403_e_atribuido_indica -q"
     }
   ],
   "evidencia": null

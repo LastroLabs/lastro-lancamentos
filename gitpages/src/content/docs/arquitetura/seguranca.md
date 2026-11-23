@@ -42,7 +42,7 @@ Assim ninguém descobre, pela resposta, que um cliente de outro escritório exis
 
 | Quem | O que acessa |
 |---|---|
-| Chefe | Gere usuários, clientes e atribuições; é o único que cadastra cliente (P-02); vê todos os clientes do próprio escritório (D-09). Se o chefe edita cadastro e gera link sem estar atribuído ainda está pendente (P-09) |
+| Chefe | Gere usuários, clientes e atribuições; é o único que cadastra cliente (P-02); vê na lista todos os clientes do próprio escritório, só com id, nome, CNPJ e responsável (D-09, P-09). Abre, altera, gera link, revisa e exporta só os clientes atribuídos a ele; pode se atribuir um cliente. Sem ser o responsável, recebe 403 (P-09) |
 | Contador | Só clientes com atribuição vigente; carteira individual, um responsável ativo por cliente (D-07 e D-09) |
 | Cliente por link | Só envio e perguntas da competência autorizada |
 | Worker | Tarefas com escopo de escritório e cliente; sem papel administrativo no banco |

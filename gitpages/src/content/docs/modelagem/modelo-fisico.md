@@ -27,7 +27,7 @@ O hash reconhece conteúdo reenviado, mas não autoriza apagar pagamentos legít
 
 A sessão no servidor referencia o membro do escritório, tem validade e pode ser encerrada. Não guarda uma carteira fixa que continue autorizando acesso após a reatribuição. A aplicação confere o papel e os vínculos vigentes em toda requisição; RLS reforça o escopo de leitura e escrita, sob papel de banco diferente do proprietário das tabelas.
 
-P-01 prevê **401** sem sessão válida, **403** quando o papel não permite a ação e **404 idêntico ao de inexistente** para recurso de outro escritório ou carteira. Só o chefe cadastra o cliente. A visão de todos os clientes do escritório não implica autorização automática para revisar, exportar, editar cadastros ou emitir links sem atribuição; aplicar a definição disponível e manter P-09 pendente.
+P-01 prevê **401** sem sessão válida, **403** quando o papel não permite a ação e **404 idêntico ao de inexistente** para recurso de outro escritório ou carteira. Só o chefe cadastra o cliente. A visão de todos os clientes do escritório não implica autorização para revisar, exportar, editar cadastros ou emitir links: pela P-09, o chefe vê só a lista (id, nome, CNPJ e responsável) e acessa só os clientes atribuídos a ele. Chefe do mesmo escritório que não é o responsável recebe **403**; contador de outra carteira continua recebendo o 404. A gestão de atribuição só exige o papel de chefe.
 
 A reatribuição bloqueia o cliente, encerra o vínculo anterior, cria o novo e incrementa a versão de acesso na mesma transação. Downloads mediados pelo backend revalidam a permissão. O histórico e as configurações continuam ligados ao cliente.
 
