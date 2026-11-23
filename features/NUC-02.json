@@ -2,11 +2,13 @@
   "id": "NUC-02",
   "titulo": "Decidir o acesso por escritório, papel e carteira",
   "modulo": "core",
-  "requisitos": ["BD-02"],
+  "requisitos": [
+    "BD-02"
+  ],
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "in_progress",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -78,14 +80,38 @@
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_ve_todos_na_lista -q"},
-    {"criterio": "c2", "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"},
-    {"criterio": "c3", "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"},
-    {"criterio": "c4", "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"},
-    {"criterio": "c5", "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"},
-    {"criterio": "c6", "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_so_atribuidos_a_ele -q"},
-    {"criterio": "c7", "comando": "pytest tests/core/test_regra_acesso.py::test_recusa_por_falta_de_atribuicao_so_para_chefe -q"},
-    {"criterio": "c8", "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_ve_todos_na_lista -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_so_atribuidos_a_ele -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_recusa_por_falta_de_atribuicao_so_para_chefe -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q"
+    }
   ],
   "evidencia": null
 }
