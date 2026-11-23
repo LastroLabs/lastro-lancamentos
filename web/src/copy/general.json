@@ -1,0 +1,9 @@
+{
+  "signIn": "Entrar",
+  "invitation": "Criar sua senha",
+  "notFound": "Página não encontrada. Confira o endereço ou volte ao início.",
+  "goToSignIn": "Ir para a entrada",
+  "healthUp": "Sistema no ar.",
+  "healthDown": "O sistema está fora do ar. Tente de novo em alguns minutos.",
+  "healthChecking": "Verificando o sistema…"
+}

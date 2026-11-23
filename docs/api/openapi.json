@@ -1,0 +1,92 @@
+{
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "description": "Body of a healthy answer: the API is up and the database answered.",
+        "properties": {
+          "api": {
+            "const": "up",
+            "title": "Api",
+            "type": "string"
+          },
+          "database": {
+            "const": "connected",
+            "title": "Database",
+            "type": "string"
+          }
+        },
+        "required": [
+          "api",
+          "database"
+        ],
+        "title": "HealthStatus",
+        "type": "object"
+      },
+      "Problem": {
+        "description": "Error body in RFC 9457 (application/problem+json).",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail"
+        ],
+        "title": "Problem",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Lastro",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "description": "Say whether the API and the database are up. No login; no internal detail.",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Health"
+      }
+    }
+  }
+}
