@@ -16,11 +16,19 @@ Como preencher (agente, ao encerrar a sessão):
 Um comando sobe a API (Python 3.14) e o PostgreSQL 18; `GET /api/v1/health` diz se o banco está conectado; o Alembic migra com o papel dono e a API conecta com um papel sem poder sobre o esquema.
 
 ## Próxima ação
-1. O humano aplica no `DECISIONS.md` o texto da emenda (BD-07 e uv) entregue em 23/11, e na ficha as mudanças sugeridas no plan.
-2. T7: `sh tools/hx verify`, `sh tools/hx check-clean`, `git diff cacb33a -- tests/` e `hx feature verify NUC-01`.
+Ficha atualizada (PR `docs/NUC-01-ficha`), emenda no `DECISIONS.md` (PR `docs/NUC-01-decisions`) e T7 feitas em 23/11; a ficha está `passing`. Falta:
+1. Aprovar o PR `docs/NUC-01-ficha`; depois, na branch da feature, rodar `git merge origin/main`. Se a ficha mudou na revisão, refazer a T7 (`git diff cacb33a -- tests/`, `ruff check .`, `hx check-clean`, `hx verify`, `hx feature verify NUC-01`).
+2. Aprovar o PR `docs/NUC-01-decisions` (BD-07 emenda, FER-01, Consequência e P-12).
+3. Tirar o PR da feature do modo rascunho.
 
 ## Bloqueios e perguntas
-- Pendente (não bloqueia a T7): itens (a), (b) e (c) da D1 no Docker Desktop. Linux nativo e CI já conferidos (CI: run `45119217554`, job `137508892873`). Importa só se alguém do time usar Mac ou Windows.
+Pendências fora desta ficha (não bloqueiam a NUC-01):
+- **Docker Desktop não testado:** itens (a), (b) e (c) da D1. Linux nativo e CI já conferidos (CI: run `45119217554`, job `137508892873`). Importa só se alguém do time usar Mac ou Windows.
+- **Varredura de nomes do `check-clean` desligada:** a variável `LASTRO_NOMES_PROIBIDOS` não está definida no local (o `check-clean` de 23/11 avisou "verificação de nomes pulada"). Na CI ela vem do segredo de mesmo nome e falta lá também, conferido no run 45119217554: o job check-clean anotou "Varredura de nomes pulada: o segredo não está disponível (PR de fork?)". Assunto do dono do harness.
+- **PR de docs do Python 3.12:** a regra 12 do `AGENTS.md` e a §10 do `ARCHITECTURE.md` ainda citam 3.12 (resposta 6 do plan).
+- **`privileged` do proxy:** tirar o `privileged: true` do `docker-proxy` se um teste nos três ambientes mostrar que ele é dispensável. O README do proxy diz que ele é necessário "em alguns contextos de SELinux/AppArmor", sem dizer quais.
+
+Histórico dos bloqueios da implementação:
 - 5 · Resolvido pelo commit só-de-testes `cacb33a` (cast `defaclobjtype::text`). Registro original: **SQL do teste de reaplicação inválido no PostgreSQL 18.** Em `test_migracoes_reaplicadas_nao_mudam_nada`, o `SNAPSHOT_SQL` concatena `text || ':' || defaclobjtype`. A coluna `pg_default_acl.defaclobjtype` é do tipo `"char"`, e o PostgreSQL 18.7 recusa com `operator is not unique: text || "char"`. Reproduzi num `postgres:18` vazio, sem nenhuma migração: o erro é da consulta, não da implementação. Com `defaclobjtype::text`, a consulta roda e, numa cópia de `tests/core` fora do repositório, os 3 testes de migração passam. Proposta: trocar só esse trecho para `defaclobjtype::text`, sem mudar valor esperado.
 - 1, 2 e 3 (teste do esqueleto, alarmes do `check-clean`, sobra de container): resolvidos pelo commit só-de-testes `59452ed` do humano.
 - 4 · Aviso de depreciação: `testcontainers.postgres is deprecated, use testcontainers.community.postgres` (4.15.0). Os testes importam o caminho antigo; hoje só avisa.
@@ -95,6 +103,13 @@ Um comando sobe a API (Python 3.14) e o PostgreSQL 18; `GET /api/v1/health` diz 
   Dono do banco: `lastro_owner`. Confirma o `create_roles.sh` rodando de verdade: os dois papéis criados, nenhum é superusuário nem tem `CREATEDB`, `CREATEROLE` ou `BYPASSRLS`, e o banco foi passado para `lastro_owner`.
 - 23/11 · S2 (pós-T6) · `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, `RESULTADO: OK` (exit 0, cerca de 26 s). `sh tools/hx check-clean` → 0 achados, `RESULTADO: OK`. `git diff cacb33a -- tests/` → vazio (0 bytes). Sobraram 0 `postgres:18`.
 - 23/11 · S2 (CI, relatado pelo humano) · Run `45119217554`, job verify `137508892873` (`hx verify` do `pr.yml`, runner do GitHub): `[2/2] pytest -q OK` e `RESULTADO: OK`. O caminho Testcontainers + `docker-proxy` + `host-gateway` funcionou na CI. O trecho de log mostrado não traz linhas do Compose nem do proxy; a prova é o `tests/core` verde sem `skip`. A remoção do container não aparece no log.
+- 23/11 · S3 (T7) · Ficha trazida por merge de `origin/docs/NUC-01-ficha` (commit de merge `859ac78`); **o PR dessa ficha ainda não foi aprovado**. Se o PR mudar antes de aprovar, a T7 precisa rodar de novo. Sobre o `859ac78`, sem mudança local fora da ficha:
+  - `git diff cacb33a -- tests/` → vazio (0 bytes).
+  - `ruff check .` (no container `dev`; o host não tem `ruff`) → `All checks passed!`, exit 0.
+  - `sh tools/hx check-clean` → `AVISO: verificação de nomes pulada (variável não definida)`, 0 achados, `RESULTADO: OK`, exit 0.
+  - `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, Arquitetura e E2E `PULADO (ainda não implementado)`, `RESULTADO: OK`, exit 0, **29,5 s** no total.
+  - `sh tools/hx feature verify NUC-01` → os 8 comandos da `verificacao` (c1 a c6) `OK`, `RESULTADO: OK`, exit 0, 57,8 s; o script gravou `estado: passing` e a `evidencia` (commit `859ac781e01a`, `2026-11-23T06:06:25Z`) em `features/NUC-01.json`.
+  - Depois: 0 containers `postgres:18` sobrando.
 
 ## Falhou
 - 23/11 · S2 (T2) · Primeiro teste c6 pelo proxy: 403 em `/exec/<id>/start` (EXEC desligado); depois, conexão recusada em `docker-proxy:<porta>` (host padrão). As duas causas foram corrigidas no Compose; ver Rodei.

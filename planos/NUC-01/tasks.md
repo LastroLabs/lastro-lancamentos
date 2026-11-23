@@ -114,11 +114,11 @@
 - **Decisões relacionadas:** D6
 - **Pronto quando:** os comandos acima rodaram e o resultado está no `progress`
 
-## [ ] T7 · Verificação final
+## [x] T7 · Verificação final
 - **Critérios de aceite:**
-  - [ ] A ficha já traz a rota e o corpo da saúde do plan (PR do humano); os nomes de teste ficam os da ficha
-  - [ ] `git diff cacb33a -- tests/` vazio
-  - [ ] `ruff check .` limpo
-  - [ ] `hx check-clean` e `hx verify` em OK; tempo do `hx verify` anotado no `progress` (risco de CI lenta)
-  - [ ] `hx feature verify NUC-01` grava `passing`
+  - [x] A ficha já traz a rota e o corpo da saúde do plan (PR do humano); os nomes de teste ficam os da ficha. Nota: a ficha veio por merge de `origin/docs/NUC-01-ficha` (`859ac78`), PR ainda não aprovado em 23/11
+  - [x] `git diff cacb33a -- tests/` vazio
+  - [x] `ruff check .` limpo
+  - [x] `hx check-clean` e `hx verify` em OK; tempo do `hx verify` anotado no `progress` (risco de CI lenta)
+  - [x] `hx feature verify NUC-01` grava `passing`
 - **Pronto quando:** os três comandos do `hx` terminam com código 0
