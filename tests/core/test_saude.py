@@ -44,8 +44,8 @@ def test_saude_com_banco_conectado_responde_ok(monkeypatch, migrated_database):
 def test_saude_sem_banco_responde_indisponivel(monkeypatch):
     port = _closed_port()
     user = "app_inventado"
-    password = secrets.token_hex(12)
-    url = f"postgresql+psycopg://{user}:{password}@127.0.0.1:{port}/banco_inventado"
+    app_pw = secrets.token_hex(12)
+    url = f"postgresql+psycopg://{user}:{app_pw}@127.0.0.1:{port}/banco_inventado"
 
     with _client_for(monkeypatch, url, url) as client:
         response = client.get(HEALTH_PATH)
@@ -55,5 +55,5 @@ def test_saude_sem_banco_responde_indisponivel(monkeypatch):
     body = response.json()
     assert body["detail"] == UNAVAILABLE_MESSAGE
     assert body["status"] == 503
-    for leaked in ("127.0.0.1", str(port), user, password, "banco_inventado", "Traceback", "psycopg"):
+    for leaked in ("127.0.0.1", str(port), user, app_pw, "banco_inventado", "Traceback", "psycopg"):
         assert leaked not in response.text, f"the response leaks '{leaked}'"

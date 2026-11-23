@@ -240,7 +240,11 @@ def test_esqueleto_da_api_tem_pontos_de_extensao_fixos(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {"echo": "ok"}
     assert not connected, "importing or creating the app opened a database connection"
-    health_paths = [route.path for route in app.routes if route.path.endswith("/health")]
+    # Public contract: the OpenAPI paths. Since FastAPI 0.137, app.routes holds included
+    # routers as items without `.path`, so it cannot be read route by route.
+    paths = app.openapi()["paths"]
+    assert f"{API_V1}/test-echo" in paths
+    health_paths = [path for path in paths if path.endswith("/health")]
     assert health_paths == [f"{API_V1}/health"]
 
 

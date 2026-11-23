@@ -99,32 +99,39 @@ def _set_password(cursor, role, password):
     )
 
 
+def _new_pw():
+    """Random password generated at run time; no fixed secret in the repository."""
+    return secrets.token_hex(16)
+
+
 @pytest.fixture(scope="session")
 def postgres_server():
     postgres_module = _require("testcontainers.postgres", "plan D1")
-    superuser_password = secrets.token_hex(16)
+    admin_pw = _new_pw()
     container = postgres_module.PostgresContainer(
         POSTGRES_IMAGE,
         username=SUPERUSER,
-        password=superuser_password,
+        password=admin_pw,
         dbname="postgres",
         driver=None,
     )
+    # The finally also covers a failed start or wait: with Ryuk disabled (plan D1), nothing
+    # else would remove a container that was created but never became ready.
     try:
-        container.start()
-    except Exception as error:  # noqa: BLE001 (docker, proxy or timeout: all become one clear failure)
-        pytest.fail(
-            "Could not start the test PostgreSQL through Testcontainers. Check that Docker is "
-            "running and that the 'docker-proxy' service (profile 'dev') is up and allows "
-            f"creating containers. Cause: {type(error).__name__}: {error}"
-        )
-    try:
+        try:
+            container.start()
+        except Exception as error:  # noqa: BLE001 (docker, proxy or timeout: all become one clear failure)
+            pytest.fail(
+                "Could not start the test PostgreSQL through Testcontainers. Check that Docker is "
+                "running and that the 'docker-proxy' service (profile 'dev') is up and allows "
+                f"creating containers. Cause: {type(error).__name__}: {error}"
+            )
         server = PostgresServer(
             host=container.get_container_host_ip(),
             port=int(container.get_exposed_port(5432)),
-            superuser_password=superuser_password,
-            owner_password=secrets.token_hex(16),
-            app_password=secrets.token_hex(16),
+            superuser_password=admin_pw,
+            owner_password=_new_pw(),
+            app_password=_new_pw(),
         )
         if not CREATE_ROLES_SQL.is_file():
             pytest.fail(f"Missing roles script: {CREATE_ROLES_SQL.relative_to(REPO_ROOT)} (plan D5)")
