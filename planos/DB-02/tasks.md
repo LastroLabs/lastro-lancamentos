@@ -32,7 +32,7 @@
 - Atualizar `progress/DB-02.md` com decisões e evidências reais.
 - **Pronto quando:** documentação explica o esquema entregue sem prometer fluxo de API ou importação de planilha.
 
-## [ ] T5 · Verificação, commit e PR
+## [x] T5 · Verificação, commit e PR
 - Confirmar `git diff <hash-dos-testes> HEAD -- tests/` vazio.
 - Rodar `hx verify`, `hx check-clean` e `hx feature verify DB-02`; registrar resultados sem dados reais.
 - Commitar a evidência gerada pelo harness; abrir PR para `developer` com o template e a tabela critério → teste.
