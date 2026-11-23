@@ -1,0 +1,96 @@
+{
+  "id": "ACE-01",
+  "titulo": "Entrar com login individual e encerrar a sessão",
+  "modulo": "access",
+  "requisitos": [
+    "RF-AUT-01"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "arthurlleite",
+  "depende_de": [
+    "NUC-01",
+    "DB-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O contador entra com as próprias credenciais e a sessão o identifica pelo nome de usuário, papel e escritório",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e contador_a (papel contador), cada um com usuário e senha próprios; nenhuma sessão aberta; contador_a entra com o próprio usuário e a própria senha e, na sessão aberta, pede a identificação de quem está conectado",
+        "saida": "entrada aceita e sessão aberta; a identificação devolve usuário contador_a, papel contador e escritório ESC-1; a senha não aparece em nenhuma resposta"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Senha errada ou usuário inexistente recebem a mesma recusa e não abrem sessão",
+      "exemplo": {
+        "entrada": "mesmo estado de c1; (a) entra com usuário contador_a e senha errada; (b) entra com usuário_inexistente e qualquer senha",
+        "saida": "nos dois casos: status 401, mensagem 'Usuário ou senha incorretos.', a mesma nos dois; nenhuma sessão aberta; a resposta não diz qual dos dois campos errou"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Dois contadores do mesmo escritório com sessões ao mesmo tempo são identificados cada um pela própria sessão",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b (papel contador), cada um com usuário e senha próprios; contador_a e contador_b entram e ficam com sessões abertas ao mesmo tempo; os pedidos de identificação são intercalados: contador_a, contador_b, contador_a",
+        "saida": "os 3 pedidos têm sucesso; o 1º e o 3º identificam usuário contador_a, papel contador, escritório ESC-1; o 2º identifica usuário contador_b, papel contador, escritório ESC-1"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Depois de sair, a mesma sessão não dá mais acesso",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e contador_a (papel contador), cada um com usuário e senha próprios; contador_a com sessão aberta; contador_a sai; com a mesma sessão, pede a identificação de quem está conectado",
+        "saida": "status 401; mensagem 'Sua sessão terminou. Entre de novo.'; nenhum dado de usuário ou de escritório na resposta"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Pedido sem sessão a um recurso protegido é recusado sem dado",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a; nenhuma sessão; cliente HTTP pede a identificação de quem está conectado sem enviar sessão",
+        "saida": "status 401; mensagem 'Entre para continuar.'; nenhum dado de usuário ou de escritório na resposta"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "Usuário que ainda não criou a senha pelo convite recebe a mesma recusa de senha errada e não abre sessão",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_c, este com convite pendente e credencial_hash nulo; nenhuma sessão; contador_c tenta entrar com usuário contador_c e (a) a senha 'senha-teste-123' e (b) senha vazia",
+        "saida": "nos dois casos: status 401, mensagem 'Usuário ou senha incorretos.', corpo idêntico ao de c2; nenhuma sessão aberta; a resposta não diz que existe convite pendente"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_login.py::test_login_valido_abre_sessao_identificada -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/access/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/access/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/access/test_login.py::test_sair_encerra_a_sessao -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/access/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_login.py::test_usuario_sem_senha_recebe_mesma_recusa -q"
+    }
+  ],
+  "evidencia": null
+}

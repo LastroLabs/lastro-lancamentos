@@ -13,7 +13,7 @@ export const historias: Record<string, string> = {
 	'RF-SEG-02': 'Como escritório, quero meus dados isolados dos de outros escritórios, para que nenhum usuário de fora os leia por tela ou endereço.',
 	'RF-SEG-03': 'Como escritório, quero que CPF, CNPJ, agência e conta sejam removidos antes de qualquer envio à IA, para que esses dados não cheguem a um serviço externo.',
 	// Cadastro
-	'RF-CAD-01': 'Como contador, quero cadastrar um cliente com nome e CNPJ, para que ele apareça na minha carteira.',
+	'RF-CAD-01': 'Como chefe, quero cadastrar um cliente com nome e CNPJ, para que ele apareça no escritório e, atribuído, na carteira do contador.',
 	'RF-CAD-02': 'Como contador, quero informar os bancos e as contas do cliente, para que cada extrato fique ligado à conta certa.',
 	'RF-CAD-03': 'Como contador, quero carregar o plano de contas do cliente por planilha, para não digitar conta por conta.',
 	'RF-CAD-04': 'Como contador, quero indicar a conta transitória do cliente, para que as pendentes tenham onde sair na exportação.',

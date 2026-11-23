@@ -1,0 +1,78 @@
+{
+  "id": "CAD-03",
+  "titulo": "Cadastrar cliente com nome e CNPJ",
+  "modulo": "registry",
+  "requisitos": [
+    "RF-CAD-01",
+    "RF-AUT-03"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [
+    "CAD-01",
+    "ACE-01",
+    "NUC-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O chefe cadastra um cliente com nome e CNPJ válido e ele aparece na lista do escritório (RF-CAD-01 relido pela P-02: só o chefe cadastra)",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e nenhum cliente; chefe_1 cadastra EMP-1 com nome 'EMPRESA TESTE 1' e um CNPJ numérico válido gerado na hora, com máscara; depois pede a lista de clientes",
+        "saida": "cadastro aceito; a resposta traz o identificador de EMP-1, o nome 'EMPRESA TESTE 1' e o CNPJ sem máscara; a lista de ESC-1 tem 1 cliente, EMP-1"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Cliente sem nome ou com CNPJ inválido não é cadastrado e a mensagem diz o que corrigir",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e nenhum cliente; chefe_1 tenta cadastrar (a) nome vazio com CNPJ válido gerado na hora e (b) nome 'EMPRESA TESTE 2' com CNPJ de dígito verificador errado",
+        "saida": "(a) status de dado inválido [definir P-13], mensagem 'Informe o nome do cliente.'; (b) status de dado inválido [definir P-13], mensagem 'O CNPJ informado não é válido. Confira os números.'; a lista de ESC-1 continua com 0 clientes"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O cliente de um escritório não aparece para outro escritório, nem pelo endereço direto",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e EMP-1 cadastrada; ESC-2 com chefe_2 (sessão aberta) e nenhum cliente; chefe_2 pede a lista de clientes, depois EMP-1 pelo endereço direto e depois um identificador de cliente que não existe",
+        "saida": "lista de chefe_2 com 0 clientes; EMP-1 e o identificador inexistente: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos dois; nenhum dado de EMP-1 na resposta"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Sem sessão, nenhum cliente é cadastrado",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e nenhum cliente; pedido de cadastro de EMP-1 com nome e CNPJ válidos, sem enviar sessão",
+        "saida": "status 401 com a mensagem 'Entre para continuar.'; a lista de ESC-1 continua com 0 clientes"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_cliente.py::test_chefe_cadastra_cliente_que_aparece_na_lista -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_cliente.py::test_cliente_sem_nome_recusado -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_cliente.py::test_cliente_com_cnpj_invalido_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_cliente.py::test_cliente_invisivel_para_outro_escritorio -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_cliente.py::test_cadastro_sem_sessao_recusado -q"
+    }
+  ],
+  "evidencia": null
+}

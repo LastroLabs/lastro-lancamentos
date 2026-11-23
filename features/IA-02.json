@@ -1,0 +1,72 @@
+{
+  "id": "IA-02",
+  "titulo": "Enviar ao serviço de IA só descrições anonimizadas",
+  "modulo": "ai",
+  "requisitos": [
+    "RF-SEG-03"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "IA-01",
+    "HAR-03"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Com extratos do gabarito que contêm documentos, a requisição que chega ao serviço de IA não contém nenhum deles",
+      "exemplo": {
+        "entrada": "descrições das movimentações de EMP-1 tiradas dos gabaritos gerados por hx fixtures build (semente padrão; campo descricao de movimentacoes, formato da HAR-03 c6), com CPF e CNPJ de teste, agência e conta nas descrições; o teste ainda acrescenta 1 descrição com CNPJ numérico válido e 1 com CNPJ alfanumérico válido, gerados na hora; um serviço de IA falso grava tudo o que recebe; pede-se a sugestão de conta dessas descrições",
+        "saida": "o serviço falso recebeu ao menos 1 requisição; nenhuma requisição contém qualquer CPF, CNPJ, número de agência ou de conta presentes nas descrições originais"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Nomes de sócios e de outras contrapartes, pessoas ou empresas, chegam ao serviço de IA só como pseudônimos (D-03)",
+      "exemplo": {
+        "entrada": "configuração padrão; nomes de sócios de EMP-1 tirados de socios em fixtures/cadastro.json (formato da HAR-03 c6) e passados no pedido; descrições 'PIX <nome do primeiro sócio de EMP-1>', 'PIX RECEBIDO MARIA TESTE SOUZA' e 'BOLETO PADARIA TESTE LTDA'; serviço de IA falso; pede-se a sugestão de conta",
+        "saida": "nenhuma requisição recebida contém o nome do sócio, 'MARIA TESTE SOUZA' nem 'PADARIA TESTE LTDA'; as requisições contêm 2 pseudônimos diferentes no formato PESSOA_ e 3 dígitos e 1 no formato EMPRESA_ e 3 dígitos"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Cada requisição ao serviço de IA leva descrições de um único cliente",
+      "exemplo": {
+        "entrada": "descrições tiradas dos gabaritos da semente padrão (formato da HAR-03 c6): 3 de EMP-1 (ESC-1) e 2 de EMP-9 (ESC-2); serviço de IA falso; pede-se, num único pedido, a sugestão de conta das 5 descrições, cada uma marcada com o seu cliente",
+        "saida": "o serviço falso recebeu requisições separadas por cliente; nenhuma requisição leva descrições de dois clientes; a requisição de EMP-1 tem 3 descrições e a de EMP-9 tem 2"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Pedido sem nenhuma movimentação não chama o serviço de IA",
+      "exemplo": {
+        "entrada": "serviço de IA falso; pede-se a sugestão de conta de uma lista vazia de descrições de EMP-1",
+        "saida": "o serviço falso recebeu 0 requisições; o resultado é uma lista vazia, sem erro"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_cada_requisicao_leva_um_unico_cliente -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q"
+    }
+  ],
+  "evidencia": null
+}

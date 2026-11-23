@@ -8,6 +8,10 @@ import BacklogEpicos from '../../../components/BacklogEpicos.astro';
 import HistoriasUsuario from '../../../components/HistoriasUsuario.astro';
 import { porPrioridade, linkRequisito } from '../../../data/requisitos';
 
+## Do requisito ao modelo
+
+As histórias dos Must têm links para sua regra de dados. Antes de implementar, consulte a [rastreabilidade](/lastro-lancamentos/modelagem/rastreabilidade/?prioridade=Must), as [chaves](/lastro-lancamentos/modelagem/modelo-logico/) e as [operações transacionais](/lastro-lancamentos/modelagem/modelo-fisico/). A ficha mantém os critérios e o estado do trabalho; a modelagem especifica a persistência.
+
 ## Níveis do backlog
 
 | Nível | O que é | Onde vive |
@@ -17,7 +21,7 @@ import { porPrioridade, linkRequisito } from '../../../data/requisitos';
 | Feature | Comportamento verificável que uma pessoa termina em 1 ou 2 sessões, com estado controlado pelo script | Ficha `features/<ID>.json` no repositório |
 
 :::caution[Este site não acompanha o andamento]
-O backlog aqui mostra o **escopo** e a **ordem planejada**, não o que já foi feito. O estado de cada feature (`not_started`, `in_progress`, `blocked`, `passing`, `regressed`) fica nas fichas `features/<ID>.json` e aparece no painel `harness.py state`.
+O backlog aqui mostra o **escopo** e a **ordem planejada**, não o que já foi feito. O estado de cada feature (`not_started`, `in_progress`, `blocked`, `passing`, `regressed`) fica nas fichas `features/<ID>.json` e aparece no painel `hx state`.
 :::
 
 ## Épicos
@@ -92,7 +96,7 @@ As histórias abaixo são uma **proposta** para avaliação do time. Elas não f
 - As personas (contador, chefe, cliente do escritório) vêm de [O que é o Lastro](/lastro-lancamentos/home/sobre/).
 - O "para" de cada história vem da dor relatada ou do critério do requisito.
 
-Depois de revisadas, elas alimentam o `feature_list.json` do harness, como pedem os requisitos.
+Depois de revisadas, elas alimentam as fichas `features/<ID>.json` do harness, uma por arquivo. O ID da ficha é a sigla do módulo + `-nn` (ex.: `ACE-01`, `CAD-03`); ver [processo e fichas](/lastro-lancamentos/decisoes/processo/). O primeiro lote (EP-01, EP-02 e fundação) está em revisão: ver [Rastreabilidade](/lastro-lancamentos/requisitos/rastreabilidade/#requisito--ficha).
 :::
 
 <Tabs>
@@ -157,18 +161,20 @@ Fora desta versão, com o motivo registrado nos requisitos.
 
 ## Regras do backlog
 
-- **Meta em features que passam, não em horas.** As metas acumuladas são 6, 18, 32 e 39 features `passing`.
+- **Meta em features que passam, não em horas.** As metas acumuladas são 6, 18, 32 e 39 features `passing`, nas ondas 1 a 4 (onda = semana, PROC-03).
 - **Escolha da semana:** pela meta de `passing` e pela ordem de dependência (`depende_de` preenchido na ficha).
 - **Regressão primeiro:** feature `regressed` entra antes de feature nova.
-- **Decisão aberta:** feature que depende de D-xx em aberto fica `blocked` e fora da sprint.
-- **WIP=1:** ninguém com duas features em andamento. O responsável é gravado na ficha pelo líder.
+- **Decisão pendente:** feature que depende de D-xx ou P-xx pendente fica `blocked` e fora da sprint.
+- **WIP=1:** ninguém com duas features em andamento; o `hx feature start` confere. O responsável (handle do GitHub) é gravado na ficha pela líder.
+- **Fichas encadeadas:** na mesma onda, ninguém recebe duas fichas ligadas por dependência **direta** (P-03).
 - **Tamanho:** passou de 2 sessões, a feature vira duas fichas.
 - **Gatilho de corte:** abaixo da meta no domingo, rebaixa itens da lista combinada. As quatro funcionalidades essenciais nunca saem. Quais são elas ainda é [pendência em aberto](/lastro-lancamentos/decisoes/#pendências-em-aberto-sem-id).
 
-Fontes: Fluxo de desenvolvimento do Lastro; Lastro: guia do harness v0.1.
+Fontes: Fluxo de desenvolvimento do Lastro; `tools/harness.py` (branch `developer`); `docs/decisoes/DECISIONS.md` (18/11/2026).
 
 ## Histórico de versão
 
 | Data | Versão da página | O que mudou |
 |---|---|---|
 | 12/11/2026 | 1.0 | Página criada: épicos por área dos Must, ordem de construção, jornadas, histórias de usuário (rascunho) e regras do backlog |
+| 18/11/2026 | 1.1 | Fichas em `features/<ID>.json` com formato de ID; regra das fichas encadeadas (P-03); onda = semana |

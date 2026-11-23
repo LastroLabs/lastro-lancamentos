@@ -124,9 +124,9 @@ const expandeRFs = (texto) => {
 };
 
 const decisoesCatalogo = [];
-for (const [id, decisao, afeta, recomendacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões em aberto dos requisitos')) {
+for (const [id, decisao, afeta, recomendacao, status, deliberacao] of tabelaDaSecao(ler(FONTES.decisoes), '## Decisões dos requisitos')) {
 	if (!/^D-0\d$/.test(id)) continue;
-	decisoesCatalogo.push({ id, decisao, afeta: expandeRFs(afeta), recomendacao });
+	decisoesCatalogo.push({ id, decisao, afeta: expandeRFs(afeta), recomendacao, status, deliberacao });
 }
 if (decisoesCatalogo.length !== 9) throw new Error(`Esperava D-01 a D-09, achei ${decisoesCatalogo.length}`);
 for (const r of requisitos) {
@@ -171,7 +171,7 @@ const saida = {
 	fontes: FONTES,
 	notas: {
 		criterio: "Nos Won't, o campo criterio guarda o Motivo.",
-		modulo: 'Mapeamento proposto (não decidido): por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won\'t sem módulo.',
+		modulo: 'Módulos aprovados com a ARQ-01 (18/11/2026). O vínculo requisito → módulo é por prefixo do ID, com exceções RF-SEG-02 → nucleo e RF-SEG-03 → ia; AVI é transversal; Won\'t sem módulo. Quando há ficha, vale o módulo da ficha.',
 		frente: 'Pela tabela de frentes da equipe; prefixos que a tabela não cita ficam com frente null.',
 		area: 'Must: subtítulo da seção. Demais: área Must do mesmo prefixo ou rótulo tirado do texto do requisito.',
 	},

@@ -19,11 +19,11 @@ export interface Requisito {
 	dores: string[];
 	/** Frente da equipe, pela tabela de frentes; null quando a fonte não cita o prefixo. */
 	frente: string | null;
-	/** Módulo src/lastro/<modulo>/: mapeamento proposto, ainda não decidido. */
+	/** Módulo src/lastro/<modulo>/: módulos aprovados (ARQ-01); vínculo pelo prefixo do ID. Quando há ficha, vale o módulo da ficha. */
 	modulo: string | null;
 }
 
-export interface Decisao { id: string; decisao: string; afeta: string[]; recomendacao: string }
+export interface Decisao { id: string; decisao: string; afeta: string[]; recomendacao: string; status: string; deliberacao: string }
 export interface Dor { dor: string; relatou: string; resposta: string; requisitos: string[] }
 
 export const requisitos = dados.requisitos as Requisito[];
@@ -94,7 +94,7 @@ export const ancora = (id: string) => id.toLowerCase();
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 export const linkRequisito = (id: string) => `${BASE}visao/requisitos/#${ancora(id)}`;
-export const linkDecisoes = () => `${BASE}decisoes/#decisões-em-aberto-dos-requisitos-d-01-a-d-09`;
+export const linkDecisoes = () => `${BASE}decisoes/#decisões-dos-requisitos-d-01-a-d-09`;
 export const link = (caminho: string) => `${BASE}${caminho.replace(/^\//, '')}`;
 
 export function contagem() {

@@ -1,0 +1,38 @@
+---
+title: Premissas e decisões da modelagem
+description: Impacto das decisões aprovadas, provisórias, assumidas e pendentes na especificação de dados.
+---
+
+import { decisoesModelo, entidades, vinculos, linkEntidade } from '../../../data/modelagem';
+import { requisitos } from '../../../data/requisitos';
+import ReqChips from '../../../components/ReqChips.astro';
+
+O esquema detalhado é uma proposta que aplica as decisões do projeto. A aprovação da arquitetura e do banco não significa aprovação automática dos nomes e das restrições de cada tabela.
+
+Os status e deliberações D-01 a D-09 são extraídos da tabela do [índice de decisões](/lastro-lancamentos/decisoes/), pelo mesmo processo que gera o catálogo de requisitos. As demais referências resumem as páginas de [arquitetura](/lastro-lancamentos/decisoes/arquitetura/), [banco](/lastro-lancamentos/decisoes/banco-de-dados/) e [acesso e cadastro](/lastro-lancamentos/decisoes/acesso-e-cadastro/).
+
+## Decisões aplicáveis
+
+{decisoesModelo.map((d) => {
+  const vs = vinculos.filter((v) => v.decisoes.includes(d.id) || requisitos.find((r) => r.id === v.requisito)?.decisoes.includes(d.id));
+  const ids = new Set(vs.flatMap((v) => v.entidades));
+  const es = entidades.filter((e) => ids.has(e.id) || e.decisoes.includes(d.id));
+  return <section>
+    <h3 id={d.id.toLowerCase()}>{d.id} — {d.titulo}</h3>
+    <p><strong>Status:</strong> {d.status}.</p>
+    <p>{d.efeito.replaceAll('**', '').replaceAll('`', '')}</p>
+    {es.length > 0 && <p><strong>Entidades:</strong> {es.map((e, i) => <span>{i > 0 ? ', ' : ''}<a href={linkEntidade(e.id)}>{e.nome}</a></span>)}.</p>}
+    {vs.length > 0 && <ReqChips ids={vs.map((v) => v.requisito)} />}
+    <p><a href={d.fonte}>Consultar decisão de origem</a></p>
+  </section>;
+})}
+
+## Compatibilidade com os registros do projeto
+
+No checkout analisado, `docs/decisoes/DECISIONS.md` está vazio. A leitura dos status acima é sustentada pelas páginas do Pages, que registram as aprovações de 18/11. A reposição do arquivo central não foi simulada nesta alteração.
+
+O `AGENTS.md` ainda cita escolhas anteriores de stack. A seção de [arquitetura](/lastro-lancamentos/decisoes/arquitetura/) registra as aprovações mais recentes; a modelagem não altera a versão do runtime. Para a passagem de saldo divergente à classificação e às perguntas, continua valendo a restrição expressa do `AGENTS.md`. A exceção de RF-VAL-05 é de exportação e não amplia automaticamente esse fluxo.
+
+## Pontos ainda a validar
+
+A precedência de RF-CLA-09, os limiares de confiança de D-08 e a P-13 continuam pendentes. A P-09 foi aprovada em 22/11: o chefe vê a lista do escritório e só acessa os clientes atribuídos a ele. Retenção de objetos, logs e equivalências de pseudônimos precisa de definição operacional. Os prazos sugeridos pelo estudo não são apresentados como política já aprovada. A homologação real do layout e as suposições da planilha permanecem explicitamente identificadas nas fontes.

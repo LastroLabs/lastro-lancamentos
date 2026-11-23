@@ -1,0 +1,121 @@
+{
+  "id": "CAD-04",
+  "titulo": "Informar as contas bancárias do cliente com banco, apelido e meses de uso",
+  "modulo": "registry",
+  "requisitos": [
+    "RF-CAD-02"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "jvsauma",
+  "depende_de": [
+    "ACE-02",
+    "NUC-02",
+    "DB-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O contador informa uma ou mais contas do cliente, cada uma com banco e apelido",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e contador_a (sessão aberta); EMP-1 atribuída a contador_a, sem contas; contador_a informa (1) banco 001 (Banco do Brasil), apelido 'Conta movimento' e (2) banco 077 (Inter), apelido 'Conta digital'; depois pede as contas de EMP-1",
+        "saida": "2 contas aceitas; a lista de EMP-1 tem 2 contas: 001 'Conta movimento' e 077 'Conta digital'"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Conta sem banco ou sem apelido é recusada e a lista não muda",
+      "exemplo": {
+        "entrada": "mesmo estado final de c1 (EMP-1 com 2 contas); contador_a tenta informar (a) apelido 'Reserva' sem banco e (b) banco 001 sem apelido",
+        "saida": "(a) status de dado inválido [definir P-13], mensagem 'Informe o banco da conta.'; (b) status de dado inválido [definir P-13], mensagem 'Dê um apelido para a conta.'; EMP-1 continua com 2 contas"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Contador de outra carteira ou usuário de outro escritório não lê nem informa contas do cliente",
+      "exemplo": {
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta, sem EMP-1); ESC-2 com chefe_2 (sessão aberta); contador_b e chefe_2 tentam, cada um, (a) ler as contas de EMP-1 e (b) informar a conta banco 001 apelido 'Outra' em EMP-1; contador_b tenta ainda (c) ler as contas de um identificador de cliente que não existe",
+        "saida": "nos 5 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 5; nenhum dado de EMP-1 nem das contas na resposta; EMP-1 continua com 2 contas"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "O código do banco precisa ter 3 dígitos e existir na lista de bancos versionada no repositório; a conta aceita volta com o nome do banco",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a tenta informar com apelido 'Reserva': (a) banco 'ABC'; (b) banco '12'; (c) um código de 3 dígitos que não está em src/lastro/registry/data/bancos.csv (o teste escolhe um código ausente lendo o arquivo); (d) banco ' 341 ' com espaços; depois pede as contas de EMP-1",
+        "saida": "(a) e (b): status de dado inválido [definir P-13], mensagem 'O código do banco tem 3 números. Confira e tente de novo.'; (c): mesmo status, mensagem 'Não encontramos um banco com este código. Confira o número.'; (d): aceita, gravada com banco '341'; a lista tem 3 contas e cada uma traz banco, nome do banco tirado do arquivo (ex.: 001 com o nome do Banco do Brasil que está no arquivo), apelido e moeda 'BRL'; bancos.csv tem as colunas codigo, nome e fonte, ao menos 001, 033, 077, 104, 237, 260, 341 e 748, e todo código tem exatamente 3 dígitos"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Dois apelidos iguais no mesmo cliente não são aceitos, mesmo com diferença de maiúsculas, acento ou espaços; em clientes diferentes, podem",
+      "exemplo": {
+        "entrada": "estado final de c1; EMP-2 também atribuída a contador_a, sem contas; contador_a tenta informar em EMP-1 (a) banco 341, apelido 'conta  MOVIMENTO' e (b) banco 341, apelido 'Conta Movimênto'; depois informa em EMP-2 (c) banco 001, apelido 'Conta movimento'",
+        "saida": "(a) e (b): status 409, mensagem 'Já existe uma conta com este apelido neste cliente. Use outro apelido.'; EMP-1 continua com 2 contas; (c): aceita, EMP-2 fica com 1 conta; o apelido é gravado como o contador digitou (sem espaços nas pontas) e a comparação usa a forma sem acento, em minúsculas e com espaços internos reduzidos a um"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "O contador informa, opcionalmente, o primeiro e o último mês em que a conta é usada; os meses são validados e gravados no primeiro dia do mês",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a informa em EMP-1: (1) banco 341, apelido 'Conta antiga', primeiro mês '2026-01' e último mês '2026-09'; (2) banco 260, apelido 'Conta nova', primeiro mês '2026-10' e sem último mês; tenta ainda (a) banco 104, apelido 'Erro 1', primeiro mês '2026-10' e último mês '2026-09'; (b) banco 104, apelido 'Erro 2', primeiro mês '10/2026'; (c) banco 104, apelido 'Erro 3', primeiro mês '2026-13'",
+        "saida": "(1) e (2) aceitas: no banco, cobertura_inicio = 2026-01-01 e cobertura_fim = 2026-09-01 em 'Conta antiga'; cobertura_inicio = 2026-10-01 e cobertura_fim nulo em 'Conta nova'; na resposta e na lista os meses saem no formato 'AAAA-MM' e as contas de c1, sem meses, saem com os dois campos nulos; (a): status de dado inválido [definir P-13], mensagem 'O último mês não pode ser antes do primeiro.'; (b) e (c): mesmo status, mensagem 'Informe o mês no formato AAAA-MM, por exemplo 2026-10.'; EMP-1 fica com 4 contas"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "O contador altera o apelido e os meses de uso de uma conta, e encerra a conta informando o último mês; o banco não muda e a conta nunca é apagada",
+      "exemplo": {
+        "entrada": "estado final de c6; contador_a altera a conta 001 'Conta movimento' de EMP-1 (rota PATCH com o id da conta): (1) apelido para 'Conta principal'; (2) último mês '2026-11' (encerrar); tenta ainda (a) trocar o banco para 237; (b) apelido 'Conta digital', que já existe em EMP-1; (c) último mês '2025-01' com primeiro mês '2026-01'; (d) contador_b altera a mesma conta; (e) contador_a altera uma conta de EMP-2 usando o caminho de EMP-1; depois pede a lista",
+        "saida": "(1) e (2) aceitas; a lista mostra 'Conta principal' com último mês '2026-11' e as outras contas iguais; (a) status de dado inválido [definir P-13], mensagem 'O banco de uma conta não pode ser trocado. Cadastre uma nova conta.'; (b) status 409 com a mensagem de c5; (c) a mensagem de c6 para último mês antes do primeiro; (d) e (e): status 404, corpo idêntico ao de c3 (conta de outro cliente conta como inexistente); nos casos recusados nada muda; não existe rota de apagar conta e a contagem de linhas de conta_bancaria nunca diminui"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não lê nem informa contas do cliente (403); atribuído a si, informa como o contador (P-09)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com 2 contas, atribuída a contador_a); ESC-1 também com EMP-4 atribuída a chefe_1, sem contas; chefe_1 (sessão aberta) tenta, em EMP-1, (a) ler as contas, (b) informar banco 341 apelido 'Outra' e (c) informar apelido 'Sem banco' sem banco; depois informa em EMP-4 banco 001 apelido 'Conta movimento' e pede as contas de EMP-4",
+        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum dado de EMP-1 nem das contas; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; EMP-1 continua com 2 contas; EMP-4: conta aceita e a lista de EMP-4 tem 1 conta, 001 'Conta movimento'"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contador_informa_contas_com_banco_e_apelido -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_conta_sem_banco_ou_apelido_recusada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contas_negadas_a_outra_carteira_e_escritorio -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_codigo_de_banco_validado_pela_lista -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_apelido_repetido_no_mesmo_cliente_recusado -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_meses_de_uso_da_conta_validados -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contador_altera_e_encerra_conta_sem_apagar -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/registry/test_contas_bancarias.py::test_contas_chefe_nao_atribuido_403_e_atribuido_informa -q"
+    }
+  ],
+  "evidencia": null
+}

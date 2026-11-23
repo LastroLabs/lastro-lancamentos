@@ -5,10 +5,12 @@ description: Requisitos funcionais do Lastro por prioridade (MoSCoW), versão 0.
 
 Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do escopo. Esta página reproduz o documento; qualquer mudança começa nele.
 
+Ajuste posterior à v0.2: o RF-CAD-01 foi relido em 18/11/2026 pela decisão P-02a (só o chefe cadastra cliente), registrada no `docs/decisoes/DECISIONS.md` e em [Decisão: acesso e cadastro](/lastro-lancamentos/decisoes/acesso-e-cadastro/). O RF-AUT-02 e o RF-AUT-03 foram ajustados em 22/11/2026 pela decisão P-09 (o chefe vê a lista do escritório, acessa só os clientes atribuídos a ele e pode se atribuir um cliente), no mesmo registro.
+
 - **Selos:** NOVO e AJUSTADO marcam o que mudou na v0.2.
 - **Origem:** v2 (proposta v2), Esc.1 e Esc.2 (escritórios-piloto), Ata, Proposta e Equipe, como estão no documento.
 - **[definir]:** valor ainda aberto. A lista está em [Escopo do MVP](/lastro-lancamentos/visao/escopo-mvp/#valores-a-definir).
-- **Decisões em aberto:** D-01 a D-09 estão no [índice de decisões](/lastro-lancamentos/decisoes/).
+- **Decisões:** D-01 a D-09 estão no [índice de decisões](/lastro-lancamentos/decisoes/). Em 18/11, D-02 a D-07 e D-09 ganharam padrão provisório; D-01 e D-08 seguem pendentes.
 
 | Prioridade | Significado | Quantidade |
 |---|---|---|
@@ -24,8 +26,8 @@ Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do esco
 | ID | Requisito | Critério de aceitação | Origem |
 |---|---|---|---|
 | RF-AUT-01 | O sistema deve permitir que cada contador acesse com login individual. | Dois contadores do mesmo escritório entram com credenciais diferentes e o sistema identifica quem fez cada ação. | v2, Esc.1 |
-| RF-AUT-02 (AJUSTADO) | O sistema deve mostrar a cada contador apenas os clientes atribuídos a ele, e ao chefe todos os clientes do escritório, aplicando essa regra no servidor em toda requisição. | O contador A não vê, nem por endereço direto, clientes atribuídos só ao contador B. O chefe vê todos os clientes do escritório e nenhum de outro escritório. | v2, Equipe |
-| RF-AUT-03 (NOVO) | O sistema deve ter o papel de chefe, que cadastra contadores e clientes e atribui clientes a contadores. | Um usuário chefe cria um contador, cria um cliente e atribui o cliente a esse contador. Um contador sem o papel de chefe não vê essas ações. | Equipe |
+| RF-AUT-02 (AJUSTADO) | O sistema deve mostrar a cada contador apenas os clientes atribuídos a ele, e ao chefe a lista de todos os clientes do escritório e o detalhe só dos atribuídos a ele, aplicando essa regra no servidor em toda requisição. (Ajustado em 22/11: no v0.2 o chefe via todos os clientes, sem separar lista e detalhe; ver decisão P-09.) | O contador A não vê, nem por endereço direto, clientes atribuídos só ao contador B. O chefe vê na lista todos os clientes do escritório e nenhum de outro escritório, e só abre os atribuídos a ele. (Ajustado em 22/11, ver decisão P-09.) | v2, Equipe |
+| RF-AUT-03 (NOVO) | O sistema deve ter o papel de chefe, que cadastra contadores e clientes e atribui clientes a contadores ou a si mesmo. (Ajustado em 22/11: no v0.2 o chefe atribuía só a contadores; ver decisão P-09.) | Um usuário chefe cria um contador, cria um cliente e atribui o cliente a esse contador ou a si mesmo. Um contador sem o papel de chefe não vê essas ações. (Ajustado em 22/11, ver decisão P-09.) | Equipe |
 | RF-AUT-04 (NOVO) | O sistema deve encerrar o acesso do contador anterior e conceder o acesso ao novo, imediatamente, quando o chefe reatribuir um cliente. | Depois de trocar as empresas 1 e 2 entre os contadores A e B, A recebe "sem acesso" ao abrir a empresa 1, mesmo com sessão aberta e por endereço direto, e B abre a empresa 1 sem novo login. Dados e aprendizado do cliente permanecem com o cliente. | Equipe |
 | RF-SEG-01 | O sistema deve gerar o link do cliente com um código imprevisível e com validade, e permitir que o contador o invalide. | Link expirado ou invalidado mostra mensagem de link inválido e não dá acesso a nenhum dado. O prazo de validade fica em configuração [definir]. | Proposta, v2 |
 | RF-SEG-02 | O sistema deve isolar os dados de cada escritório. | Um usuário de um escritório não consegue ler dados de outro escritório por nenhuma tela nem endereço. | Proposta |
@@ -35,7 +37,7 @@ Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do esco
 
 | ID | Requisito | Critério de aceitação | Origem |
 |---|---|---|---|
-| RF-CAD-01 | O contador deve poder cadastrar um cliente com nome e CNPJ. | O cliente aparece na carteira do contador depois de salvo. | v2 (F04) |
+| RF-CAD-01 | O chefe deve poder cadastrar um cliente com nome e CNPJ. (Ajustado em 18/11: no v0.2 era "o contador"; ver decisão P-02a.) | O cliente aparece no escritório depois de salvo e, atribuído, na carteira do contador. (Ajustado em 18/11, ver decisão P-02a.) | v2 (F04) |
 | RF-CAD-02 | O contador deve poder informar os bancos (e as contas) do cliente. | O cliente guarda uma ou mais contas, cada uma com banco e apelido. | v2 (passo 1) |
 | RF-CAD-03 | O contador deve poder carregar o plano de contas do cliente por planilha. | O plano de contas do piloto é carregado com código e nome de cada conta. Linha inválida é rejeitada com a linha indicada. | Esc.1, v2 |
 | RF-CAD-04 | O contador deve poder indicar qual conta do plano é a conta transitória do cliente. | A conta escolhida precisa existir no plano. Sem ela, o sistema não permite exportar. | Esc.1, Esc.2, v2 |
@@ -189,4 +191,4 @@ Fonte: **Requisitos funcionais v0.2, 07/11/2026**. É a fonte de verdade do esco
 - **Decisões:** concordamos com as recomendações D-01 a D-09? Alguma muda o escopo?
 - **Fonte única:** o fluxo de chefe e troca de responsável veio de um relato só. Vamos confirmar nos pilotos antes de tratá-lo como certo?
 
-**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em histórias de usuário para o `feature_list.json` do harness.
+**Próximo passo depois da avaliação:** escrever os requisitos não funcionais (segurança em detalhe, desempenho, privacidade, usabilidade no celular) e transformar os Must em fichas `features/<ID>.json` do harness, uma por arquivo (nota de 18/11: o documento v0.2 falava em um arquivo único de features, que não existe).

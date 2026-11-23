@@ -1,0 +1,85 @@
+{
+  "id": "WEB-01",
+  "titulo": "Criar o ambiente do front-end: SPA React com rotas dos três papéis, cliente da API gerado e textos centralizados",
+  "modulo": "web",
+  "requisitos": [
+    "ARQ-02",
+    "ARQ-05",
+    "RF-AVI-02"
+  ],
+  "prioridade": "must",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "jvsauma",
+  "depende_de": [
+    "NUC-01"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O projeto web/ (React 19 + TypeScript strict + Vite, pnpm com lockfile, Biome, Vitest) instala, passa no lint, nos testes e no build dentro do ambiente do hx verify, sem configuração manual",
+      "exemplo": {
+        "entrada": "clone limpo; Docker no ar; dentro do contêiner de verificação, em web/: pnpm install --frozen-lockfile; pnpm run lint; pnpm run test; pnpm run build",
+        "saida": "os 4 comandos terminam com código 0; a versão do Node no contêiner é a fixada em web/package.json (campo engines) e em web/.nvmrc; o build gera web/dist/index.html; as versões das dependências estão fixadas no pnpm-lock.yaml; nenhum arquivo de web/dist/ nem de web/node_modules/ é versionado"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A estrutura de pastas e as rotas dos três papéis e do convite existem, cada uma com uma tela provisória, e endereço desconhecido mostra uma mensagem simples",
+      "exemplo": {
+        "entrada": "build pronto; os testes de componente (Vitest + Testing Library) abrem as rotas /entrar, /convite/abc123, /chefe, /contador, /enviar/abc123 e /qualquer-coisa",
+        "saida": "existem web/src/api/, web/src/components/, web/src/copy/ e web/src/pages/manager/, pages/accountant/ e pages/client/; cada rota mostra o título provisório 'Entrar', 'Criar sua senha', 'Área do chefe', 'Área do contador' e 'Envio do extrato' (as de /convite e /enviar recebem abc123 como parâmetro); /qualquer-coisa mostra 'Página não encontrada. Confira o endereço ou volte ao início.'; as rotas usam TanStack Router"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Os tipos do cliente da API são gerados do OpenAPI do backend por um comando, e gerar de novo não muda nada",
+      "exemplo": {
+        "entrada": "backend da NUC-01 com GET /api/v1/saude; roda pnpm run gerar:api, que exporta o OpenAPI do app FastAPI para docs/api/openapi.json sem subir servidor e gera web/src/api/schema.d.ts com openapi-typescript; roda o comando uma segunda vez",
+        "saida": "os dois arquivos existem e estão versionados; a segunda execução não altera nenhum byte; schema.d.ts contém a rota /api/v1/saude; o cliente HTTP em web/src/api/ usa openapi-fetch com esses tipos e o prefixo /api/v1, com o endereço base vindo de VITE_API_URL; nenhum tipo da API é escrito à mão"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A página inicial consulta a saúde da API pelo cliente gerado e mostra o resultado em português simples",
+      "exemplo": {
+        "entrada": "teste de componente com a resposta da API simulada: (a) status 200 com api = 'no_ar' e banco = 'conectado'; (b) status 503; (c) falha de rede",
+        "saida": "(a) mostra 'Sistema no ar.'; (b) e (c) mostram 'O sistema está fora do ar. Tente de novo em alguns minutos.'; nenhum código de status, nome de rota ou termo técnico aparece na tela"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Todo texto de tela sai de web/src/copy/ e está listado em docs/design/microcopy.md",
+      "exemplo": {
+        "entrada": "o teste lê os textos exportados por web/src/copy/ e o arquivo docs/design/microcopy.md",
+        "saida": "microcopy.md existe com uma seção por papel (chefe, contador, cliente) e uma geral; cada texto de web/src/copy/ aparece no microcopy.md exatamente igual; os textos de c2 e c4 estão entre eles; uma busca nos componentes de web/src/pages/ não encontra texto literal entre tags JSX"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/web/test_web_foundation.py::test_web01_front_instala_lint_testes_e_build_no_conteiner -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/web/test_web_foundation.py::test_web01_rotas_dos_tres_papeis_e_pagina_nao_encontrada -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/web/test_web_foundation.py::test_web01_cliente_da_api_gerado_do_openapi_e_estavel -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/web/test_web_foundation.py::test_web01_pagina_inicial_mostra_saude_da_api -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/web/test_web_foundation.py::test_web01_textos_de_tela_centralizados_no_microcopy -q"
+    }
+  ],
+  "evidencia": null
+}

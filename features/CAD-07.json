@@ -1,0 +1,84 @@
+{
+  "id": "CAD-07",
+  "titulo": "Cadastrar os sócios do cliente e mostrá-los na ficha",
+  "modulo": "registry",
+  "requisitos": [
+    "RF-CAD-06"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "jvsauma",
+  "depende_de": [
+    "ACE-02",
+    "NUC-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "O contador cadastra sócios pelo nome e eles aparecem na ficha do cliente",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-1 atribuída a contador_a, sem sócios; contador_a cadastra os sócios 'SOCIO TESTE A' e 'SOCIO TESTE B'; depois abre a ficha de EMP-1",
+        "saida": "2 cadastros aceitos; a ficha de EMP-1 lista 2 sócios: 'SOCIO TESTE A' e 'SOCIO TESTE B'"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "Sócio sem nome é recusado e a lista não muda",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a tenta cadastrar (a) nome vazio e (b) nome só com espaços",
+        "saida": "nos 2 casos: status de dado inválido [definir P-13], mensagem 'Informe o nome do sócio.'; a ficha de EMP-1 continua com 2 sócios"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Cliente sem sócios mostra lista vazia, sem erro",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem sócios; contador_a abre a ficha de EMP-3",
+        "saida": "sucesso; 0 sócios"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "Contador de outra carteira ou usuário de outro escritório não lê nem cadastra sócios do cliente",
+      "exemplo": {
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta, sem EMP-1); ESC-2 com chefe_2 (sessão aberta); contador_b e chefe_2 tentam, cada um, (a) ler os sócios de EMP-1 e (b) cadastrar o sócio 'SOCIO TESTE C' em EMP-1; contador_b tenta ainda (c) ler os sócios de um identificador de cliente que não existe",
+        "saida": "nos 5 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 5; nenhum nome de sócio de EMP-1 na resposta; a ficha de EMP-1 continua com 2 sócios"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não lê nem cadastra sócios do cliente (403); atribuído a si, cadastra como o contador (P-09)",
+      "exemplo": {
+        "entrada": "estado final de c1 (EMP-1 com 2 sócios, atribuída a contador_a); ESC-1 também com chefe_1 (sessão aberta) e EMP-4 atribuída a chefe_1, sem sócios; chefe_1 tenta, em EMP-1, (a) ler os sócios, (b) cadastrar o sócio 'SOCIO TESTE C' e (c) cadastrar um sócio com nome vazio; depois cadastra o sócio 'SOCIO TESTE D' em EMP-4 e abre a ficha de EMP-4",
+        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum nome de sócio de EMP-1; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; a ficha de EMP-1 continua com 2 sócios; EMP-4: cadastro aceito e a ficha de EMP-4 lista 1 sócio, 'SOCIO TESTE D'"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_socios.py::test_contador_cadastra_socios_que_aparecem_na_ficha -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_socios.py::test_socio_sem_nome_recusado -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_socios.py::test_cliente_sem_socios_lista_vazia -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_socios.py::test_socios_negados_a_outra_carteira_e_escritorio -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/registry/test_socios.py::test_socios_chefe_nao_atribuido_403_e_atribuido_cadastra -q"
+    }
+  ],
+  "evidencia": null
+}

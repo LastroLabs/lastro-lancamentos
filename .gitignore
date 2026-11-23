@@ -1,10 +1,18 @@
 # Dependências e saídas do site (gitpages/)
+# O build é feito pelo workflow deploy-docs.yml; dist/ não vai para o repositório.
 gitpages/node_modules/
 gitpages/dist/
 gitpages/.astro/
 
 # Qualquer node_modules em outra pasta
 node_modules/
+
+# Build do front (web/, React + Vite)
+web/dist/
+
+# Saída do `hx fixtures build` (cadastro, OFX, planilhas e gabarito sintéticos).
+# Gerada de novo pela semente fixa; o gabarito gerado não é versionado.
+/fixtures/
 
 # Documentos de referência privados: nunca vão para o repositório público
 referencias/
@@ -17,6 +25,19 @@ referencias/
 # Configuração local do Claude Code (por pessoa)
 .claude/settings.local.json
 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+
 # Logs
 *.log
 npm-debug.log*
@@ -28,8 +49,12 @@ Thumbs.db
 desktop.ini
 *~
 
-# Editores
-.vscode/
+# Editores (settings.json do VS Code é compartilhado pelo time)
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
+
+# Exceção: o modelo de variáveis de ambiente é versionado
+!.env.example

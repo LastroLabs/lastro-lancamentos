@@ -62,6 +62,7 @@ export default defineConfig({
 				{
 					label: "Fluxo de desenvolvimento",
 					items: [
+						{ label: "Orquestração", slug: "fluxo/orquestracao", badge: { text: "comece aqui", variant: "tip" } },
 						{ label: "Por que um harness", slug: "fluxo/visao-geral" },
 						{ label: "O ritmo da semana", slug: "fluxo/semana" },
 						{ label: "Ciclo de uma feature", slug: "fluxo/ciclo-da-feature" },
@@ -74,6 +75,8 @@ export default defineConfig({
 						{ label: "Índice de decisões", slug: "decisoes" },
 						{ label: "Arquitetura do sistema", slug: "decisoes/arquitetura" },
 						{ label: "Banco de dados", slug: "decisoes/banco-de-dados" },
+						{ label: "Processo e fichas", slug: "decisoes/processo" },
+						{ label: "Acesso e cadastro", slug: "decisoes/acesso-e-cadastro" },
 						{ label: "Avaliação com LLM e modelos", slug: "decisoes/avaliacao-llm" },
 						{ label: "UX/UI", slug: "decisoes/ux-ui" },
 					],
@@ -86,6 +89,18 @@ export default defineConfig({
 						{ label: "Dados", slug: "arquitetura/dados" },
 						{ label: "IA", slug: "arquitetura/ia" },
 						{ label: "Segurança e LGPD", slug: "arquitetura/seguranca" },
+					],
+				},
+				{
+					label: "Modelagem de dados",
+					items: [
+						{ label: "Visão geral", slug: "modelagem" },
+						{ label: "Entidades e atributos", slug: "modelagem/entidades" },
+						{ label: "Diagramas", slug: "modelagem/diagramas" },
+						{ label: "Modelo lógico", slug: "modelagem/modelo-logico" },
+						{ label: "Modelo físico e operações", slug: "modelagem/modelo-fisico" },
+						{ label: "Premissas e decisões", slug: "modelagem/decisoes" },
+						{ label: "Rastreabilidade", slug: "modelagem/rastreabilidade" },
 					],
 				},
 				{

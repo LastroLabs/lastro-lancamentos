@@ -1,0 +1,103 @@
+{
+  "id": "HX-11",
+  "titulo": "Espelhar as fichas no Project da organização com issues, responsáveis e bloqueios",
+  "modulo": "ci",
+  "requisitos": [],
+  "prioridade": "should",
+  "onda": 1,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Em developer, cada ficha sem item vira um issue 'ID: título' no Project, com responsável e coluna do estado, sem duplicar",
+      "exemplo": {
+        "entrada": "fichas HX-20 not_started (responsavel jvsauma) e HX-21 in_progress (responsavel nome-inexistente); já existe o issue 'HX-20: ...'; sync rodado duas vezes",
+        "saida": "só HX-21 é criado, em FAZENDO, sem responsável e com aviso no log; HX-20 não é duplicado; a segunda execução não faz nenhuma alteração"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "A coluna depende da origem: branch da feature só leva o próprio card a FAZENDO, PR aberto leva a EM REVISÃO, developer só avança e nunca recua",
+      "exemplo": {
+        "entrada": "push na branch feat/HX-20-... com HX-20 in_progress e HX-21 passing na cópia da branch; PR aberto da HX-20; push em developer com HX-22 not_started cujo card está em FAZENDO",
+        "saida": "a branch move só HX-20 para FAZENDO e ignora HX-21; o PR move HX-20 para EM REVISÃO; o card de HX-22 continua em FAZENDO; ficha passing em developer vai para FINALIZADA e fecha o issue"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Em developer, responsável e dependências são reconciliados nos dois sentidos e ficha apagada não apaga issue",
+      "exemplo": {
+        "entrada": "HX-20 troca responsavel de jvsauma para camposs04 e depende_de de [HX-01] para [HX-02]; a ficha HX-23 foi removida de features/",
+        "saida": "o issue de HX-20 fica só com camposs04 e bloqueado só por HX-02 (bloqueio de HX-01 removido); o issue de HX-23 continua aberto e o log avisa"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "--dry-run não escreve nada e falha da API dá código 2 sem tocar nas fichas",
+      "exemplo": {
+        "entrada": "'project_sync --dry-run' com 2 mudanças pendentes; depois execução normal com a API respondendo 401",
+        "saida": "o dry-run lista as 2 mudanças e não faz chamadas de escrita; a execução com 401 sai com código 2, ERRO/MOTIVO/CORREÇÃO citando APP_CLIENT_ID e APP_PRIVATE_KEY, e nenhum arquivo em features/ muda"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync.py::test_cria_issue_para_ficha_sem_item -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync.py::test_nao_duplica_e_segunda_execucao_nao_altera -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/ci/test_project_sync.py::test_responsavel_desconhecido_avisa_sem_falhar -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync.py::test_branch_move_so_o_proprio_card -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync.py::test_pr_aberto_vai_para_em_revisao -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync.py::test_developer_nunca_recua_status -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/ci/test_project_sync.py::test_passing_em_developer_finaliza_e_fecha_issue -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync.py::test_reconcilia_responsavel -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync.py::test_reconcilia_bloqueios -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/ci/test_project_sync.py::test_ficha_removida_nao_apaga_issue -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_project_sync.py::test_dry_run_nao_escreve -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/ci/test_project_sync.py::test_falha_api_exit_2_sem_tocar_fichas -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "ruff check tools/project_sync.py tests/ci/test_project_sync.py"
+    }
+  ],
+  "evidencia": null
+}
