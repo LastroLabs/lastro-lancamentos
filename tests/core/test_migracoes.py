@@ -26,7 +26,7 @@ SNAPSHOT_SQL = """
 SELECT 'table', schemaname || '.' || tablename FROM pg_tables
  WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
 UNION ALL
-SELECT 'default_acl', defaclrole::regrole::text || ':' || defaclobjtype || ':'
+SELECT 'default_acl', defaclrole::regrole::text || ':' || defaclobjtype::text || ':'
        || coalesce(defaclnamespace::regnamespace::text, '') || ':' || defaclacl::text
   FROM pg_default_acl
 UNION ALL
