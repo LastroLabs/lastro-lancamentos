@@ -28,6 +28,7 @@ Aguardar a revisão do PR #50 (base `developer`). Um humano marca D1 a D5 e a ap
 - 23/11 · S2 · `hx feature verify HAR-04` gravou `passing` (commit 4708dbc).
 - 23/11 · S3 · Docs `decisoes/processo.md` e `fluxo/orquestracao.mdx`: nota "Planejado" trocada por "Implementado (HAR-04)" (commit 54c374f).
 - 23/11 · S3 · Push da branch e PR #50 aberto para a `developer`, com o template preenchido.
+- 23/11 · S3 · HX-11 e HX-12 marcadas `passing` à mão, com evidência real (ver Rodei e Decisões); registrado no PR #50.
 
 ## Rodei
 - 23/11 · S2 · `pytest tests/harness -q` (venv local) → 167 passaram
@@ -36,6 +37,7 @@ Aguardar a revisão do PR #50 (base `developer`). Um humano marca D1 a D5 e a ap
 - 23/11 · S2 · `hx verify` (container, após rebuild) → ruff e pytest OK
 - 23/11 · S2 · `hx feature verify HAR-04` → c1 a c7 e c9 OK, código 0
 - 23/11 · S3 · `hx check-clean` → 0 achados (sem `LASTRO_NOMES_PROIBIDOS`: nomes pulados)
+- 23/11 · S3 · 13 comandos da ficha HX-11 e 11 da HX-12 (pytest e ruff, venv local) → todos ok; evidência gravada com o commit 69cef1f3394f
 
 ## Falhou
 - 23/11 · S2 · `hx verify` falhou com `No module named 'pydantic'`: imagem `lastro-dev` desatualizada. Resolvido com `docker compose --profile dev build dev`.
@@ -46,6 +48,7 @@ Aguardar a revisão do PR #50 (base `developer`). Um humano marca D1 a D5 e a ap
 - 23/11 · S2 · Handle da equipe comparado sem diferenciar maiúsculas de minúsculas, como no GitHub.
 - 23/11 · S3 · PR aberto contra a `developer` (base indicada nos docs do fluxo), não contra a `main`.
 - 23/11 · S2 · `ruff format` não foi aplicado em `tools/harness.py`: o projeto não usa o formatador e o diff ficaria enorme.
+- 23/11 · S3 · EXCEÇÃO à regra 2 do AGENTS.md: `estado` e `evidencia` de HX-11 e HX-12 editados à mão, autorizado por caio-nascime nesta sessão (features dele, concluídas e não encerradas; `hx feature verify` não serve porque exige `in_progress` e o WIP=1 impede o `start`). Vale só para essas duas fichas.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
