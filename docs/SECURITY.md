@@ -31,6 +31,7 @@ Vale também para **issues, PRs e comentários**: não cole trecho de extrato re
 ## 3. Dados de teste
 
 - Tudo vem de `hx fixtures build` (razão sintético que gera OFX/PDF e o gabarito). Não escreva fixture à mão com dado que pareça real.
+- **Exceção DB-01 (responsável, 23/11/2026):** enquanto `hx fixtures build` estiver indisponível, seus testes podem gerar dados sintéticos determinísticos, com nomes fictícios, hashes inventados e CNPJs com DV inválido nos testes que não verificam validação fiscal. A exceção não autoriza dados reais nem se estende automaticamente a outras features. Ver `docs/decisoes/DECISIONS.md`, seção 5.
 - **CPF e CNPJ de teste com dígito verificador inválido.** O `hx check-clean` trata número com DV válido como possível dado real; DV inválido passa como sintético. Exemplo: `111.222.333-00`.
 - Nomes de contrapartes inventados e identificáveis como falsos: `CONTRAPARTE_001`, `CLIENTE_TESTE`.
 - Valores, datas e descrições são inventados. Não adapte um extrato real "trocando só os nomes": a estrutura de valores e datas também identifica.
@@ -83,6 +84,8 @@ Regras da CI (repositório público):
 O `check-clean` **reduz** o risco, não o elimina. A segunda barreira é a revisão humana.
 
 ## 8. Regras do produto que são segurança
+
+**Divisão DB-01/NUC-03 (responsável DB-01, 23/11/2026):** a DB-01 cria as tabelas e restrições; a NUC-03 implementa as políticas RLS. A conclusão da NUC-03 é condição obrigatória antes do uso com dados de piloto. Não criar políticas permissivas para contornar a pendência. FKs compostas não substituem isolamento de leitura e escrita por RLS.
 
 Detalhe nos requisitos (RF-SEG) e nas regras do `AGENTS.md`; aqui só o lembrete.
 

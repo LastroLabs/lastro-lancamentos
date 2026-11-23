@@ -18,9 +18,9 @@ O modelo organiza os dados necessários para receber extratos, conferir saldos, 
 
 A escolha do **PostgreSQL 18**, do isolamento com RLS, dos valores em centavos e do histórico auditável está **aprovada**, conforme [BD-01 a BD-08](/lastro-lancamentos/decisoes/banco-de-dados/). Sessão no servidor e fila no PostgreSQL com Procrastinate também estão aprovadas pela [arquitetura](/lastro-lancamentos/decisoes/arquitetura/).
 
-O **esquema detalhado desta seção é uma proposta de implementação** dessas decisões. Os nomes e as restrições das tabelas ainda precisam ser transformados em migrações e validados. No checkout analisado, `src/lastro/` contém apenas `__init__.py`; não foram encontradas entidades persistidas ou migrações de produto. As fichas S1 apresentadas no site estão em revisão e não representam funcionalidades concluídas.
+O **esquema detalhado desta seção é uma proposta de implementação** dessas decisões. Os nomes e as restrições das tabelas ainda precisam ser transformados em migrações e validados. A revisão DB-01 de 23/11/2026 confirmou o recorte de identidade/carteira do modelo físico; a NUC-01 já possui ambiente e migração de privilégios. Esta revisão não implementa as tabelas DB-01 nem comprova sua migração. As fichas S1 apresentadas no site estão em revisão e não representam funcionalidades concluídas.
 
-O modelo propõe **27 tabelas de domínio e acesso**. A separação de `USUARIO`, `MEMBRO` e `SESSAO` preserva identidade, papel no escritório e revogação; `PLANO_CONTAS` explicita a publicação e a substituição do plano. As tabelas internas do Procrastinate são infraestrutura e não integram essa contagem. Não se propõe uma segunda fila baseada em `ARQUIVO`.
+O modelo propõe **28 tabelas de domínio e acesso**. CONVITE foi incorporado pela revisão DB-01 de 23/11/2026, com hash, validade, uso e revogação. A separação de `USUARIO`, `MEMBRO` e `SESSAO` preserva identidade, papel no escritório e revogação; `PLANO_CONTAS` explicita a publicação e a substituição do plano. As tabelas internas do Procrastinate são infraestrutura e não integram essa contagem. Não se propõe uma segunda fila baseada em `ARQUIVO`.
 
 ## Escopo e prioridades
 

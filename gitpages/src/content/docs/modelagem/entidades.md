@@ -1,6 +1,6 @@
 ---
 title: Entidades e atributos
-description: Responsabilidades, atributos e integridade das 27 entidades propostas para o MVP.
+description: Responsabilidades, atributos e integridade das entidades propostas para o MVP.
 ---
 
 As entidades abaixo são uma especificação, não tabelas já implementadas. O identificador técnico é `id`; o escopo se repete conforme o [modelo lógico](/lastro-lancamentos/modelagem/modelo-logico/). Cada entidade possui âncora para referências vindas dos requisitos e das fichas.
@@ -9,7 +9,7 @@ Os requisitos associados podem ser consultados no sentido inverso em [rastreabil
 
 ## Índice
 
-- **Identidade e carteira**: [ESCRITORIO](#escritorio), [USUARIO](#usuario), [MEMBRO](#membro), [SESSAO](#sessao), [CLIENTE](#cliente), [ATRIBUICAO](#atribuicao).
+- **Identidade e carteira**: [ESCRITORIO](#escritorio), [USUARIO](#usuario), [MEMBRO](#membro), [SESSAO](#sessao), [CONVITE](#convite), [CLIENTE](#cliente), [ATRIBUICAO](#atribuicao).
 - **Cadastro e plano contábil**: [CONTA_BANCARIA](#conta_bancaria), [SOCIO](#socio), [PLANO_CONTAS](#plano_contas), [CONTA_CONTABIL](#conta_contabil).
 - **Envio e conferência**: [COMPETENCIA](#competencia), [LINK_CLIENTE](#link_cliente), [ARQUIVO](#arquivo), [EXTRATO](#extrato), [MOVIMENTACAO](#movimentacao), [ORIGEM_MOVIMENTACAO](#origem_movimentacao), [VALIDACAO](#validacao).
 - **Classificação e revisão**: [REGRA_CLASSIFICACAO](#regra_classificacao), [SUGESTAO](#sugestao), [PERGUNTA](#pergunta), [PERGUNTA_ITEM](#pergunta_item), [PERGUNTA_OPCAO](#pergunta_opcao), [RESPOSTA](#resposta), [REVISAO](#revisao).
@@ -49,7 +49,7 @@ Associação do usuário ao escritório, com papel de chefe ou contador e situa�
 
 **Integridade:** UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. Pela P-09, o chefe pode ser o responsável de um cliente, e acessar o cliente exige ser o responsável ativo, seja chefe ou contador.
 
-**Relacionamentos:** Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, ATRIBUICAO e pelos eventos de revisão.
+**Relacionamentos:** Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, CONVITE (destinatário e autor), ATRIBUICAO e pelos eventos de revisão.
 
 [Requisitos desta entidade](/lastro-lancamentos/modelagem/rastreabilidade/?entidade=membro) · [Chaves e vínculos](/lastro-lancamentos/modelagem/modelo-logico/#membro).
 
@@ -65,11 +65,25 @@ Registro da sessão no servidor e de sua possibilidade de encerramento.
 
 [Requisitos desta entidade](/lastro-lancamentos/modelagem/rastreabilidade/?entidade=sessao) · [Chaves e vínculos](/lastro-lancamentos/modelagem/modelo-logico/#sessao).
 
+### CONVITE
+
+Convite para um membro aceitar o acesso, conforme c1/c2/c5 da ficha DB-01. Sua inclusão documental foi autorizada pelo responsável em 23/11/2026.
+
+**Atributos:** `escritorio_id; id; membro_id; hash_token; criado_por; criado_em; expira_em; usado_em; revogado_em`.
+
+**Integridade:** PK `(escritorio_id, id)`; hash único, obrigatório e hexadecimal minúsculo com 64 caracteres; expiração posterior à criação; uso e revogação não podem estar ambos preenchidos. No máximo um convite por membro com `usado_em IS NULL AND revogado_em IS NULL`. Um convite expirado ainda satisfaz esse predicado se não for usado ou revogado; isso decorre do índice explícito; A3 exige revogar o convite expirado pendente antes da reemissão. As 48 h de c5 são exemplo, não prazo padrão aprovado. Não existe coluna de código/token em claro.
+
+**Relacionamentos:** `(escritorio_id, membro_id)` e `(escritorio_id, criado_por)` referenciam `membro(escritorio_id, id)`; o autor e o destinatário pertencem ao mesmo escritório. `usuario.credencial_hash` pode ser nulo enquanto o convite não é aceito; esta ficha não implementa o aceite.
+
+[Chaves e vínculos](/lastro-lancamentos/modelagem/modelo-logico/#convite) · [Recorte físico e pendências](/lastro-lancamentos/modelagem/modelo-fisico/#recorte-físico-da-db-01). CONVITE integra o índice interativo e os vínculos RF-AUT-01/03, conforme A5 confirmado em 23/11/2026.
+
 ### CLIENTE
 
 Empresa atendida, com cadastro, plano vigente e configurações que permanecem após troca de contador.
 
 **Atributos:** `id; escritorio_id; nome; cnpj_normalizado; ativo; versao_acesso; plano_atual_id; conta_transitoria_id; conta_entrada_socio_id; conta_saida_socio_id`
+
+**Recorte DB-01:** somente `escritorio_id; id; nome; cnpj_normalizado; ativo; versao_acesso`. As colunas de plano e contas entram na DB-02, conforme c1. Tipos, restrições e detalhes pendentes estão no [modelo físico](/lastro-lancamentos/modelagem/modelo-fisico/#recorte-físico-da-db-01).
 
 **Integridade:** CNPJ é texto e único dentro do escritório. Só o chefe cria o cadastro. As contas configuradas pertencem ao cliente e ao plano vigente. Na nova carga, a ausência da transitória no plano novo deixa o cliente sem transitória, conforme P-11.
 

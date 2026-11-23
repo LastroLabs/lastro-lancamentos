@@ -92,6 +92,8 @@ Base: guia de código do TypeScript (Microsoft), convenções do React, `eslint`
 
 ## 4. SQL e banco (PostgreSQL)
 
+**Exceções da DB-01, decididas pelo responsável em 23/11/2026:** os nomes físicos de tabelas e colunas permanecem exatamente como na ficha `features/DB-01.json`, em português e no singular (`escritorio`, `usuario`, `membro`, `sessao`, `convite`, `cliente`, `atribuicao`). A exceção não se estende a outros módulos; classes Python e convenção central seguem D2 confirmado no plano DB-01. A DB-01 cria o esquema e suas restrições; as políticas RLS ficam na NUC-03, cuja conclusão é obrigatória antes do uso com dados de piloto. Não criar políticas permissivas para contornar essa divisão. Estas exceções prevalecem sobre as regras gerais de nomes e de RLS na mesma migração abaixo; não dispensam isolamento no produto. Registro: `docs/decisoes/DECISIONS.md`, seção 5.
+
 Base: convenções da comunidade PostgreSQL; os identificadores têm no máximo **63 caracteres** e, sem aspas, o Postgres os grava em minúsculas.
 
 | Elemento | Padrão | Exemplo |

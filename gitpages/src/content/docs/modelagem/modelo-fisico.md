@@ -9,6 +9,70 @@ A implementação deve seguir [BD-01 a BD-08](/lastro-lancamentos/decisoes/banco
 
 Identificadores técnicos e referências usam **UUID**. Valores e saldos usam **BIGINT em centavos com sinal**: entrada positiva e saída negativa. Datas bancárias usam `DATE`; os instantes de envio, revisão e revogação usam `TIMESTAMPTZ`. O mês da competência é representado pelo primeiro dia. CNPJ, códigos contábeis e identificadores bancários são texto; não devem ser convertidos em números.
 
+## Recorte físico da DB-01
+
+Referência: `features/DB-01.json`, c1–c6; decisões do responsável em 23/11/2026 registradas em `docs/decisoes/DECISIONS.md`, seção 5. Esta seção reúne critérios explícitos e complementos F1–F5/D1–D3 confirmados pelo responsável e incorporados a c1/c2/c5/c6 com autorização em 23/11/2026 (R1 do plano). Não apresenta migração executada.
+
+**Divisão aprovada:** nomes físicos portugueses singulares da ficha, como exceção ao CODING_STANDARDS.md; esquema e restrições na DB-01, políticas RLS na NUC-03. A NUC-03 precisa estar concluída antes do uso com dados de piloto. Não criar políticas permissivas de contorno. FKs não substituem isolamento de acesso.
+
+**Leitura da tabela:** `NN` significa `NOT NULL`; PK também implica não nulabilidade. Todo `id` é UUID v4 gerado pelo banco com `gen_random_uuid()` (D1). Referências são UUID. Nulabilidade incorpora F1 confirmado; defaults temporais permanecem somente os explicitados na ficha (F2).
+
+| Tabela | Colunas do recorte confirmado |
+|---|---|
+| `escritorio` | `id uuid PK`; `nome text NN`; `ativo boolean NN DEFAULT true` |
+| `usuario` | `id uuid PK`; `identificador_login text NN UNIQUE`; `nome text NN`; `ativo boolean NN DEFAULT true`; `credencial_hash text NULL` |
+| `membro` | `escritorio_id uuid`; `id uuid`; `usuario_id uuid NN`; `papel text NN`; `ativo boolean NN DEFAULT true`; PK `(escritorio_id, id)`; UNIQUE `(escritorio_id, usuario_id)` |
+| `sessao` | `escritorio_id uuid`; `id uuid`; `membro_id uuid NN`; `hash_token text NN UNIQUE`; `criada_em timestamptz NN`; `expira_em timestamptz NN`; `encerrada_em timestamptz NULL`; PK `(escritorio_id, id)` |
+| `convite` | `escritorio_id uuid`; `id uuid`; `membro_id uuid NN`; `hash_token text NN UNIQUE`; `criado_por uuid NN`; `criado_em timestamptz NN DEFAULT now()`; `expira_em timestamptz NN`; `usado_em timestamptz NULL`; `revogado_em timestamptz NULL`; PK `(escritorio_id, id)` |
+| `cliente` | `escritorio_id uuid`; `id uuid`; `nome text NN`; `cnpj_normalizado text NN`; `ativo boolean NN DEFAULT true`; `versao_acesso bigint NN DEFAULT 0`; PK `(escritorio_id, id)`; UNIQUE `(escritorio_id, cnpj_normalizado)` |
+| `atribuicao` | `escritorio_id uuid`; `cliente_id uuid`; `id uuid`; `membro_id uuid NN`; `atribuido_por uuid NN`; `inicio timestamptz NN`; `fim timestamptz NULL`; PK `(escritorio_id, cliente_id, id)` |
+
+Nenhuma coluna de plano ou conta contábil em `cliente` nesta migração; entram na DB-02. `credencial_hash` é nulo enquanto o convite não foi aceito; não se cria trigger nem fluxo de aceite por inferência. Não guardar código/token de convite em claro.
+
+### Chaves estrangeiras (c2 e F3/F4 confirmados)
+
+| Origem | Colunas | Destino |
+|---|---|---|
+| `membro` | `usuario_id` | `usuario(id)` |
+| `membro` | `escritorio_id` | `escritorio(id)` |
+| `cliente` | `escritorio_id` | `escritorio(id)` |
+| `sessao` | `(escritorio_id, membro_id)` | `membro(escritorio_id, id)` |
+| `convite` | `(escritorio_id, membro_id)` e `(escritorio_id, criado_por)` | `membro(escritorio_id, id)` |
+| `atribuicao` | `(escritorio_id, cliente_id)` | `cliente(escritorio_id, id)` |
+| `atribuicao` | `(escritorio_id, membro_id)` e `(escritorio_id, atribuido_por)` | `membro(escritorio_id, id)` |
+
+F3 confirma as FKs diretas membro/cliente para escritório, sem FKs diretas redundantes em sessão, convite ou atribuição. Todas as FKs usam ON DELETE/UPDATE NO ACTION e NOT DEFERRABLE, sem cascata (F4). Complementos transcritos na ficha com autorização em R1.
+
+### CHECKs e índices explícitos (c1/c3/c4/c5)
+
+- `membro`: `papel IN ('chefe', 'contador')`.
+- `sessao`: `expira_em > criada_em`.
+- `cliente`: `versao_acesso >= 0`.
+- `atribuicao`: `fim IS NULL OR fim > inicio`; índice único parcial `(escritorio_id, cliente_id) WHERE fim IS NULL`.
+- `convite`: `hash_token ~ '^[0-9a-f]{64}$'`; `expira_em > criado_em`; `usado_em IS NULL OR revogado_em IS NULL`; índice único parcial `(escritorio_id, membro_id) WHERE usado_em IS NULL AND revogado_em IS NULL`.
+
+Esse índice mantém um convite expirado na unicidade se não usado nem revogado. A3 exige revogar o convite expirado ainda pendente antes da reemissão; o serviço desse fluxo não faz parte da DB-01. As 48 h do exemplo não são política de validade. O esquema aceita chefe como responsável (c3/P-09) e o mesmo usuário em escritórios distintos (c4).
+
+### Migração e permissões explícitas (c1/c6)
+
+Uma revisão Alembic após a base NUC-01 (`0001` no repositório consultado), sem criar dados. Seis modelos em `src/lastro/access/models.py`, cliente em `src/lastro/registry/models.py`. Downgrade remove as sete tabelas e retorna à revisão anterior; reaplicar restaura o mesmo esquema. O papel da aplicação lê/grava sem ser dono e não pode apagar a tabela `escritorio`. A DB-01 não implementa login, aceite de convite, serviço de reatribuição nem políticas RLS.
+
+### Complementos F1–F5 confirmados em 23/11/2026
+
+O responsável confirmou todas as decisões abaixo e autorizou sua inclusão nos critérios, concluída em R1. Isso não constitui aprovação integral do plano.
+
+| # | Detalhe complementado | Decisão confirmada | Impacto |
+|---|---|---|---|
+| F1 | Nulabilidade de `membro.usuario_id`, `sessao.membro_id`, `sessao.criada_em`, `sessao.expira_em`, `atribuicao.membro_id`, `atribuicao.atribuido_por`. | `NOT NULL` em todos, conforme confirmação explícita do responsável. PKs já impõem NN às colunas que as compõem. | Evita FK/CHECK contornados por NULL; c1/c2. |
+| F2 | Defaults temporais além de `convite.criado_em`. | Exigir preenchimento explícito para `sessao.criada_em`, `sessao.expira_em`, `atribuicao.inicio` e `convite.expira_em`, sem novos defaults; manter só `now()` explicitado. Não fixar duração de sessão/convite nesta feature. | c1/c5; não transformar 48 h em regra. |
+| F3 | Lista completa de FKs diretas para escritório. | Acrescentar `membro.escritorio_id` e `cliente.escritorio_id` → `escritorio(id)`; as FKs compostas de sessão/convite/atribuição já asseguram pertencimento indiretamente. Não adicionar FKs diretas redundantes nessas três sem necessidade aprovada. | Completa relação lógica; apresentar complemento de c1/c2 antes de alterar ficha. |
+| F4 | `ON DELETE`, `ON UPDATE` e adiamento das FKs. | `NO ACTION` em ambas, `NOT DEFERRABLE`, sem cascata; preservar histórico e rejeitar referências inválidas na escrita. | c2/c3/c6; não introduzir deleção automática. |
+| F5 | Índices auxiliares de FK e nomes exatos de constraints/índices. | Criar os seis índices auxiliares não cobertos por prefixo de PK/UNIQUE: `membro(usuario_id)`, `sessao(escritorio_id, membro_id)`, `convite(escritorio_id, membro_id)` e `(escritorio_id, criado_por)`, `atribuicao(escritorio_id, membro_id)` e `(escritorio_id, atribuido_por)`. O índice parcial de convite só cobre pendentes. Lista e convenção D2 confirmadas; sem unicidade global extra de `id`. | c1, manutenção e desempenho; sem requisito de carga inventado. |
+
+D1–D3 confirmados: UUID v4 com gen_random_uuid(), Base/MetaData comum em core/models.py, modelos nos caminhos A1, classes/convenção central D2 e migração explícita independente dos modelos vivos. Prazo de sessão, algoritmo de credencial, normalização/case do login e regras fiscais de CNPJ não são resolvidos pela DB-01; não acrescentar CHECKs, triggers ou normalização a partir dessas lacunas.
+
+### Continuação das convenções gerais
+
 A ficha CAD-01 em revisão prevê CNPJ numérico e alfanumérico. O modelo armazena o identificador como texto normalizado e não inventa regra de validação além da ficha. O status HTTP de dado inválido permanece em P-13.
 
 Colunas centrais de valores, contas, estados e relacionamentos são tipadas. `JSONB` fica restrito a evidências variáveis, metadados sanitizados e fotografias validadas. A confiança pode usar categoria e pontuação limitada; a pontuação não é uma probabilidade calibrada por presunção. O limite continua pendente em D-08.
