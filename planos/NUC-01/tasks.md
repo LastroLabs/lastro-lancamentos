@@ -1,7 +1,7 @@
 # Tasks — NUC-01 · Criar o ambiente da API e do banco e responder a saúde da API
 
 **Plan:** planos/NUC-01/plan.md · **Ficha:** features/NUC-01.json
-**Ordem:** T1 → revisão humana dos testes → commit só-de-testes (hash `7c567ee`) → T2 em diante (sessão nova, sem editar `tests/`)
+**Ordem:** T1 → revisão humana dos testes → commit só-de-testes (hash `cacb33a`; antes `7c567ee` e `59452ed`, trocados em 23/11 com autorização do humano) → T2 em diante (sessão nova, sem editar `tests/`)
 **Antes da T1:** pergunta 12 respondida em 23/11 (corpo `{"api": "up", "database": "connected"}`). D1 (Testcontainers pelo proxy, decidida pelo humano em 23/11), D4, D5 e D7 confirmadas em 23/11.
 **Antes da T2:** pergunta 11 respondida em 23/11 (opção C: proxy do socket no perfil `dev`). D2, D3 e D6 confirmadas em 23/11. Os itens "a conferir na T2" do plan são critérios de aceite da T2.
 **Antes da T7:** o humano aplica na ficha as mudanças sugeridas no plan (rota e corpo da saúde; os nomes de teste ficam os da ficha).
@@ -33,22 +33,22 @@
 - **Decisões relacionadas:** D1, D4, D5, D7
 - **Pronto quando:** `docker compose run --rm dev pytest tests/core -q` mostra só falhas esperadas (com a imagem atual: falham por import)
 
-## [ ] T2 · Imagem com uv, Compose com proxy do Docker, `.env.example` e papéis do banco
+## [x] T2 · Imagem com uv, Compose com proxy do Docker, `.env.example` e papéis do banco
 - **Critérios da ficha:** c1, c6
 - **Regra de negócio (em linguagem simples):** qualquer pessoa do time clona, copia o `.env.example` e sobe tudo; as versões das bibliotecas são as mesmas em toda máquina; os testes criam sozinhos um banco limpo a cada rodada.
 - **Critérios de aceite:**
-  - [ ] `pyproject.toml` com `[project]` (Python 3.14, dependências da D3) e `[dependency-groups]` `dev`; `uv.lock` gerado e versionado; o `[tool.ruff]` existente é mantido
-  - [ ] `Dockerfile` em estágios: base `python:3.14-slim` (tag exata), uv de `ghcr.io/astral-sh/uv:<versão fixa>`, `dev` com `uv sync --locked`, `runtime` com `--no-dev`; ambiente virtual fora de `/app`, no `PATH`. Nomes das variáveis do uv conferidos em https://docs.astral.sh/uv/reference/environment/
-  - [ ] `docker-compose.yml`: `api` (estágio `runtime`, porta 8000, healthcheck em `/api/v1/health` com Python, sem `curl`); `db` (`postgres:18`, volume em `/var/lib/postgresql`, healthcheck `pg_isready`); `dev` (estágio `dev`, perfil `dev`, mesmo nome e `working_dir`, `depends_on: docker-proxy`, `DOCKER_HOST=tcp://docker-proxy:2375`, `TESTCONTAINERS_RYUK_DISABLED=true`, **sem** socket montado)
-  - [ ] `docker-proxy`: `tecnativa/docker-socket-proxy:v0.5.0` com o digest `sha256` anotado, perfil `dev`, `privileged`, **único** serviço que monta `/var/run/docker.sock`, sem `ports`; libera `POST`, `CONTAINERS`, `ALLOW_START`, `ALLOW_STOP`, `IMAGES`, `NETWORKS` e `INFO` (D1), e nada além do que o Testcontainers usar
-  - [ ] A conferir (D1), registrado no `progress`, em Linux nativo, Docker Desktop e CI: (a) como o proxy trata `DELETE` e se o Testcontainers precisa de `EXEC`; (b) se o `stop()` remove o container com o Ryuk desligado; se não remove, a fixture remove e apaga as sobras no início da sessão. Religar o Ryuk só com aval do humano; (c) se o host padrão ("gateway IP") alcança a porta do Postgres a partir do `dev`; se não alcança, fixar `TESTCONTAINERS_HOST_OVERRIDE` no Compose com um valor que sirva aos três (ex.: `host.docker.internal` + `extra_hosts` com `host-gateway`, a conferir)
-  - [ ] A conferir (D6): a tag exata do uv e o `UV_PROJECT_ENVIRONMENT` em https://docs.astral.sh/uv/reference/environment/; a wheel cp314 do `psycopg-binary` para Linux (se faltar, `libpq5`)
-  - [ ] `migrations/bootstrap/create_roles.sql` (idempotente, sem senha) e `create_roles.sh` (initdb do `db`: roda o SQL, aplica `OWNER_DB_PASSWORD` e `APP_DB_PASSWORD`, passa o banco para `lastro_owner`)
-  - [ ] `.env.example` com `POSTGRES_*`, `OWNER_DB_PASSWORD`, `APP_DB_PASSWORD`, `DATABASE_URL`, `MIGRATIONS_DATABASE_URL`, valores contendo `exemplo`
-  - [ ] `requirements-dev.txt` removido
-  - [ ] `docker compose config --services` sem perfil lista só `api` e `db`
-  - [ ] `tests/harness` e `tests/ci` continuam verdes no 3.14 com uv
-  - [ ] Com o testcontainers instalado, os 4 testes que hoje dão ERROR na fixture passam a falhar pelo motivo da T5 (alembic.ini ausente), não por erro de montagem
+  - [x] `pyproject.toml` com `[project]` (Python 3.14, dependências da D3) e `[dependency-groups]` `dev`; `uv.lock` gerado e versionado; o `[tool.ruff]` existente é mantido
+  - [x] `Dockerfile` em estágios: base `python:3.14-slim` (tag exata), uv de `ghcr.io/astral-sh/uv:<versão fixa>`, `dev` com `uv sync --locked`, `runtime` com `--no-dev`; ambiente virtual fora de `/app`, no `PATH`. Nomes das variáveis do uv conferidos em https://docs.astral.sh/uv/reference/environment/
+  - [x] `docker-compose.yml`: `api` (estágio `runtime`, porta 8000, healthcheck em `/api/v1/health` com Python, sem `curl`); `db` (`postgres:18`, volume em `/var/lib/postgresql`, healthcheck `pg_isready`); `dev` (estágio `dev`, perfil `dev`, mesmo nome e `working_dir`, `depends_on: docker-proxy`, `DOCKER_HOST=tcp://docker-proxy:2375`, `TESTCONTAINERS_RYUK_DISABLED=true`, **sem** socket montado)
+  - [x] `docker-proxy`: `tecnativa/docker-socket-proxy:v0.5.0` com o digest `sha256` anotado, perfil `dev`, `privileged`, **único** serviço que monta `/var/run/docker.sock`, sem `ports`; libera `POST`, `CONTAINERS`, `ALLOW_START`, `ALLOW_STOP`, `IMAGES`, `NETWORKS` e `INFO` (D1), e nada além do que o Testcontainers usar. **Feito com `EXEC` a mais:** o Testcontainers precisa dele (plan, D1)
+  - [ ] A conferir (D1), registrado no `progress`, em Linux nativo, Docker Desktop e CI: (a) como o proxy trata `DELETE` e se o Testcontainers precisa de `EXEC`; (b) se o `stop()` remove o container com o Ryuk desligado; se não remove, a fixture remove e apaga as sobras no início da sessão. Religar o Ryuk só com aval do humano; (c) se o host padrão ("gateway IP") alcança a porta do Postgres a partir do `dev`; se não alcança, fixar `TESTCONTAINERS_HOST_OVERRIDE` no Compose com um valor que sirva aos três (ex.: `host.docker.internal` + `extra_hosts` com `host-gateway`, a conferir). **Desmarcado:** (a), (b) e (c) conferidos só em Linux nativo (`progress`, 23/11); faltam Docker Desktop e CI
+  - [x] A conferir (D6): a tag exata do uv e o `UV_PROJECT_ENVIRONMENT` em https://docs.astral.sh/uv/reference/environment/; a wheel cp314 do `psycopg-binary` para Linux (se faltar, `libpq5`)
+  - [ ] `migrations/bootstrap/create_roles.sql` (idempotente, sem senha) e `create_roles.sh` (initdb do `db`: roda o SQL, aplica `OWNER_DB_PASSWORD` e `APP_DB_PASSWORD`, passa o banco para `lastro_owner`). **Desmarcado:** o `.sql` roda na fixture dos testes (verde); o `.sh` só roda de verdade no `docker compose up` da T6
+  - [x] `.env.example` com `POSTGRES_*`, `OWNER_DB_PASSWORD`, `APP_DB_PASSWORD`, `DATABASE_URL`, `MIGRATIONS_DATABASE_URL`, valores contendo `exemplo`
+  - [x] `requirements-dev.txt` removido
+  - [x] `docker compose config --services` sem perfil lista só `api` e `db`
+  - [x] `tests/harness` e `tests/ci` continuam verdes no 3.14 com uv
+  - [x] Com o testcontainers instalado, os 4 testes que hoje dão ERROR na fixture passam a falhar pelo motivo da T5 (alembic.ini ausente), não por erro de montagem
 - **Exemplos:** clone limpo, sem `.env` → `hx verify` funciona (o banco de teste vem do Testcontainers); `.env` copiado → `docker compose up -d --wait` termina com `api` e `db` saudáveis; lock desatualizado → o build falha no `uv sync --locked`
 - **Arquivos:** `pyproject.toml`, `uv.lock`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `migrations/bootstrap/create_roles.sql`, `migrations/bootstrap/create_roles.sh`; remove `requirements-dev.txt` (o `pr.yml` não muda)
 - **Reaproveitar:** serviço `dev` atual (nome e `working_dir`) · **Não criar:** segundo Dockerfile, `requirements*.txt`, mudança em `tools/`
@@ -56,14 +56,14 @@
 - **Decisões relacionadas:** D1, D2, D3, D5, D6, D7
 - **Pronto quando:** `pytest tests/core/test_ambiente.py::test_compose_define_api_e_banco_com_versoes_decididas -q` e `pytest tests/core/test_ambiente.py::test_ambiente_de_verificacao_tem_python_e_banco_decididos -q` passam no `dev`
 
-## [ ] T3 · Configuração e sessão do banco em `core/`
+## [x] T3 · Configuração e sessão do banco em `core/`
 - **Critérios da ficha:** c2
 - **Regra de negócio (em linguagem simples):** um só lugar lê a configuração do ambiente e abre a conexão; as outras fichas só importam. Importar não pode conectar, senão a API cai ao iniciar sem banco.
 - **Critérios de aceite:**
-  - [ ] `src/lastro/core/config.py`: classe `Settings` com `database_url` e `migrations_database_url` lidas do ambiente; função `get_settings()` (sem estado global mutável)
-  - [ ] `src/lastro/core/db.py`: motor async e `async_sessionmaker` criados sob demanda; dependência que entrega uma sessão por requisição; `is_database_reachable()` com `connect_timeout` curto
-  - [ ] Importar os dois módulos sem `DATABASE_URL` não falha nem conecta
-  - [ ] A URL nunca aparece em log nem em mensagem de erro
+  - [x] `src/lastro/core/config.py`: classe `Settings` com `database_url` e `migrations_database_url` lidas do ambiente; função `get_settings()` (sem estado global mutável)
+  - [x] `src/lastro/core/db.py`: motor async e `async_sessionmaker` criados sob demanda; dependência que entrega uma sessão por requisição; `is_database_reachable()` com `connect_timeout` curto
+  - [x] Importar os dois módulos sem `DATABASE_URL` não falha nem conecta
+  - [x] A URL nunca aparece em log nem em mensagem de erro
 - **Exemplos:** `DATABASE_URL=postgresql+psycopg://lastro_app:…@db/lastro` → sessão abre; host inexistente → `is_database_reachable()` devolve `False` em poucos segundos, sem exceção vazando
 - **Arquivos:** `src/lastro/core/config.py`, `src/lastro/core/db.py`
 - **Não criar:** contexto de RLS e permissões (NUC-03/ACE)
@@ -71,14 +71,14 @@
 - **Decisões relacionadas:** D3, D7
 - **Pronto quando:** a parte de import de `test_esqueleto_da_api_tem_pontos_de_extensao_fixos` passa
 
-## [ ] T4 · `create_app()` e rota de saúde em `api/`
+## [x] T4 · `create_app()` e rota de saúde em `api/`
 - **Critérios da ficha:** c2, c3, c4
 - **Regra de negócio (em linguagem simples):** a rota de saúde diz a quem opera o sistema se a API e o banco estão vivos, sem login e sem revelar nada interno. Banco fora do ar vira mensagem simples: o que aconteceu + o que fazer.
 - **Critérios de aceite:**
-  - [ ] `src/lastro/api/app.py` com `create_app(settings=None)` e um roteador `/api/v1` onde as fichas registram rotas
-  - [ ] `GET /api/v1/health` em `src/lastro/api/routes.py`, fina, chamando `is_database_reachable()`
-  - [ ] 200 com `{"api": "up", "database": "connected"}`; banco fora → 503 `application/problem+json` com `detail` da ficha (em português)
-  - [ ] Nenhum traceback em resposta de erro
+  - [x] `src/lastro/api/app.py` com `create_app(settings=None)` e um roteador `/api/v1` onde as fichas registram rotas
+  - [x] `GET /api/v1/health` em `src/lastro/api/routes.py`, fina, chamando `is_database_reachable()`
+  - [x] 200 com `{"api": "up", "database": "connected"}`; banco fora → 503 `application/problem+json` com `detail` da ficha (em português)
+  - [x] Nenhum traceback em resposta de erro
 - **Exemplos:** banco no ar → 200; porta fechada → 503; rota de teste `/api/v1/test-echo` → 200
 - **Arquivos:** `src/lastro/api/app.py`, `src/lastro/api/routes.py`
 - **Não criar:** autenticação, CORS, middleware de sessão
@@ -86,14 +86,14 @@
 - **Decisões relacionadas:** D4
 - **Pronto quando:** `pytest tests/core/test_ambiente.py::test_esqueleto_da_api_tem_pontos_de_extensao_fixos -q` e `pytest tests/core/test_saude.py -q` passam
 
-## [ ] T5 · Alembic e migração base de permissões
+## [x] T5 · Alembic e migração base de permissões
 - **Critérios da ficha:** c5
 - **Regra de negócio (em linguagem simples):** o esquema do banco evolui por migrações versionadas, rodadas pelo dono. A aplicação só lê e grava: se for invadida, não consegue apagar tabelas nem fugir do isolamento por escritório (RLS, que vem depois).
 - **Critérios de aceite:**
-  - [ ] `alembic.ini` sem URL; `migrations/env.py` (async) lê `migrations_database_url` de `core/config.py`
-  - [ ] `migrations/versions/0001_base_privileges.py` com as permissões da D8 e `downgrade` que as desfaz
-  - [ ] Duas execuções seguidas de `alembic upgrade head`: a segunda não aplica nada e a versão não muda
-  - [ ] O comando da `api` no Compose roda `alembic upgrade head` antes do Uvicorn (resposta 3)
+  - [x] `alembic.ini` sem URL; `migrations/env.py` (async) lê `migrations_database_url` de `core/config.py`
+  - [x] `migrations/versions/0001_base_privileges.py` com as permissões da D8 e `downgrade` que as desfaz (o `downgrade` está escrito, mas não foi executado; nenhum teste o cobre)
+  - [x] Duas execuções seguidas de `alembic upgrade head`: a segunda não aplica nada e a versão não muda
+  - [ ] O comando da `api` no Compose roda `alembic upgrade head` antes do Uvicorn (resposta 3). **Desmarcado:** o comando está no Compose, mas só roda de verdade no `docker compose up` da T6
 - **Exemplos:** banco novo → versão `0001`; de novo → `0001`, nada aplicado; `lastro_app` faz `CREATE TABLE x` → permissão negada
 - **Arquivos:** `alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`, `migrations/versions/0001_base_privileges.py`, `docker-compose.yml` (comando da `api`); apagar `migrations/.gitkeep`
 - **Não criar:** tabela de negócio, extensão `pg_trgm`
@@ -115,7 +115,7 @@
 ## [ ] T7 · Verificação final
 - **Critérios de aceite:**
   - [ ] A ficha já traz a rota e o corpo da saúde do plan (PR do humano); os nomes de teste ficam os da ficha
-  - [ ] `git diff 7c567ee -- tests/` vazio
+  - [ ] `git diff cacb33a -- tests/` vazio
   - [ ] `ruff check .` limpo
   - [ ] `hx check-clean` e `hx verify` em OK; tempo do `hx verify` anotado no `progress` (risco de CI lenta)
   - [ ] `hx feature verify NUC-01` grava `passing`
