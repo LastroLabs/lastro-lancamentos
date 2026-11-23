@@ -33,7 +33,7 @@ Aguardar revisão e merge do PR na `developer`. Depois, pegar a próxima feature
 - 22/11 · S1 · `hx check-clean` → 0 achado(s), RESULTADO: OK (sem a variável de nomes proibidos; verificação de nomes pulada)
 
 ## Falhou
-- 22/11 · S1 · `hx` no Git Bash e `python -m pytest` direto não rodam (sem Python no PATH do bash e sem pytest instalado fora do ambiente); usei `. .	ools\hx.ps1; hx verify` no PowerShell.
+- 22/11 · S1 · `hx` no Git Bash e `python -m pytest` direto não rodam (sem Python no PATH do bash e sem pytest instalado fora do ambiente); usei `. .\tools\hx.ps1; hx verify` no PowerShell.
 
 ## Decisões
 - 22/11 · S1 · Recusa é valor de retorno, não exceção (D2); cliente inexistente ou de outro escritório dá NOT_FOUND para não revelar existência (P-01); NOT_ASSIGNED só aparece para o chefe do mesmo escritório (P-09). Detalhes em `planos/NUC-02/plan.md`.
