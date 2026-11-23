@@ -120,8 +120,8 @@ As regras de ficha vêm das decisões de 18/11 (ver [Decisão: processo e fichas
 - `onda` vai de 1 a 4;
 - `verificacao` lista 100% dos testes, com `pytest` ou `ruff check`.
 
-:::note[Planejado]
-O `hx` hoje confere o `id` contra o nome do arquivo, os campos obrigatórios, o estado, a verificação de cada critério, os comandos permitidos e o grafo de dependências. O campo a mais, o padrão do ID, a lista de módulos, a faixa de `onda`, a `prioridade`, os campos fixos, o `responsavel` na equipe e o nome de teste repetido serão conferidos pela ficha **HAR-04** (em revisão). A regra da dependência direta na mesma onda (P-03) não é conferida pelo `hx`.
+:::note[Implementado (HAR-04)]
+O `hx` confere o `id` contra o nome do arquivo, os campos obrigatórios (e recusa campo a mais), o estado, a verificação de cada critério, os comandos permitidos e o grafo de dependências. Também confere o padrão do ID, a lista de módulos, a faixa de `onda`, a `prioridade`, os campos fixos, o `responsavel` na equipe e o nome de teste repetido entre fichas. As regras novas só valem se `gitpages/src/data/equipe.ts` existir na raiz. A regra da dependência direta na mesma onda (P-03) não é conferida pelo `hx`.
 :::
 
 ## Ondas e metas

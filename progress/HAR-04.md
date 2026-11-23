@@ -5,7 +5,7 @@
 
 <!--
 Como preencher (agente, ao encerrar a sessão):
-- REESCREVA as seções do topo: Objetivo, Próxima ação, Bloqueios e perguntas.
+- REESCREVA as seções do topo: Objetivo, Próxima ação e Bloqueios e perguntas.
 - ACRESCENTE, sem apagar o que já existe, em Feito, Rodei, Falhou e Decisões.
   Cada linha começa com a data (DD/MM) e a sessão, ex.: "- 14/11 · S2 · ...".
 - Registre só o que realmente rodou. Sem dado real, nome de cliente ou segredo.
@@ -13,28 +13,39 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+O `hx state` (e `feature verify`/`start`) recusa ficha fora das regras de 18/11: campos exatos, ID, módulo, prioridade, onda, campos fixos, responsável da equipe e nome de teste único. O `hx check-clean` passa a achar CNPJ alfanumérico com dígito verificador válido.
 
 ## Próxima ação
-(a primeira coisa a fazer ao retomar; de preferência um comando ou um arquivo)
+Revisão humana: marcar D1 a D5 no `planos/HAR-04/plan.md` e abrir o PR da branch para a `developer` com o template de `.github/` (antes, rodar `hx check-clean`).
 
 ## Bloqueios e perguntas
-- (nenhum)
+- Conferir a regra "resto < 2 → 0" do DV alfanumérico na rotina oficial do Serpro (plan, D3); hoje vale a mesma regra do CNPJ numérico, que os testes usam.
 
 ## Feito
-- DD/MM · S1 ·
+- 23/11 · S1 · Plan, tasks e recorte da ficha; testes em `tests/harness/test_validacao_lote.py` (commit 143faed).
+- 23/11 · S2 · `tools/harness.py`: `validar_regras_do_projeto` (ligada em `_carregar_fichas_validas` só se existir `equipe.ts`), `ler_handles_da_equipe`, dicas na CORREÇÃO; `_CNPJ` e `cnpj_valido` aceitam letras (commit 21c342c).
+- 23/11 · S2 · Imagem `lastro-dev` reconstruída (estava de 17/11, sem as dependências da NUC-01).
+- 23/11 · S2 · `hx feature verify HAR-04` gravou `passing` (commit 4708dbc).
+- 23/11 · S3 · Docs `decisoes/processo.md` e `fluxo/orquestracao.mdx`: nota "Planejado" trocada por "Implementado (HAR-04)".
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
+- 23/11 · S2 · `pytest tests/harness -q` (venv local) → 167 passaram
+- 23/11 · S2 · `ruff check .` → OK
+- 23/11 · S2 · `hx state` na raiz real → código 0; `hx check-clean` → 0 achados
+- 23/11 · S2 · `hx verify` (container, após rebuild) → ruff e pytest OK
+- 23/11 · S2 · `hx feature verify HAR-04` → c1 a c7 e c9 OK, código 0
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
+- 23/11 · S2 · `hx verify` falhou com `No module named 'pydantic'`: imagem `lastro-dev` desatualizada. Resolvido com `docker compose --profile dev build dev`.
+- 23/11 · S2 · `pytest -q` no venv local (Python 3.13, sem pydantic e testcontainers) falha em `tests/core`; não tem relação com a HAR-04.
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+- 23/11 · S1 · Regras de 18/11 só valem se `gitpages/src/data/equipe.ts` existir na raiz (opção A), para não mudar testes antigos (caio-nascime).
+- 23/11 · S2 · Handle da equipe comparado sem diferenciar maiúsculas de minúsculas, como no GitHub.
+- 23/11 · S2 · `ruff format` não foi aplicado em `tools/harness.py`: o projeto não usa o formatador e o diff ficaria enorme.
 
 ## Fim de sessão
-- [ ] `hx verify` verde, ou a falha está descrita em "Falhou"
-- [ ] Nada quebrado nem pela metade na branch; commit feito
-- [ ] "Próxima ação" atualizada
-- [ ] Nenhum dado real nem segredo nas anotações
+- [x] `hx verify` verde, ou a falha está descrita em "Falhou"
+- [x] Nada quebrado nem pela metade na branch; commit feito
+- [x] "Próxima ação" atualizada
+- [x] Nenhum dado real nem segredo nas anotações
