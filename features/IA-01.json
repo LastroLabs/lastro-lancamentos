@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "arthurlleite",
   "depende_de": [],
   "bloqueada_por": null,
@@ -125,5 +125,65 @@
       "comando": "pytest tests/ai/test_anonimizar.py::test_nenhum_nome_de_pessoa_sai_em_claro -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T20:43:32Z",
+    "commit": "ae65d6bc0ccf",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_cpf_e_cnpj_numericos_removidos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_cnpj_alfanumerico_removido -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_agencia_e_conta_removidas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_nomes_de_pessoas_viram_pseudonimos_estaveis -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_nomes_de_empresas_viram_pseudonimo_de_empresa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_pseudonimizacao_de_nomes_configuravel -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_texto_sem_dado_pessoal_inalterado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_nivel_invalido_recusado_e_niveis_aceitos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_listas_versionadas_com_fonte_e_sem_conflito -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_nivel_intermediario_preserva_operacao_e_atividade -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/ai/test_anonimizar.py::test_nenhum_nome_de_pessoa_sai_em_claro -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
