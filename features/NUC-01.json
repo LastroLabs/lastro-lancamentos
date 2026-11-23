@@ -29,7 +29,7 @@
       "descricao": "O esqueleto da API fica em src/lastro/core/ (configuração e conexão com o banco) e src/lastro/api/ (criação do app e registro de rotas), em lugares fixos, para as outras fichas só importarem",
       "exemplo": {
         "entrada": "código da ficha pronto; um teste importa os pontos de extensão e registra uma rota de teste sob /api/v1",
-        "saida": "existem src/lastro/core/config.py com as configurações lidas do ambiente, src/lastro/core/db.py com a sessão do banco e src/lastro/api/app.py com create_app(); a rota de teste responde em /api/v1/<caminho>; importar esses módulos não abre conexão com o banco; nenhum arquivo novo fora de src/lastro/core/, src/lastro/api/, migrations/ (incluindo migrations/bootstrap/), tests/core/ e dos arquivos de ambiente (Dockerfile, docker-compose.yml, .env.example, pyproject.toml, uv.lock, alembic.ini)"
+        "saida": "existem src/lastro/core/config.py com as configurações lidas do ambiente, src/lastro/core/db.py com a sessão do banco e src/lastro/api/app.py com create_app(); a rota de teste responde em /api/v1/<caminho>; importar esses módulos não abre conexão com o banco; nenhum arquivo novo de código ou de ambiente fora de src/lastro/core/, src/lastro/api/, migrations/ (incluindo migrations/bootstrap/), tests/core/ e dos arquivos de ambiente (Dockerfile, docker-compose.yml, .env.example, pyproject.toml, uv.lock, alembic.ini); ficam fora dessa restrição os artefatos do fluxo do harness: planos/NUC-01/ (plan.md e tasks.md), progress/NUC-01.md e a própria ficha features/NUC-01.json"
       }
     },
     {
