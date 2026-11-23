@@ -20,7 +20,7 @@ Um comando sobe a API (Python 3.14) e o PostgreSQL 18; `GET /api/v1/health` diz 
 2. T7: `sh tools/hx verify`, `sh tools/hx check-clean`, `git diff cacb33a -- tests/` e `hx feature verify NUC-01`.
 
 ## Bloqueios e perguntas
-- Pendente (não bloqueia a T6): itens (a), (b) e (c) da D1 conferidos só em Linux nativo; faltam Docker Desktop e CI.
+- Pendente (não bloqueia a T7): itens (a), (b) e (c) da D1 no Docker Desktop. Linux nativo e CI já conferidos (CI: run `45119217554`, job `137508892873`). Importa só se alguém do time usar Mac ou Windows.
 - 5 · Resolvido pelo commit só-de-testes `cacb33a` (cast `defaclobjtype::text`). Registro original: **SQL do teste de reaplicação inválido no PostgreSQL 18.** Em `test_migracoes_reaplicadas_nao_mudam_nada`, o `SNAPSHOT_SQL` concatena `text || ':' || defaclobjtype`. A coluna `pg_default_acl.defaclobjtype` é do tipo `"char"`, e o PostgreSQL 18.7 recusa com `operator is not unique: text || "char"`. Reproduzi num `postgres:18` vazio, sem nenhuma migração: o erro é da consulta, não da implementação. Com `defaclobjtype::text`, a consulta roda e, numa cópia de `tests/core` fora do repositório, os 3 testes de migração passam. Proposta: trocar só esse trecho para `defaclobjtype::text`, sem mudar valor esperado.
 - 1, 2 e 3 (teste do esqueleto, alarmes do `check-clean`, sobra de container): resolvidos pelo commit só-de-testes `59452ed` do humano.
 - 4 · Aviso de depreciação: `testcontainers.postgres is deprecated, use testcontainers.community.postgres` (4.15.0). Os testes importam o caminho antigo; hoje só avisa.
@@ -94,6 +94,7 @@ Um comando sobe a API (Python 3.14) e o PostgreSQL 18; `GET /api/v1/health` diz 
   ```
   Dono do banco: `lastro_owner`. Confirma o `create_roles.sh` rodando de verdade: os dois papéis criados, nenhum é superusuário nem tem `CREATEDB`, `CREATEROLE` ou `BYPASSRLS`, e o banco foi passado para `lastro_owner`.
 - 23/11 · S2 (pós-T6) · `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, `RESULTADO: OK` (exit 0, cerca de 26 s). `sh tools/hx check-clean` → 0 achados, `RESULTADO: OK`. `git diff cacb33a -- tests/` → vazio (0 bytes). Sobraram 0 `postgres:18`.
+- 23/11 · S2 (CI, relatado pelo humano) · Run `45119217554`, job verify `137508892873` (`hx verify` do `pr.yml`, runner do GitHub): `[2/2] pytest -q OK` e `RESULTADO: OK`. O caminho Testcontainers + `docker-proxy` + `host-gateway` funcionou na CI. O trecho de log mostrado não traz linhas do Compose nem do proxy; a prova é o `tests/core` verde sem `skip`. A remoção do container não aparece no log.
 
 ## Falhou
 - 23/11 · S2 (T2) · Primeiro teste c6 pelo proxy: 403 em `/exec/<id>/start` (EXEC desligado); depois, conexão recusada em `docker-proxy:<porta>` (host padrão). As duas causas foram corrigidas no Compose; ver Rodei.
