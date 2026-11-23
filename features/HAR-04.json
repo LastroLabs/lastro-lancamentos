@@ -6,7 +6,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -111,5 +111,50 @@
       "comando": "pytest tests/harness/test_validacao_lote.py::test_check_clean_detecta_cnpj_alfanumerico -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T14:39:30Z",
+    "commit": "21c342c7b8c1",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_campo_extra_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_id_fora_do_padrao_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_modulo_desconhecido_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_prioridade_e_onda_validadas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_campos_fixos_validados -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_responsavel_fora_da_equipe_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_nome_de_teste_repetido_entre_fichas_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c9",
+        "comando": "pytest tests/harness/test_validacao_lote.py::test_check_clean_detecta_cnpj_alfanumerico -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
