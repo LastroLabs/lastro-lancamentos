@@ -1,3 +1,32 @@
+[project]
+name = "lastro"
+version = "0.1.0"
+description = "Lastro: leitura e conferência de extratos bancários para escritórios contábeis"
+requires-python = ">=3.14,<3.15"
+# Plan NUC-01, D3. Exact versions live in uv.lock (D6); here only the lower bounds.
+dependencies = [
+    "alembic>=1.20",
+    "fastapi>=0.165",
+    "psycopg[binary]>=3.3",
+    "pydantic>=2.12",
+    "pydantic-settings>=2.12",
+    "sqlalchemy[asyncio]>=2.0.44",
+    "uvicorn>=0.38",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28",
+    "pytest>=9.2",
+    "pyyaml>=6.0",
+    "ruff>=0.14",
+    "testcontainers[postgres]>=4.15",
+]
+
+[tool.uv]
+# The code is not installed as a package: the image uses PYTHONPATH=/app/src (plan D6).
+package = false
+
 [tool.ruff.lint]
 # EXE002: no Docker Desktop (Windows) o bind mount mostra todo arquivo como executável (755),
 # então o ruff do container acusa "executável sem shebang" em arquivos que não são.

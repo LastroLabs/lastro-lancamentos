@@ -11,7 +11,9 @@ const requisitos = new Map(catalogo.requisitos.map((r) => [r.id, r]));
 const entidades = new Map(modelo.entidades.map((e) => [e.id, e]));
 const vinculos = new Map(modelo.vinculos.map((v) => [v.requisito, v]));
 const slug = (s) => s.trim().toLowerCase().replace(/[^\p{L}\p{N}_\s-]/gu, '').replace(/\s/g, '-');
-assert.equal(entidades.size, 27);
+assert.equal(entidades.size, 28);
+assert(entidades.has('convite'), 'Entidade CONVITE ausente');
+assert.equal(entidades.get('convite').nome, 'CONVITE');
 assert.equal(entidades.size, modelo.entidades.length, 'Entidade duplicada');
 assert.equal(vinculos.size, modelo.vinculos.length, 'Requisito duplicado na modelagem');
 for (const v of modelo.vinculos) {

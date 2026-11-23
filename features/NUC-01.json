@@ -10,7 +10,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "camposs04",
   "depende_de": [],
   "bloqueada_por": null,
@@ -99,5 +99,50 @@
       "comando": "pytest tests/core/test_ambiente.py::test_ambiente_de_verificacao_tem_python_e_banco_decididos -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T06:06:25Z",
+    "commit": "859ac781e01a",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/core/test_ambiente.py::test_compose_define_api_e_banco_com_versoes_decididas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/core/test_ambiente.py::test_esqueleto_da_api_tem_pontos_de_extensao_fixos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/core/test_saude.py::test_saude_com_banco_conectado_responde_ok -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/core/test_saude.py::test_saude_sem_banco_responde_indisponivel -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_migracoes.py::test_migracoes_em_banco_vazio_chegam_a_ultima_versao -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_migracoes.py::test_migracoes_reaplicadas_nao_mudam_nada -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_migracoes.py::test_usuario_da_aplicacao_nao_e_superusuario_nem_dono -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/core/test_ambiente.py::test_ambiente_de_verificacao_tem_python_e_banco_decididos -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

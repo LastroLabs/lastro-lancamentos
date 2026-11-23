@@ -40,6 +40,15 @@
       ]
     },
     {
+      "id": "convite",
+      "nome": "CONVITE",
+      "grupo": "Identidade e carteira",
+      "modulo": "acesso",
+      "decisoes": [
+        "BD-02"
+      ]
+    },
+    {
       "id": "cliente",
       "nome": "CLIENTE",
       "grupo": "Identidade e carteira",
@@ -252,7 +261,8 @@
       "entidades": [
         "usuario",
         "membro",
-        "sessao"
+        "sessao",
+        "convite"
       ],
       "regra": "Identidade e sessão individuais; eventos identificam o membro autor.",
       "decisoes": [
@@ -278,7 +288,8 @@
       "entidades": [
         "membro",
         "cliente",
-        "atribuicao"
+        "atribuicao",
+        "convite"
       ],
       "regra": "Papel de chefe autoriza cadastro de contador, cliente e atribuição.",
       "decisoes": [

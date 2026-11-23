@@ -1,13 +1,15 @@
 ---
 title: Modelo lógico
-description: Chaves, escopo e relações das 27 tabelas propostas para o MVP.
+description: Chaves, escopo e relações das tabelas propostas para o MVP.
 ---
 
 ## Convenções
 
-`E` representa `escritorio_id`; `C`, `cliente_id`; `I`, o identificador técnico. ESCRITORIO e USUARIO usam `I` como PK. MEMBRO e SESSAO usam `(E, I)`. CLIENTE usa `(E, I)`. As demais tabelas subordinadas ao cliente usam `(E, C, I)` e FK `(E, C)` para CLIENTE `(E, I)`.
+`E` representa `escritorio_id`; `C`, `cliente_id`; `I`, o identificador técnico. ESCRITORIO e USUARIO usam `I` como PK. MEMBRO, SESSAO e CONVITE usam `(E, I)`. CLIENTE usa `(E, I)`. As demais tabelas subordinadas ao cliente usam `(E, C, I)` e FK `(E, C)` para CLIENTE `(E, I)`.
 
 Uma FK que inclui competência, conta, movimento, pergunta ou plano exige uma chave `UNIQUE` com a mesma combinação no destino. Compartilhar o UUID não dispensa preservar o escopo. As referências ao plano atual e às contas de configuração podem ficar nulas até o cadastro estar completo.
+
+F3/F4 confirmados em 23/11/2026: MEMBRO e CLIENTE têm FK direta escritorio_id → escritorio(id), sem duplicar relações garantidas por FKs compostas. Todas as FKs da DB-01 usam ON DELETE/UPDATE NO ACTION e NOT DEFERRABLE, sem cascata.
 
 ## Relações por entidade
 
@@ -29,7 +31,7 @@ Login individual identifica a autoria. Segredo de autenticação não é armazen
 
 ### MEMBRO
 
-Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, ATRIBUICAO e pelos eventos de revisão.
+Referencia ESCRITORIO e USUARIO. É referenciado por SESSAO, CONVITE (destinatário e autor), ATRIBUICAO e pelos eventos de revisão.
 
 UNIQUE(escritorio_id, usuario_id). O papel pertence ao vínculo organizacional. Somente chefe cadastra contador, cliente e atribuição. Pela P-09, o chefe pode ser o responsável de um cliente, e acessar o cliente exige ser o responsável ativo, seja chefe ou contador.
 
@@ -42,6 +44,12 @@ Referencia o MEMBRO do mesmo escritório; não é vinculada artificialmente a um
 Hash único. Sessão encerrada ou expirada não autoriza requisições. O prazo da sessão não foi fixado nesta modelagem. A carteira é consultada a cada operação, sem ser incorporada como autorização permanente ao token.
 
 [Descrição e atributos](/lastro-lancamentos/modelagem/entidades/#sessao) · [Requisitos vinculados](/lastro-lancamentos/modelagem/rastreabilidade/?entidade=sessao).
+
+### CONVITE
+
+Referencia MEMBRO destinatário e MEMBRO autor pelas FKs `(escritorio_id, membro_id)` e `(escritorio_id, criado_por)`, ambas para `membro(escritorio_id, id)`, conforme DB-01/c2. PK `(escritorio_id, id)`.
+
+Hash globalmente único; índice único parcial `(escritorio_id, membro_id)` onde `usado_em IS NULL AND revogado_em IS NULL`, conforme c5. Expiração não integra esse predicado; A3 exige revogar o convite expirado pendente antes de reemitir. CHECKs exigem expiração posterior à criação e impedem uso e revogação simultâneos. Tipos/defaults e complementos F1–F5 confirmados: [recorte DB-01](/lastro-lancamentos/modelagem/modelo-fisico/#recorte-físico-da-db-01).
 
 ### CLIENTE
 

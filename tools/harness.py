@@ -391,16 +391,147 @@ def _texto(valor: object) -> str:
     return "-" if _vazio(valor) else str(valor)
 
 
+# ---------------------------------------------------------------------------
+# HAR-04: regras de 18/11 (só valem se a raiz tiver o equipe.ts; plan D4, opção A)
+# ---------------------------------------------------------------------------
+
+EQUIPE_TS = Path("gitpages") / "src" / "data" / "equipe.ts"
+PADRAO_ID = re.compile(r"^[A-Z]{2,4}-\d{2}$")
+MODULOS = (
+    "core",
+    "access",
+    "registry",
+    "uploads",
+    "parsing",
+    "validation",
+    "classification",
+    "questions",
+    "review",
+    "export",
+    "ai",
+    "observability",
+    "api",
+    "worker",
+    "harness",
+    "ci",
+    "web",
+)
+PRIORIDADES = ("must", "should", "could")
+ONDAS = range(1, 5)
+_HANDLE_GITHUB = re.compile(r"""\bgithub\s*:\s*['"]([^'"]+)['"]""")
+_NOME_DE_TESTE = re.compile(r"::(\S+)")
+_CAMPO_DO_PROBLEMA = re.compile(r"^\S+ \((\w+)\):")
+DICAS_POR_CAMPO = {
+    "id": "o id segue o padrão AAA-00 (2 a 4 letras maiúsculas, hífen e 2 dígitos).",
+    "modulo": f"o modulo é um destes: {', '.join(MODULOS)}.",
+    "prioridade": f"a prioridade é uma destas: {', '.join(PRIORIDADES)}.",
+    "onda": "a onda é um número inteiro de 1 a 4.",
+    "responsavel": f"o responsavel é um handle do GitHub listado em {EQUIPE_TS.as_posix()}.",
+    "verificacao": "cada nome de teste (depois de '::') pertence a uma só ficha.",
+}
+
+
+def ler_handles_da_equipe(raiz: Path) -> set[str]:
+    """Handles (campo `github`) do equipe.ts, em minúsculas. Nenhum lido → HarnessErro."""
+    caminho = Path(raiz) / EQUIPE_TS
+    try:
+        texto = caminho.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError) as e:
+        raise HarnessErro(
+            erro="não consegui ler a lista da equipe.",
+            motivo=f"falha ao ler {EQUIPE_TS.as_posix()} ({e}).",
+            correcao="confira se o arquivo existe e está em UTF-8.",
+        ) from e
+    handles = {h.strip().casefold() for h in _HANDLE_GITHUB.findall(texto) if h.strip()}
+    if not handles:
+        raise HarnessErro(
+            erro="não encontrei nenhum handle na lista da equipe.",
+            motivo=f"{EQUIPE_TS.as_posix()} não tem nenhuma linha no formato github: '<handle>'.",
+            correcao="preencha o campo github de quem é da equipe, ou corrija o formato do arquivo.",
+        )
+    return handles
+
+
+def _problemas_de_regra(ficha: dict, handles: set[str]) -> list[str]:
+    pid = _id_da_ficha(ficha)
+    problemas: list[str] = []
+
+    def add(campo: str, texto: str) -> None:
+        problemas.append(f"{pid} ({campo}): {texto}")
+
+    for campo in ficha:
+        if campo not in CAMPOS_OBRIGATORIOS:
+            add(campo, f"campo '{campo}' não faz parte da ficha; remova-o")
+
+    if "id" in ficha and not (isinstance(ficha["id"], str) and PADRAO_ID.match(ficha["id"])):
+        add("id", f"o id '{ficha['id']}' não segue o padrão AAA-00")
+    if "modulo" in ficha and ficha["modulo"] not in MODULOS:
+        add("modulo", f"módulo '{ficha['modulo']}' desconhecido")
+    if "prioridade" in ficha and ficha["prioridade"] not in PRIORIDADES:
+        add("prioridade", f"prioridade '{ficha['prioridade']}' inválida")
+    if "onda" in ficha:
+        onda = ficha["onda"]
+        if isinstance(onda, bool) or not isinstance(onda, int) or onda not in ONDAS:
+            add("onda", f"onda '{onda}' inválida")
+    if "essencial" in ficha and ficha["essencial"] is not False:
+        add("essencial", "essencial deve ser false")
+    if "tipo_verificacao" in ficha and ficha["tipo_verificacao"] != "comando":
+        add("tipo_verificacao", "tipo_verificacao deve ser 'comando'")
+    if ficha.get("estado") != "blocked" and not _vazio(ficha.get("bloqueada_por")):
+        add("bloqueada_por", "bloqueada_por só é preenchido quando o estado é blocked")
+
+    responsavel = ficha.get("responsavel")
+    if not _vazio(responsavel) and (
+        not isinstance(responsavel, str) or responsavel.strip().casefold() not in handles
+    ):
+        add("responsavel", f"'{responsavel}' não é um handle da equipe")
+    return problemas
+
+
+def _nomes_de_teste(ficha: dict) -> set[str]:
+    verificacoes = ficha.get("verificacao")
+    if not isinstance(verificacoes, list):
+        return set()
+    nomes: set[str] = set()
+    for item in verificacoes:
+        comando = item.get("comando") if isinstance(item, dict) else None
+        if isinstance(comando, str):
+            nomes.update(_NOME_DE_TESTE.findall(comando))
+    return nomes
+
+
+def validar_regras_do_projeto(fichas: list[dict], raiz: Path) -> list[str]:
+    """Regras de 18/11 (HAR-04). Problemas no formato '<ID> (<campo>): <texto>'."""
+    handles = ler_handles_da_equipe(raiz)
+    problemas: list[str] = []
+    donos: dict[str, list[str]] = {}
+    for ficha in fichas:
+        problemas.extend(_problemas_de_regra(ficha, handles))
+        for nome in _nomes_de_teste(ficha):
+            donos.setdefault(nome, []).append(_id_da_ficha(ficha))
+    for nome, ids in sorted(donos.items()):
+        if len(ids) > 1:
+            ids = sorted(ids, key=_chave_natural)
+            problemas.append(
+                f"{ids[0]} (verificacao): o teste '{nome}' aparece em {' e '.join(ids)}"
+            )
+    return problemas
+
+
 def _carregar_fichas_validas(raiz: Path, erro: str, correcao: str) -> list[dict]:
     """Carrega todas as fichas e falha com HarnessErro se qualquer uma tiver problema."""
     fichas = carregar_fichas(raiz)
     problemas = validar_fichas(fichas)
+    if (Path(raiz) / EQUIPE_TS).is_file():
+        problemas += validar_regras_do_projeto(fichas, raiz)
     if problemas:
+        campos = {m.group(1) for p in problemas if (m := _CAMPO_DO_PROBLEMA.match(p))}
+        dicas = [DICAS_POR_CAMPO[c] for c in DICAS_POR_CAMPO if c in campos]
         raise HarnessErro(
             erro=erro,
             motivo=f"{len(problemas)} problema(s) encontrado(s):\n"
             + "\n".join(f"- {p}" for p in problemas),
-            correcao=correcao,
+            correcao=" ".join([correcao, *(f"Lembre: {d}" for d in dicas)]),
         )
     return fichas
 
@@ -482,8 +613,10 @@ TIPO_SEGREDO = "possível segredo (atribuição)"
 TIPO_NOME = "nome proibido"
 
 _CPF = re.compile(r"\b(?:[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}|[0-9]{11})\b", re.ASCII)
+# HAR-04: as 12 primeiras posições aceitam letras (CNPJ alfanumérico); os 2 DVs são dígitos.
 _CNPJ = re.compile(
-    r"\b(?:[0-9]{2}\.[0-9]{3}\.[0-9]{3}/[0-9]{4}-[0-9]{2}|[0-9]{14})\b", re.ASCII
+    r"\b(?:[0-9A-Z]{2}\.[0-9A-Z]{3}\.[0-9A-Z]{3}/[0-9A-Z]{4}-[0-9]{2}|[0-9A-Z]{12}[0-9]{2})\b",
+    re.ASCII | re.IGNORECASE,
 )
 _CHAVE_SK = re.compile(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}")
 _CHAVE_AWS = re.compile(r"(?<![A-Za-z0-9])AKIA[A-Z0-9]{16}")
@@ -522,10 +655,15 @@ def cpf_valido(texto: str) -> bool:
 
 
 def cnpj_valido(texto: str) -> bool:
-    """True se `texto` (com ou sem pontuação) é um CNPJ de DV correto e não repetido."""
-    d = _digitos(texto)
-    if len(d) != 14 or len(set(d)) == 1:
+    """True se `texto` (com ou sem pontuação, numérico ou alfanumérico) é um CNPJ de DV correto.
+
+    Cada caractere vale ord(c) - 48 depois de passar para maiúscula (0 = 0, A = 17); no CNPJ
+    numérico isso é o próprio dígito. Os 2 últimos são sempre dígitos. Todos iguais → False.
+    """
+    chars = [c for c in texto.upper() if c.isascii() and c.isalnum()]
+    if len(chars) != 14 or not all(c.isdigit() for c in chars[12:]) or len(set(chars)) == 1:
         return False
+    d = [ord(c) - 48 for c in chars]
     return (
         _digito_verificador(d[:12], _PESOS_CNPJ_1) == d[12]
         and _digito_verificador(d[:13], _PESOS_CNPJ_2) == d[13]
