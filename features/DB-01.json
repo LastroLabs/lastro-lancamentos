@@ -38,8 +38,8 @@
       "id": "c3",
       "descricao": "Um cliente tem no máximo um responsável ativo (D-09), e o histórico de atribuições é preservado",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1, contador_a, contador_b e EMP-1; (1) grava atribuição de EMP-1 a contador_a com fim nulo; (2) tenta gravar outra atribuição de EMP-1 a contador_b com fim nulo; (3) encerra a de contador_a (fim = agora) e grava a de contador_b com fim nulo, na mesma transação; (4) tenta gravar uma atribuição com fim anterior ao início",
-        "saida": "(1) aceita; (2) recusada pelo índice único parcial em (escritorio_id, cliente_id) WHERE fim IS NULL; (3) aceita: EMP-1 fica com 2 linhas de atribuição, só a de contador_b com fim nulo; (4) recusada pelo CHECK de intervalo"
+        "entrada": "ESC-1 com chefe_1, contador_a, contador_b, EMP-1 e EMP-2; (1) grava atribuição de EMP-1 a contador_a com fim nulo; (2) tenta gravar outra atribuição de EMP-1 a contador_b com fim nulo; (3) encerra a de contador_a (fim = agora) e grava a de contador_b com fim nulo, na mesma transação; (4) tenta gravar uma atribuição com fim anterior ao início; (5) grava atribuição de EMP-2 ao membro chefe_1 com fim nulo",
+        "saida": "(1) aceita; (2) recusada pelo índice único parcial em (escritorio_id, cliente_id) WHERE fim IS NULL; (3) aceita: EMP-1 fica com 2 linhas de atribuição, só a de contador_b com fim nulo; (4) recusada pelo CHECK de intervalo; (5) aceita: o esquema não limita o papel do responsável, e o chefe pode ser responsável (P-09)"
       }
     },
     {

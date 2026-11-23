@@ -56,6 +56,14 @@
         "entrada": "mesmo estado de c4 mais ESC-2 com chefe_2 (sessão aberta); chefe_2 tenta (a) gerar link para EMP-1 e (b) invalidar o link existente",
         "saida": "nos 2 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente; nenhum dado de EMP-1 na resposta; o link existente continua válido"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "O chefe do mesmo escritório que não é o responsável não gera nem invalida link (403); atribuído a si, gera e invalida como o contador (P-09)",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; EMP-1 atribuída a contador_a, com um link L1 válido de 10/2026; EMP-4 atribuída a chefe_1; chefe_1 tenta (a) gerar link para EMP-1 e (b) invalidar L1; depois gera o link L4 de EMP-4, competência 10/2026, abre L4 sem login, invalida L4 e abre L4 de novo sem login",
+        "saida": "(a) e (b): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2, sem dado de EMP-1; nenhum link novo de EMP-1 e L1 continua válido; L4: gerado com código de ao menos 43 caracteres; a 1ª abertura mostra a competência 10/2026; depois de invalidado: status 404, mensagem 'Este link não vale mais. Peça um novo ao seu contador.'"
+      }
     }
   ],
   "verificacao": [
@@ -86,6 +94,10 @@
     {
       "criterio": "c5",
       "comando": "pytest tests/access/test_link_cliente.py::test_outro_escritorio_nao_gera_nem_invalida -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_chefe_nao_atribuido_403_e_atribuido_gera_e_invalida -q"
     }
   ],
   "evidencia": null

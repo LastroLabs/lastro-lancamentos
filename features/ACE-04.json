@@ -56,6 +56,38 @@
         "entrada": "ESC-1 com chefe_1, contador_a e EMP-1 atribuída a contador_a; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta reatribuir para contador_x (a) EMP-1 e (b) um identificador de cliente que não existe",
         "saida": "nos 2 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos dois; nenhum dado de EMP-1 na resposta; EMP-1 continua com contador_a"
       }
+    },
+    {
+      "id": "c6",
+      "descricao": "O chefe assume o cliente de um contador: o contador perde o acesso na hora e o chefe passa a abrir o cliente (P-09)",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 atribuída a contador_a; chefe_1 abre EMP-1; chefe_1 reatribui EMP-1 para si mesmo; contador_a, na mesma sessão, pede EMP-1 pelo endereço direto; chefe_1 abre EMP-1 de novo e consulta o responsável",
+        "saida": "antes da troca, chefe_1 recebe status 403, mensagem 'Atribua este cliente a você para fazer isso.', sem dado de EMP-1; reatribuição aceita; contador_a: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente; chefe_1: sucesso e dados de EMP-1 retornados; EMP-1 com 1 responsável ativo, chefe_1"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "O chefe devolve o cliente a um contador e deixa de abrir o cliente, mas continua a vê-lo na lista",
+      "exemplo": {
+        "entrada": "estado final de c6; chefe_1 reatribui EMP-1 para contador_b; chefe_1, na mesma sessão, abre EMP-1 e pede a lista de clientes; contador_b abre EMP-1",
+        "saida": "reatribuição aceita; chefe_1 ao abrir EMP-1: status 403, mensagem 'Atribua este cliente a você para fazer isso.', sem dado de EMP-1; na lista de chefe_1, EMP-1 aparece com responsável contador_b; contador_b: sucesso e dados de EMP-1 retornados"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "Contador sem o papel de chefe não reatribui cliente, nem o próprio",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1, contador_a (sessão aberta) e contador_b; EMP-1 atribuída a contador_a; contador_a tenta reatribuir EMP-1 para (a) contador_b e (b) chefe_1",
+        "saida": "nos 2 casos: status 403, mensagem 'Só o chefe do escritório pode fazer isso.'; EMP-1 continua com contador_a e a tabela atribuicao não muda"
+      }
+    },
+    {
+      "id": "c9",
+      "descricao": "Reatribuir para responsável inexistente ou de outro escritório é recusado sem mudar nada",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; EMP-1 atribuída a contador_a; ESC-2 com contador_x; chefe_1 tenta reatribuir EMP-1 para (a) um identificador de membro que não existe e (b) contador_x",
+        "saida": "nos 2 casos: status 404, mensagem 'Responsável não encontrado no seu escritório.', corpo idêntico nos 2, sem dado de ESC-2; EMP-1 continua com contador_a e a tabela atribuicao não muda"
+      }
     }
   ],
   "verificacao": [
@@ -78,6 +110,22 @@
     {
       "criterio": "c5",
       "comando": "pytest tests/access/test_reatribuicao.py::test_chefe_de_outro_escritorio_nao_reatribui -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/access/test_reatribuicao.py::test_chefe_assume_cliente_e_contador_anterior_perde_acesso -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/access/test_reatribuicao.py::test_chefe_devolve_cliente_e_perde_acesso_ao_detalhe -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/access/test_reatribuicao.py::test_contador_sem_papel_de_chefe_nao_reatribui -q"
+    },
+    {
+      "criterio": "c9",
+      "comando": "pytest tests/access/test_reatribuicao.py::test_reatribuir_para_responsavel_inexistente_ou_de_outro_escritorio -q"
     }
   ],
   "evidencia": null
