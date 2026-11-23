@@ -390,10 +390,8 @@ def test_migracao_db01_cria_tabelas_de_identidade_com_colunas_e_chaves(
             _insert(conn, table, **_values(table, state))
     _assert_catalog(_catalog(migrated_database))
     scripts = ScriptDirectory.from_config(Config(str(REPO_ROOT / "alembic.ini")))
-    revisions = list(scripts.walk_revisions())
-    assert len(revisions) == 2
-    assert revisions[0].down_revision == "0001"
-    assert revisions[1].revision == "0001"
+    assert scripts.get_revision("0002").down_revision == "0001"
+    assert scripts.get_revision("0001").down_revision is None
 
 
 FK_CASES = (
@@ -724,7 +722,7 @@ def test_db01_migracao_reverte_e_usuario_da_aplicacao_nao_e_dono(fresh_database)
         base_acl = _base_snapshot(conn)
         conn.execute("CREATE TABLE db01_base_probe (id integer PRIMARY KEY, note text)")
         conn.execute("INSERT INTO db01_base_probe VALUES (1, 'SYNTHETIC_BASE')")
-    _run_alembic(fresh_database, "upgrade", "head")
+    _run_alembic(fresh_database, "upgrade", "0002")
     with connect(fresh_database.conninfo(OWNER_ROLE)) as conn:
         _require_schema(conn)
     before = _catalog(fresh_database)
@@ -738,7 +736,7 @@ def test_db01_migracao_reverte_e_usuario_da_aplicacao_nao_e_dono(fresh_database)
         assert conn.execute("SELECT * FROM db01_base_probe").fetchall() == [
             (1, "SYNTHETIC_BASE")
         ]
-    _run_alembic(fresh_database, "upgrade", "head")
+    _run_alembic(fresh_database, "upgrade", "0002")
     assert _catalog(fresh_database) == before
     with connect(fresh_database.conninfo(APP_ROLE)) as conn:
         assert conn.execute("SELECT current_user").fetchone() == (APP_ROLE,)
