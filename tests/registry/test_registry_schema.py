@@ -216,7 +216,11 @@ def test_migracao_db02_cria_tabelas_de_cadastro_com_colunas_e_chaves(migrated_da
         assert set(TABLES) <= set(inspector.get_table_names())
         for table in TABLES:
             actual = {
-                col["name"]: (str(col["type"]).lower(), col["nullable"], col["default"])
+                col["name"]: (
+                    str(col["type"].compile(dialect=engine.dialect)).lower(),
+                    col["nullable"],
+                    col["default"],
+                )
                 for col in inspector.get_columns(table)
             }
             assert actual == COLUMNS[table], table
