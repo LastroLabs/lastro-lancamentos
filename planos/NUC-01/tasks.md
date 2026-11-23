@@ -1,33 +1,33 @@
 # Tasks — NUC-01 · Criar o ambiente da API e do banco e responder a saúde da API
 
 **Plan:** planos/NUC-01/plan.md · **Ficha:** features/NUC-01.json
-**Ordem:** T1 → revisão humana dos testes → commit só-de-testes (anotar o hash) → T2 em diante (sessão nova, sem editar `tests/`)
+**Ordem:** T1 → revisão humana dos testes → commit só-de-testes (hash `7c567ee`) → T2 em diante (sessão nova, sem editar `tests/`)
 **Antes da T1:** pergunta 12 respondida em 23/11 (corpo `{"api": "up", "database": "connected"}`). D1 (Testcontainers pelo proxy, decidida pelo humano em 23/11), D4, D5 e D7 confirmadas em 23/11.
 **Antes da T2:** pergunta 11 respondida em 23/11 (opção C: proxy do socket no perfil `dev`). D2, D3 e D6 confirmadas em 23/11. Os itens "a conferir na T2" do plan são critérios de aceite da T2.
-**Antes da T7:** o humano aplica na ficha as mudanças sugeridas no plan (nomes de teste e rota em inglês).
+**Antes da T7:** o humano aplica na ficha as mudanças sugeridas no plan (rota e corpo da saúde; os nomes de teste ficam os da ficha).
 
 ---
 
-## [ ] T1 · Escrever os testes dos critérios
+## [x] T1 · Escrever os testes dos critérios
 - **Critérios da ficha:** c1, c2, c3, c4, c5, c6
 - **Regra de negócio (em linguagem simples):** antes de qualquer tela, o time precisa de uma API que sobe com um comando, sabe dizer se o banco está vivo e conecta com um usuário que não pode mexer na estrutura do banco. Os testes provam isso sem depender da máquina de quem roda.
 - **Critérios de aceite:**
-  - [ ] `tests/core/test_core_environment.py`:
-    - `test_compose_defines_api_and_db_with_decided_versions`: lê `docker-compose.yml` e `Dockerfile`; `api` vem de `python:3.14-*` (estágio `runtime`); `db` usa `postgres:18*`; `DATABASE_URL` só chega por variável, sem senha literal; sem perfil, o `up` sobe exatamente `api` e `db`; `dev` e `docker-proxy` estão no perfil `dev`; só o `docker-proxy` monta `/var/run/docker.sock` e não publica porta; o `dev` recebe `DOCKER_HOST` apontando para o proxy.
-    - `test_api_skeleton_has_fixed_extension_points`: importa `lastro.core.config`, `lastro.core.db` e `lastro.api.app` sem abrir conexão; registra uma rota de teste em `/api/v1/<path>` e ela responde.
-    - `test_verification_environment_has_decided_python_and_database`: Python 3.14; o container do Testcontainers responde `server_version_num` 18xxxx.
-  - [ ] `tests/core/test_core_health.py`:
-    - `test_health_with_database_connected_returns_ok`: 200, corpo exatamente `{"api": "up", "database": "connected"}`, sem login.
-    - `test_health_without_database_returns_unavailable`: 503, `application/problem+json`, `detail` igual à mensagem da ficha; corpo sem host, usuário, senha nem traceback.
-  - [ ] `tests/core/test_core_migrations.py`:
-    - `test_migrations_on_empty_database_reach_latest_revision`
-    - `test_reapplied_migrations_change_nothing`
-    - `test_app_user_is_not_superuser_nor_owner`: sem `rolsuper` e sem `rolbypassrls`; lê e grava em tabela do dono; `CREATE TABLE` e `DROP TABLE` dão erro de permissão.
-  - [ ] `tests/core/conftest.py`: fixture de sessão com `PostgresContainer("postgres:18", …)`, que roda `migrations/bootstrap/create_roles.sql` e define senhas geradas na hora; cada teste de migração cria um banco novo com nome aleatório e dono `lastro_owner`; no fim da sessão, para e remove o container (o Ryuk fica desligado, D1).
-  - [ ] Sem proxy, sem Docker ou sem banco, o teste falha com mensagem clara que cita o `docker-proxy`; nenhum `skip`.
-  - [ ] Todos falham hoje pelo motivo certo (módulos, dependências e migrações ausentes).
+  - [x] `tests/core/test_ambiente.py`:
+    - `test_compose_define_api_e_banco_com_versoes_decididas`: lê `docker-compose.yml` e `Dockerfile`; `api` vem de `python:3.14-*` (estágio `runtime`); `db` usa `postgres:18*`; `DATABASE_URL` só chega por variável, sem senha literal; sem perfil, o `up` sobe exatamente `api` e `db`; `dev` e `docker-proxy` estão no perfil `dev`; só o `docker-proxy` monta `/var/run/docker.sock` e não publica porta; o `dev` recebe `DOCKER_HOST` apontando para o proxy.
+    - `test_esqueleto_da_api_tem_pontos_de_extensao_fixos`: importa `lastro.core.config`, `lastro.core.db` e `lastro.api.app` sem abrir conexão; registra uma rota de teste em `/api/v1/<path>` e ela responde.
+    - `test_ambiente_de_verificacao_tem_python_e_banco_decididos`: Python 3.14; o container do Testcontainers responde `server_version_num` 18xxxx.
+  - [x] `tests/core/test_saude.py`:
+    - `test_saude_com_banco_conectado_responde_ok`: 200, corpo exatamente `{"api": "up", "database": "connected"}`, sem login.
+    - `test_saude_sem_banco_responde_indisponivel`: 503, `application/problem+json`, `detail` igual à mensagem da ficha; corpo sem host, usuário, senha nem traceback.
+  - [x] `tests/core/test_migracoes.py`:
+    - `test_migracoes_em_banco_vazio_chegam_a_ultima_versao`
+    - `test_migracoes_reaplicadas_nao_mudam_nada`
+    - `test_usuario_da_aplicacao_nao_e_superusuario_nem_dono`: sem `rolsuper` e sem `rolbypassrls`; lê e grava em tabela do dono; `CREATE TABLE` e `DROP TABLE` dão erro de permissão.
+  - [x] `tests/core/conftest.py`: fixture de sessão com `PostgresContainer("postgres:18", …)`, que roda `migrations/bootstrap/create_roles.sql` e define senhas geradas na hora; cada teste de migração cria um banco novo com nome aleatório e dono `lastro_owner`; no fim da sessão, para e remove o container (o Ryuk fica desligado, D1).
+  - [x] Sem proxy, sem Docker ou sem banco, o teste falha com mensagem clara que cita o `docker-proxy`; nenhum `skip`.
+  - [x] Todos falham hoje pelo motivo certo (módulos, dependências e migrações ausentes).
 - **Exemplos:** banco no ar → `{"api": "up", "database": "connected"}`; `DATABASE_URL` apontando para porta fechada → 503 com "O banco de dados não está respondendo. Tente de novo em alguns minutos."; rota de teste `/api/v1/test-echo` → 200
-- **Arquivos:** `tests/core/test_core_environment.py`, `tests/core/test_core_health.py`, `tests/core/test_core_migrations.py`, `tests/core/conftest.py`; apagar `tests/core/.gitkeep`
+- **Arquivos:** `tests/core/test_ambiente.py`, `tests/core/test_saude.py`, `tests/core/test_migracoes.py`, `tests/core/conftest.py`; apagar `tests/core/.gitkeep`
 - **Reaproveitar:** leitura de YAML de `tests/ci/test_pr_workflow.py` · **Não criar:** fixture com dado de negócio, senha fixa
 - **Fora do escopo:** código de produção, `create_roles.sql` (vem na T2)
 - **Decisões relacionadas:** D1, D4, D5, D7
@@ -48,12 +48,13 @@
   - [ ] `requirements-dev.txt` removido
   - [ ] `docker compose config --services` sem perfil lista só `api` e `db`
   - [ ] `tests/harness` e `tests/ci` continuam verdes no 3.14 com uv
+  - [ ] Com o testcontainers instalado, os 4 testes que hoje dão ERROR na fixture passam a falhar pelo motivo da T5 (alembic.ini ausente), não por erro de montagem
 - **Exemplos:** clone limpo, sem `.env` → `hx verify` funciona (o banco de teste vem do Testcontainers); `.env` copiado → `docker compose up -d --wait` termina com `api` e `db` saudáveis; lock desatualizado → o build falha no `uv sync --locked`
 - **Arquivos:** `pyproject.toml`, `uv.lock`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `migrations/bootstrap/create_roles.sql`, `migrations/bootstrap/create_roles.sh`; remove `requirements-dev.txt` (o `pr.yml` não muda)
 - **Reaproveitar:** serviço `dev` atual (nome e `working_dir`) · **Não criar:** segundo Dockerfile, `requirements*.txt`, mudança em `tools/`
 - **Fora do escopo:** SeaweedFS, worker, imagem de produção final (hospedagem)
 - **Decisões relacionadas:** D1, D2, D3, D5, D6, D7
-- **Pronto quando:** `pytest tests/core/test_core_environment.py::test_compose_defines_api_and_db_with_decided_versions -q` e `pytest tests/core/test_core_environment.py::test_verification_environment_has_decided_python_and_database -q` passam no `dev`
+- **Pronto quando:** `pytest tests/core/test_ambiente.py::test_compose_define_api_e_banco_com_versoes_decididas -q` e `pytest tests/core/test_ambiente.py::test_ambiente_de_verificacao_tem_python_e_banco_decididos -q` passam no `dev`
 
 ## [ ] T3 · Configuração e sessão do banco em `core/`
 - **Critérios da ficha:** c2
@@ -68,7 +69,7 @@
 - **Não criar:** contexto de RLS e permissões (NUC-03/ACE)
 - **Fora do escopo:** login, sessão de usuário
 - **Decisões relacionadas:** D3, D7
-- **Pronto quando:** a parte de import de `test_api_skeleton_has_fixed_extension_points` passa
+- **Pronto quando:** a parte de import de `test_esqueleto_da_api_tem_pontos_de_extensao_fixos` passa
 
 ## [ ] T4 · `create_app()` e rota de saúde em `api/`
 - **Critérios da ficha:** c2, c3, c4
@@ -83,7 +84,7 @@
 - **Não criar:** autenticação, CORS, middleware de sessão
 - **Fora do escopo:** tratador global RFC 9457 para todas as rotas (só o da saúde)
 - **Decisões relacionadas:** D4
-- **Pronto quando:** `pytest tests/core/test_core_environment.py::test_api_skeleton_has_fixed_extension_points -q` e `pytest tests/core/test_core_health.py -q` passam
+- **Pronto quando:** `pytest tests/core/test_ambiente.py::test_esqueleto_da_api_tem_pontos_de_extensao_fixos -q` e `pytest tests/core/test_saude.py -q` passam
 
 ## [ ] T5 · Alembic e migração base de permissões
 - **Critérios da ficha:** c5
@@ -97,7 +98,7 @@
 - **Arquivos:** `alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`, `migrations/versions/0001_base_privileges.py`, `docker-compose.yml` (comando da `api`); apagar `migrations/.gitkeep`
 - **Não criar:** tabela de negócio, extensão `pg_trgm`
 - **Decisões relacionadas:** D5, D7, D8
-- **Pronto quando:** `pytest tests/core/test_core_migrations.py -q` passa
+- **Pronto quando:** `pytest tests/core/test_migracoes.py -q` passa
 
 ## [ ] T6 · Conferência manual da c1 e documentação
 - **Critérios da ficha:** c1 (parte que o teste não prova)
@@ -113,8 +114,8 @@
 
 ## [ ] T7 · Verificação final
 - **Critérios de aceite:**
-  - [ ] A ficha já traz os nomes de teste e a rota em inglês (PR do humano)
-  - [ ] `git diff <hash-dos-testes> -- tests/` vazio
+  - [ ] A ficha já traz a rota e o corpo da saúde do plan (PR do humano); os nomes de teste ficam os da ficha
+  - [ ] `git diff 7c567ee -- tests/` vazio
   - [ ] `ruff check .` limpo
   - [ ] `hx check-clean` e `hx verify` em OK; tempo do `hx verify` anotado no `progress` (risco de CI lenta)
   - [ ] `hx feature verify NUC-01` grava `passing`

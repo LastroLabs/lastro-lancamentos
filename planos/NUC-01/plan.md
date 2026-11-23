@@ -14,7 +14,7 @@
 | 5 | Lugar do script de papéis | ATENÇÃO | **Respondida 23/11:** dentro de `migrations/` (D5) | camposs04 |
 | 6 | Python 3.12 na regra 12 do AGENTS.md e na §10 do ARCHITECTURE | ATENÇÃO | **Respondida 23/11:** esta ficha troca a imagem para 3.14; os docs vão num PR separado | camposs04 |
 | 7 | Gestão de dependências | ATENÇÃO | **Respondida 23/11:** a opção mais sustentável; ficou uv + lockfile + build em estágios (D6) | camposs04 |
-| 8 | Nomes em português da ficha contra o CODING_STANDARDS | ATENÇÃO | **Respondida 23/11:** seguir o CODING_STANDARDS (inglês; `test_<module>_<topic>.py`) | camposs04 |
+| 8 | Nomes em português da ficha contra o CODING_STANDARDS | ATENÇÃO | **Respondida 23/11:** seguir o CODING_STANDARDS (inglês; `test_<module>_<topic>.py`). **Revista 23/11:** arquivos e nomes de teste ficam os da ficha; a troca para o inglês vai para a ficha de renomeação (CODING_STANDARDS §8) | camposs04 |
 | 9 | c1 só verificável de forma estática | ATENÇÃO | **Respondida 23/11:** teste do YAML + conferência manual na T6, no `progress` | camposs04 |
 | 10 | Feature grande | ATENÇÃO | **Respondida 23/11:** manter; se passar de 2 sessões, separar a c5 numa `NUC-01b` | camposs04 |
 | 11 | Como o `dev` (com `--user uid:gid`) acessa o Docker sem configuração manual e sem mudar `tools/` | BLOQUEANTE | **Respondida 23/11:** opção C: um proxy do socket no perfil `dev`; o `dev` usa `DOCKER_HOST` pela rede interna; só o proxy monta o socket (D1, D2) | camposs04 |
@@ -25,7 +25,6 @@
 - c2: `create_app()` no lugar de `criar_app()`; na lista de arquivos de ambiente, trocar `requirements-dev.txt` por `pyproject.toml` e `uv.lock` (D6); `migrations/bootstrap/` explícito.
 - c3: rota `/api/v1/health`; corpo `{"api": "up", "database": "connected"}`. c4: rota `/api/v1/health`; 503 em `application/problem+json` com a mensagem (em português, igual à ficha) em `detail` (D4).
 - c5 e c6: o banco de teste é um PostgreSQL 18 criado pelo Testcontainers (imagem oficial), alcançado por um proxy do Docker.
-- `verificacao`: `tests/core/test_core_environment.py::test_compose_defines_api_and_db_with_decided_versions` (c1), `::test_api_skeleton_has_fixed_extension_points` (c2), `::test_verification_environment_has_decided_python_and_database` (c6); `tests/core/test_core_health.py::test_health_with_database_connected_returns_ok` (c3), `::test_health_without_database_returns_unavailable` (c4); `tests/core/test_core_migrations.py::test_migrations_on_empty_database_reach_latest_revision`, `::test_reapplied_migrations_change_nothing`, `::test_app_user_is_not_superuser_nor_owner` (c5).
 
 ## 2. Decisões tomadas pelo agente
 ### D1 · Banco de teste pelo Testcontainers; o `dev` fala com o Docker por um proxy — **decidida pelo humano em 23/11** (respostas 1 e 11)
