@@ -43,12 +43,12 @@ O harness (`tools/harness.py`) já cria branch, grava estado e evidência e conf
 
 ### IDs e módulos (P-08 e HAR-04)
 
-- ID da ficha: sigla do módulo + `-nn` (ex.: `ACE-01`, `CAD-03`, `NUC-01`). Fichas do harness usam `HAR-nn`; as primeiras usaram `HX-nn`.
-- HX-10 mantém o ID, que é anterior à regra; novas fichas de CI usam `CI-nn` (P-08, assumida).
-- `modulo` é um dos 14 módulos de `src/lastro/` (ver [Arquitetura](/lastro-lancamentos/arquitetura/visao-geral/#módulos)), mais `harness` e `ci`.
+- ID da ficha: 2 a 4 letras maiúsculas, hífen e 2 dígitos (`^[A-Z]{2,4}-\d{2}$`). Por convenção, a sigla lembra o módulo (`ACE-01`, `CAD-03`, `NUC-01`; `HAR-nn` para o harness e `CI-nn` para a CI), mas o validador **não** confere a sigla: fichas como `DB-01`, `HX-11` e `ADM-01` são válidas.
+- HX-10, HX-11 e HX-12 mantêm o ID, que é anterior à convenção (P-08, assumida).
+- `modulo` é um dos 14 módulos de `src/lastro/` (ver [Arquitetura](/lastro-lancamentos/arquitetura/visao-geral/#módulos)), mais `harness`, `ci` e `web`, sempre com o nome da pasta, em inglês.
 
 :::note[Planejado]
-O validador de `tools/harness.py` ainda **não** confere a regex do ID, a lista de módulos, a faixa de `onda` (1 a 4), a `prioridade` nem a regra das fichas encadeadas. Hoje ele confere campos obrigatórios, `id` igual ao nome do arquivo, estado válido, critério com verificação, comandos permitidos e dependências sem ciclo. A ficha **HAR-04** (em revisão) vai entregar essas checagens.
+O validador de `tools/harness.py` ainda **não** confere campo a mais na ficha, o padrão do ID, a lista de módulos, a faixa de `onda` (1 a 4), a `prioridade`, os campos fixos (`essencial`, `tipo_verificacao`, `bloqueada_por`), o `responsavel` na equipe nem o nome de teste repetido entre fichas. Hoje ele confere campos obrigatórios, `id` igual ao nome do arquivo, estado válido, critério com verificação, comandos permitidos e dependências sem ciclo. A ficha **HAR-04** (em revisão) vai entregar essas checagens. A regra das fichas encadeadas (P-03) fica com quem distribui as fichas: o validador não a confere.
 :::
 
 ## Motivos registrados
@@ -65,6 +65,6 @@ O validador de `tools/harness.py` ainda **não** confere a regex do ID, a lista 
 ## Consequências
 
 - O `AGENTS.md` da `developer` ainda mostra o `hx feature start` com uma opção de dono que não existe, e uma mensagem de erro do `harness.py` também. Os dois ficam desatualizados até a próxima PR do harness.
-- Ficha que não segue as regras de ID e módulo passa no `hx state` até a HAR-04 entrar.
+- Ficha com ID fora do padrão ou módulo desconhecido passa no `hx state` até a HAR-04 entrar.
 
 Fontes: `docs/decisoes/DECISIONS.md` (18/11/2026), seções 3 e 4; `tools/harness.py` (branch `developer`).

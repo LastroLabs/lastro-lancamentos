@@ -22,26 +22,26 @@
     },
     {
       "id": "c2",
-      "descricao": "O ID segue ^[A-Z]{2,4}-\\d{2}$ e começa pela sigla do módulo; HX-10 é a única exceção (P-08)",
+      "descricao": "O ID segue ^[A-Z]{2,4}-\\d{2}$",
       "exemplo": {
-        "entrada": "cópias temporárias com: (a) ficha 'ACE-1' em ACE-1.json; (b) ficha 'CAD-08' com modulo 'acesso'; (c) ficha 'CI-01' com modulo 'ci'; (d) HX-10 como está. Siglas: nucleo NUC, acesso ACE, cadastro CAD, ia IA, harness HAR, ci CI; demais módulos [definir], só com o regex",
-        "saida": "(a) e (b): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('id'); (c) e (d) aceitas"
+        "entrada": "cópias temporárias com: (a) ficha 'ACE-1' em ACE-1.json; (b) ficha 'CI-01' com modulo 'ci'; (c) HX-10 como está",
+        "saida": "(a): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('id'); (b) e (c) aceitas"
       }
     },
     {
       "id": "c3",
-      "descricao": "O módulo é um dos 14 da arquitetura, harness ou ci",
+      "descricao": "O módulo é um dos 14 da arquitetura (core, access, registry, uploads, parsing, validation, classification, questions, review, export, ai, observability, api, worker), harness, ci ou web",
       "exemplo": {
         "entrada": "cópia temporária com uma ficha válida cujo modulo é 'financeiro'",
-        "saida": "hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('modulo'), e a CORREÇÃO lista os 16 módulos aceitos"
+        "saida": "hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('modulo'), e a CORREÇÃO lista os 17 módulos aceitos"
       }
     },
     {
       "id": "c4",
-      "descricao": "A prioridade é must, should ou could e igual à MoSCoW de algum RF citado (docs/requisitos/requisitos_lastro.json); a onda vai de 1 a 4",
+      "descricao": "A prioridade é must, should ou could; a onda vai de 1 a 4",
       "exemplo": {
-        "entrada": "cópias temporárias com: (a) prioridade 'should' e requisitos ['RF-AUT-01'] (Must); (b) prioridade 'urgente'; (c) onda 5; (d) ficha HAR sem RF com prioridade 'should'",
-        "saida": "(a) e (b): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('prioridade'); (c): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('onda'); (d) aceita"
+        "entrada": "cópias temporárias com: (a) prioridade 'urgente'; (b) onda 5; (c) prioridade 'should' e onda 2",
+        "saida": "(a): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('prioridade'); (b): hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('onda'); (c) aceita"
       }
     },
     {
@@ -62,18 +62,10 @@
     },
     {
       "id": "c7",
-      "descricao": "Cada verificação segue 'pytest tests/<modulo>/test_<alvo>.py::test_<nome> -q', na pasta do módulo, com um único arquivo por ficha e nome de teste que não se repete entre fichas",
+      "descricao": "O nome de teste da verificação não se repete entre fichas",
       "exemplo": {
-        "entrada": "cópias temporárias com: (a) comando 'ruff check src'; (b) ficha de modulo cadastro com teste em tests/acesso/; (c) ficha com testes em dois arquivos; (d) duas fichas com o mesmo nome de teste",
-        "saida": "nos 4 casos: hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('verificacao'); em (d) as duas fichas são citadas"
-      }
-    },
-    {
-      "id": "c8",
-      "descricao": "Uma ficha não depende diretamente de outra do mesmo responsável na mesma onda (P-03: só dependência direta)",
-      "exemplo": {
-        "entrada": "cópias temporárias com: (a) X e Y de caio-nascime, onda 2, X depende de Y; (b) X de caio-nascime depende de Z de guin409, que depende de Y de caio-nascime, as 3 na onda 2",
-        "saida": "(a) hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('depende_de'), citando X e Y; (b) aceita"
+        "entrada": "cópia temporária com duas fichas válidas que usam o mesmo nome de teste",
+        "saida": "hx state recusa com ERRO, MOTIVO e CORREÇÃO citando a ficha e o campo, código de saída 2, e não lista nenhuma ficha ('verificacao'), citando as duas fichas"
       }
     },
     {
@@ -92,7 +84,7 @@
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/harness/test_validacao_lote.py::test_id_fora_do_padrao_ou_da_sigla_recusado -q"
+      "comando": "pytest tests/harness/test_validacao_lote.py::test_id_fora_do_padrao_recusado -q"
     },
     {
       "criterio": "c3",
@@ -112,15 +104,7 @@
     },
     {
       "criterio": "c7",
-      "comando": "pytest tests/harness/test_validacao_lote.py::test_formato_dos_comandos_de_verificacao -q"
-    },
-    {
-      "criterio": "c7",
       "comando": "pytest tests/harness/test_validacao_lote.py::test_nome_de_teste_repetido_entre_fichas_recusado -q"
-    },
-    {
-      "criterio": "c8",
-      "comando": "pytest tests/harness/test_validacao_lote.py::test_dependencia_direta_na_mesma_onda_recusada -q"
     },
     {
       "criterio": "c9",

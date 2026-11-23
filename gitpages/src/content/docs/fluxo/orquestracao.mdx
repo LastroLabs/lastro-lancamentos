@@ -115,13 +115,13 @@ O `hx` recusa iniciar ou verificar uma ficha `blocked` e aponta o `DECISIONS.md`
 As regras de ficha vêm das decisões de 18/11 (ver [Decisão: processo e fichas](/lastro-lancamentos/decisoes/processo/)):
 
 - o arquivo é `features/<ID>.json`, com `id` igual ao nome do arquivo;
-- o ID é a sigla do módulo + `-nn` (`ACE-01`, `CAD-03`, `NUC-01`), com `HAR-nn` para o harness e `CI-nn` para a CI;
-- `modulo` é um dos 14 módulos de `src/lastro/`, `harness` ou `ci`;
+- o ID segue `^[A-Z]{2,4}-\d{2}$`; por convenção a sigla lembra o módulo (`ACE-01`, `CAD-03`, `NUC-01`, `HAR-nn`, `CI-nn`), sem checagem automática;
+- `modulo` é um dos 14 módulos de `src/lastro/`, `harness`, `ci` ou `web`;
 - `onda` vai de 1 a 4;
 - `verificacao` lista 100% dos testes, com `pytest` ou `ruff check`.
 
 :::note[Planejado]
-O `hx` hoje confere o `id` contra o nome do arquivo, os campos obrigatórios, o estado, a verificação de cada critério, os comandos permitidos e o grafo de dependências. A regex do ID, a lista de módulos, a faixa de `onda` e a `prioridade` serão conferidas pela ficha **HAR-04** (em revisão).
+O `hx` hoje confere o `id` contra o nome do arquivo, os campos obrigatórios, o estado, a verificação de cada critério, os comandos permitidos e o grafo de dependências. O campo a mais, o padrão do ID, a lista de módulos, a faixa de `onda`, a `prioridade`, os campos fixos, o `responsavel` na equipe e o nome de teste repetido serão conferidos pela ficha **HAR-04** (em revisão). A regra da dependência direta na mesma onda (P-03) não é conferida pelo `hx`.
 :::
 
 ## Ondas e metas
