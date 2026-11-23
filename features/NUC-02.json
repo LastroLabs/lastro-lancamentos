@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -113,5 +113,50 @@
       "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T00:51:55Z",
+    "commit": "e983eebc356e",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_ve_todos_na_lista -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_contador_acessa_so_atribuidos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_outro_escritorio_sempre_negado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_usuario_sem_escritorio_ou_papel_negado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_filtro_de_lista_devolve_so_visiveis -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_chefe_acessa_so_atribuidos_a_ele -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_recusa_por_falta_de_atribuicao_so_para_chefe -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/core/test_regra_acesso.py::test_gerir_atribuicao_exige_chefe_do_escritorio -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
