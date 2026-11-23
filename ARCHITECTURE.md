@@ -139,6 +139,10 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 
 ## 8. Fichas e pastas
 
+**Exceção DB-01/A1 confirmada pelo responsável em 23/11/2026:** seis modelos em `src/lastro/access/models.py`, cliente em `src/lastro/registry/models.py`, Base comum em `src/lastro/core/models.py` e uma revisão em `migrations/versions/`. A ficha permanece única, com sessões separadas para testes e implementação (A2); módulos não importam modelos internos uns dos outros.
+
+**Divisão DB-01/NUC-03 (23/11/2026, decisão do responsável DB-01):** esquema e restrições na DB-01; políticas RLS na NUC-03, obrigatoriamente concluída antes de usar dados de piloto. Sem políticas permissivas de contorno. Nomes físicos da DB-01 seguem a ficha em português singular, como exceção ao CODING_STANDARDS.md. Esta divisão não declara o isolamento implementado nem altera a I-4 do produto. Ver `docs/decisoes/DECISIONS.md`, seção 5.
+
 - O campo `modulo` da ficha é o nome da pasta (`core`, `access`, `registry`, `ai`...) ou `harness`/`ci`. A ficha só cria código na pasta do seu módulo e testes em `tests/<module>/`.
 - O prefixo do ID é histórico e não deriva da pasta: NUC → `core`, ACE → `access`, CAD → `registry`, IA → `ai`, HAR → `harness`, HX → `ci`.
 

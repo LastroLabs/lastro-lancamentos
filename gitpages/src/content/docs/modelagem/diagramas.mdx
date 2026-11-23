@@ -15,9 +15,11 @@ As vistas mostram os vínculos centrais, com até cinco entidades por diagrama. 
   ESCRITORIO ||--o{ MEMBRO : possui
   USUARIO ||--o{ MEMBRO : identifica
   MEMBRO ||--o{ SESSAO : autentica
+  MEMBRO ||--o{ CONVITE : recebe
+  MEMBRO ||--o{ CONVITE : cria
 `} />
 
-[USUARIO](/lastro-lancamentos/modelagem/entidades/#usuario) mantém a identidade; [MEMBRO](/lastro-lancamentos/modelagem/entidades/#membro), o papel no [ESCRITORIO](/lastro-lancamentos/modelagem/entidades/#escritorio); [SESSAO](/lastro-lancamentos/modelagem/entidades/#sessao), a validade e o encerramento. A sessão no servidor decorre de ARQ-03. A separação não autoriza compartilhar carteiras.
+[USUARIO](/lastro-lancamentos/modelagem/entidades/#usuario) mantém a identidade; [MEMBRO](/lastro-lancamentos/modelagem/entidades/#membro), o papel no [ESCRITORIO](/lastro-lancamentos/modelagem/entidades/#escritorio); [SESSAO](/lastro-lancamentos/modelagem/entidades/#sessao), a validade e o encerramento. [CONVITE](/lastro-lancamentos/modelagem/entidades/#convite) referencia o membro destinatário e o autor do mesmo escritório; guarda hash, validade, uso e revogação. Convite expirado ainda pendente deve ser revogado antes da reemissão. As FKs compostas estão no modelo lógico. A sessão no servidor decorre de ARQ-03. A separação não autoriza compartilhar carteiras.
 
 <ReqChips ids={['RF-AUT-01','RF-AUT-03','RF-SEG-02']} />
 
