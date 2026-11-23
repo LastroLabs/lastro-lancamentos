@@ -6,7 +6,7 @@
   "prioridade": "should",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [
     "HX-11"
@@ -93,5 +93,65 @@
       "comando": "pytest tests/ci/test_project_sync_workflow.py::test_dry_run_disponivel_no_primeiro_uso -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T15:09:36Z",
+    "commit": "69cef1f3394f",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_gatilhos_permitidos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_sem_push_em_branch_de_feature -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_sem_pull_request_nem_pull_request_target -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_chave_so_com_environment -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_agendada_nao_faz_checkout_de_branch -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_segredo_nao_vai_para_log -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_permissoes_minimas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_concurrency_serializa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_acoes_fixadas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_cada_gatilho_chama_a_origem_certa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_project_sync_workflow.py::test_dry_run_disponivel_no_primeiro_uso -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

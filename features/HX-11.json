@@ -6,7 +6,7 @@
   "prioridade": "should",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [],
   "bloqueada_por": null,
@@ -99,5 +99,75 @@
       "comando": "ruff check tools/project_sync.py tests/ci/test_project_sync.py"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T15:09:36Z",
+    "commit": "69cef1f3394f",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync.py::test_cria_issue_para_ficha_sem_item -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync.py::test_nao_duplica_e_segunda_execucao_nao_altera -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ci/test_project_sync.py::test_responsavel_desconhecido_avisa_sem_falhar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync.py::test_branch_move_so_o_proprio_card -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync.py::test_pr_aberto_vai_para_em_revisao -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync.py::test_developer_nunca_recua_status -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ci/test_project_sync.py::test_passing_em_developer_finaliza_e_fecha_issue -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync.py::test_reconcilia_responsavel -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync.py::test_reconcilia_bloqueios -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ci/test_project_sync.py::test_ficha_removida_nao_apaga_issue -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_project_sync.py::test_dry_run_nao_escreve -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ci/test_project_sync.py::test_falha_api_exit_2_sem_tocar_fichas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "ruff check tools/project_sync.py tests/ci/test_project_sync.py",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
