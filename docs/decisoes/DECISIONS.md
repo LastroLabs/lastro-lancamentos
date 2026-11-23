@@ -94,3 +94,12 @@ Detalhes de DDL confirmados: `gitpages/src/content/docs/modelagem/modelo-fisico.
 Confirmações não aprovam o plano inteiro. Em 23/11/2026, após autorização explícita do responsável, os complementos propostos de c1/c2/c5/c6 foram aplicados à ficha (R1), preservando c3/c4, os seis comandos de teste, estado e evidência. R2 atualizou o verificador para 28 entidades e presença explícita de CONVITE, preservando as demais checagens. As verificações estruturais e de interações passaram; nenhum teste DB-01 ou código de produto foi escrito.
 
 **Aprovação posterior — 23/11/2026:** `guin409` aprovou explicitamente o plano e as tasks da DB-01 com as decisões registradas e autorizou o commit do material revisado. A aprovação consta em `planos/DB-01/plan.md`; esta sessão permanece sem escrita de testes ou implementação. O estado e a evidência da ficha não foram alterados.
+
+### Complemento D2/F5 — nomes dos índices de convite — 23/11/2026
+
+O responsável definiu os nomes abaixo e autorizou registrar este complemento no plano e na documentação, ajustar os testes e reexecutar as verificações para revisão antes do commit:
+
+- Auxiliar: `ix_convite_escritorio_id_membro_id`, não único, em `(escritorio_id, membro_id)`, sem predicado.
+- Único parcial: `uq_convite_escritorio_id_membro_id_pendente`, `UNIQUE` em `(escritorio_id, membro_id)` com `WHERE usado_em IS NULL AND revogado_em IS NULL`.
+
+Somente os nomes distinguem os dois índices; suas colunas, unicidade e predicados permanecem como aprovados. A decisão não autoriza implementação, migrações ou commit nesta etapa e não altera critérios, estado ou evidência da ficha.

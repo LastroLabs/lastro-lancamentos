@@ -91,6 +91,34 @@
     {
       "criterio": "c6",
       "comando": "pytest tests/access/test_identity_schema.py::test_db01_migracao_reverte_e_usuario_da_aplicacao_nao_e_dono -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_models_share_metadata_and_match_migrated_catalog -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_model_import_does_not_connect -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_required_columns_reject_null -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_invalid_checks_leave_no_rows -q"
+    },
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_hash_is_globally_unique -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_partial_uniqueness_is_scoped_to_firm_and_client -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/access/test_identity_schema.py::test_db01_used_invitation_allows_reissue_and_no_fixed_duration -q"
     }
   ],
   "evidencia": null

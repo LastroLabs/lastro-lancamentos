@@ -53,6 +53,15 @@ F3 confirma as FKs diretas membro/cliente para escritório, sem FKs diretas redu
 
 Esse índice mantém um convite expirado na unicidade se não usado nem revogado. A3 exige revogar o convite expirado ainda pendente antes da reemissão; o serviço desse fluxo não faz parte da DB-01. As 48 h do exemplo não são política de validade. O esquema aceita chefe como responsável (c3/P-09) e o mesmo usuário em escritórios distintos (c4).
 
+**Complemento D2/F5, decidido pelo responsável em 23/11/2026:** os dois índices de `convite` nas mesmas colunas têm nomes distintos, sem alterar suas propriedades:
+
+| Nome | Colunas | Único | Predicado |
+|---|---|---|---|
+| `ix_convite_escritorio_id_membro_id` | `(escritorio_id, membro_id)` | Não | Sem predicado |
+| `uq_convite_escritorio_id_membro_id_pendente` | `(escritorio_id, membro_id)` | Sim | `usado_em IS NULL AND revogado_em IS NULL` |
+
+O primeiro integra os seis índices auxiliares de F5; o segundo mantém a restrição de um convite pendente por membro. Este complemento de nomes prevalece sobre a aplicação indistinta de `ix_<table>_<columns>` aos dois índices. Registro: `docs/decisoes/DECISIONS.md`, seção 5, e D2 em `planos/DB-01/plan.md`.
+
 ### Migração e permissões explícitas (c1/c6)
 
 Uma revisão Alembic após a base NUC-01 (`0001` no repositório consultado), sem criar dados. Seis modelos em `src/lastro/access/models.py`, cliente em `src/lastro/registry/models.py`. Downgrade remove as sete tabelas e retorna à revisão anterior; reaplicar restaura o mesmo esquema. O papel da aplicação lê/grava sem ser dono e não pode apagar a tabela `escritorio`. A DB-01 não implementa login, aceite de convite, serviço de reatribuição nem políticas RLS.
