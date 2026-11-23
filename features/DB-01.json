@@ -10,7 +10,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "guin409",
   "depende_de": [
     "NUC-01"
@@ -121,5 +121,75 @@
       "comando": "pytest tests/access/test_identity_schema.py::test_db01_used_invitation_allows_reissue_and_no_fixed_duration -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-23T16:27:45Z",
+    "commit": "71fb62f57bfd",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_migracao_db01_cria_tabelas_de_identidade_com_colunas_e_chaves -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_fk_de_outro_escritorio_recusada -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_um_responsavel_ativo_por_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_unicidades_de_cadastro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_convite_guarda_so_o_hash_e_um_pendente_por_membro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_migracao_reverte_e_usuario_da_aplicacao_nao_e_dono -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_models_share_metadata_and_match_migrated_catalog -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_model_import_does_not_connect -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_required_columns_reject_null -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_invalid_checks_leave_no_rows -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_hash_is_globally_unique -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_partial_uniqueness_is_scoped_to_firm_and_client -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/access/test_identity_schema.py::test_db01_used_invitation_allows_reissue_and_no_fixed_duration -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
