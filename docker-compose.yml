@@ -1,6 +1,104 @@
+# Plan NUC-01 (D1, D2, D5, D7).
+#   docker compose up -d --wait   -> starts only `api` and `db` (no profile).
+#   docker compose run dev <cmd>  -> verification container (profile `dev`, used by the hx);
+#                                    it also starts `docker-proxy`.
+# Secrets and URLs come only from the .env (copied from .env.example); nothing literal here.
+
 services:
+  api:
+    build:
+      context: .
+      target: runtime
+    # Dev only (plan, answer 3): migrate as the owner role, then serve as the app role.
+    # To be reviewed with the hosting decision.
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && exec uvicorn lastro.api.app:create_app --factory --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MIGRATIONS_DATABASE_URL: ${MIGRATIONS_DATABASE_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Python instead of curl: the slim image has no curl. urlopen raises on 503.
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-lastro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Read only by migrations/bootstrap/create_roles.sh, on the first start (plan D5).
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      # PostgreSQL 18 images keep the data under /var/lib/postgresql (not .../data).
+      - db-data:/var/lib/postgresql
+      - ./migrations/bootstrap/create_roles.sh:/docker-entrypoint-initdb.d/create_roles.sh:ro
+      - ./migrations/bootstrap/create_roles.sql:/lastro-bootstrap/create_roles.sql:ro
+    healthcheck:
+      # -h 127.0.0.1: during the first start, the entrypoint runs a temporary server that
+      # listens only on the Unix socket (while create_roles.sh runs); over TCP, the check
+      # passes only once the final server is up.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   dev:
-    build: .
+    build:
+      context: .
+      target: dev
+    profiles: ["dev"]
     working_dir: /app
     volumes:
       - .:/app
+    depends_on:
+      - docker-proxy
+    environment:
+      # Testcontainers reaches Docker only through the proxy; no socket in this container.
+      DOCKER_HOST: tcp://docker-proxy:2375
+      # Ryuk would mount the Docker socket itself; the test fixture removes its container.
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      # By default Testcontainers would use the DOCKER_HOST name (docker-proxy), where the
+      # published port does not exist; the port lives on the Docker host, reached from here
+      # as host.docker.internal (mapped below on Linux; built in on Docker Desktop).
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  docker-proxy:
+    # v0.5.0 is the last version tag on Docker Hub; the digest pins it (plan D1).
+    image: tecnativa/docker-socket-proxy:v0.5.0@sha256:1f5038b54f06c3e18422902cf00ba21803d1c97805aae032e5e6673d532d3459
+    profiles: ["dev"]
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # Only what Testcontainers needs to run the test PostgreSQL. POST=1 allows the methods
+      # other than GET (DELETE included); each path section still needs its own flag.
+      # EXEC: PostgresContainer waits for the database by running psql inside it.
+      POST: 1
+      CONTAINERS: 1
+      ALLOW_START: 1
+      ALLOW_STOP: 1
+      EXEC: 1
+      IMAGES: 1
+      NETWORKS: 1
+      INFO: 1
+
+volumes:
+  db-data:
