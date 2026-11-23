@@ -50,7 +50,10 @@ services:
       - ./migrations/bootstrap/create_roles.sh:/docker-entrypoint-initdb.d/create_roles.sh:ro
       - ./migrations/bootstrap/create_roles.sql:/lastro-bootstrap/create_roles.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      # -h 127.0.0.1: during the first start, the entrypoint runs a temporary server that
+      # listens only on the Unix socket (while create_roles.sh runs); over TCP, the check
+      # passes only once the final server is up.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 5s
       retries: 10

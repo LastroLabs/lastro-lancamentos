@@ -43,7 +43,7 @@
   - [x] `docker-proxy`: `tecnativa/docker-socket-proxy:v0.5.0` com o digest `sha256` anotado, perfil `dev`, `privileged`, **único** serviço que monta `/var/run/docker.sock`, sem `ports`; libera `POST`, `CONTAINERS`, `ALLOW_START`, `ALLOW_STOP`, `IMAGES`, `NETWORKS` e `INFO` (D1), e nada além do que o Testcontainers usar. **Feito com `EXEC` a mais:** o Testcontainers precisa dele (plan, D1)
   - [ ] A conferir (D1), registrado no `progress`, em Linux nativo, Docker Desktop e CI: (a) como o proxy trata `DELETE` e se o Testcontainers precisa de `EXEC`; (b) se o `stop()` remove o container com o Ryuk desligado; se não remove, a fixture remove e apaga as sobras no início da sessão. Religar o Ryuk só com aval do humano; (c) se o host padrão ("gateway IP") alcança a porta do Postgres a partir do `dev`; se não alcança, fixar `TESTCONTAINERS_HOST_OVERRIDE` no Compose com um valor que sirva aos três (ex.: `host.docker.internal` + `extra_hosts` com `host-gateway`, a conferir). **Desmarcado:** (a), (b) e (c) conferidos só em Linux nativo (`progress`, 23/11); faltam Docker Desktop e CI
   - [x] A conferir (D6): a tag exata do uv e o `UV_PROJECT_ENVIRONMENT` em https://docs.astral.sh/uv/reference/environment/; a wheel cp314 do `psycopg-binary` para Linux (se faltar, `libpq5`)
-  - [ ] `migrations/bootstrap/create_roles.sql` (idempotente, sem senha) e `create_roles.sh` (initdb do `db`: roda o SQL, aplica `OWNER_DB_PASSWORD` e `APP_DB_PASSWORD`, passa o banco para `lastro_owner`). **Desmarcado:** o `.sql` roda na fixture dos testes (verde); o `.sh` só roda de verdade no `docker compose up` da T6
+  - [x] `migrations/bootstrap/create_roles.sql` (idempotente, sem senha) e `create_roles.sh` (initdb do `db`: roda o SQL, aplica `OWNER_DB_PASSWORD` e `APP_DB_PASSWORD`, passa o banco para `lastro_owner`). O `.sql` roda na fixture dos testes (verde). O `.sh` rodou de verdade na T6: os dois papéis existem sem superusuário, `CREATEDB`, `CREATEROLE` nem `BYPASSRLS`, o dono do banco é `lastro_owner` e a saúde respondeu `connected` (consulta no `progress`)
   - [x] `.env.example` com `POSTGRES_*`, `OWNER_DB_PASSWORD`, `APP_DB_PASSWORD`, `DATABASE_URL`, `MIGRATIONS_DATABASE_URL`, valores contendo `exemplo`
   - [x] `requirements-dev.txt` removido
   - [x] `docker compose config --services` sem perfil lista só `api` e `db`
@@ -93,20 +93,20 @@
   - [x] `alembic.ini` sem URL; `migrations/env.py` (async) lê `migrations_database_url` de `core/config.py`
   - [x] `migrations/versions/0001_base_privileges.py` com as permissões da D8 e `downgrade` que as desfaz (o `downgrade` está escrito, mas não foi executado; nenhum teste o cobre)
   - [x] Duas execuções seguidas de `alembic upgrade head`: a segunda não aplica nada e a versão não muda
-  - [ ] O comando da `api` no Compose roda `alembic upgrade head` antes do Uvicorn (resposta 3). **Desmarcado:** o comando está no Compose, mas só roda de verdade no `docker compose up` da T6
+  - [x] O comando da `api` no Compose roda `alembic upgrade head` antes do Uvicorn (resposta 3). Confirmado na T6: a `api` subiu saudável depois do `alembic upgrade head`
 - **Exemplos:** banco novo → versão `0001`; de novo → `0001`, nada aplicado; `lastro_app` faz `CREATE TABLE x` → permissão negada
 - **Arquivos:** `alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`, `migrations/versions/0001_base_privileges.py`, `docker-compose.yml` (comando da `api`); apagar `migrations/.gitkeep`
 - **Não criar:** tabela de negócio, extensão `pg_trgm`
 - **Decisões relacionadas:** D5, D7, D8
 - **Pronto quando:** `pytest tests/core/test_migracoes.py -q` passa
 
-## [ ] T6 · Conferência manual da c1 e documentação
+## [x] T6 · Conferência manual da c1 e documentação
 - **Critérios da ficha:** c1 (parte que o teste não prova)
 - **Regra de negócio (em linguagem simples):** o teste lê o arquivo; só subir de verdade prova que sobe.
 - **Critérios de aceite:**
-  - [ ] Num clone limpo: `cp .env.example .env` e `docker compose up -d --wait` → `api` e `db` saudáveis; `curl localhost:8000/api/v1/health` → 200; resultado em "Rodei" do `progress/NUC-01.md`
-  - [ ] README: seção curta "Subir o ambiente" e a tabela de arquivos atualizada (`pyproject.toml`/`uv.lock` no lugar de `requirements-dev.txt`)
-  - [ ] Texto da emenda para `DECISIONS.md` (uv, perfil `dev`, proxy do Docker como único a montar o socket) entregue ao humano, que aplica
+  - [x] Num clone limpo: `cp .env.example .env` e `docker compose up -d --wait` → `api` e `db` saudáveis; `curl localhost:8000/api/v1/health` → 200; resultado em "Rodei" do `progress/NUC-01.md` (feito pelo humano em 23/11: clone limpo do `1325dee` e nova subida com o healthcheck `-h 127.0.0.1`, as duas com `api` e `db` saudáveis)
+  - [x] README: seção curta "Subir o ambiente" e a tabela de arquivos atualizada (`pyproject.toml`/`uv.lock` no lugar de `requirements-dev.txt`)
+  - [x] Texto da emenda para `DECISIONS.md` (uv, perfil `dev`, proxy do Docker como único a montar o socket) entregue ao humano, que aplica
 - **Arquivos:** `README.md`, `progress/NUC-01.md`
 - **Fora do escopo:** editar ficha, AGENTS.md, ARCHITECTURE.md ou DECISIONS.md (resposta 6; sugestões no plan)
 - **Decisões relacionadas:** D6

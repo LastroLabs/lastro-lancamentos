@@ -16,7 +16,8 @@ Como preencher (agente, ao encerrar a sessão):
 Um comando sobe a API (Python 3.14) e o PostgreSQL 18; `GET /api/v1/health` diz se o banco está conectado; o Alembic migra com o papel dono e a API conecta com um papel sem poder sobre o esquema.
 
 ## Próxima ação
-T6: `cp .env.example .env && docker compose up -d --wait`, depois `curl localhost:8000/api/v1/health`. Isso confirma o `create_roles.sh` e o comando da `api` com `alembic upgrade head`, que ainda não rodaram de verdade. Antes de ir para a T7, rodar `sh tools/hx verify` com a referência `cacb33a`.
+1. O humano aplica no `DECISIONS.md` o texto da emenda (BD-07 e uv) entregue em 23/11, e na ficha as mudanças sugeridas no plan.
+2. T7: `sh tools/hx verify`, `sh tools/hx check-clean`, `git diff cacb33a -- tests/` e `hx feature verify NUC-01`.
 
 ## Bloqueios e perguntas
 - Pendente (não bloqueia a T6): itens (a), (b) e (c) da D1 conferidos só em Linux nativo; faltam Docker Desktop e CI.
@@ -79,12 +80,27 @@ T6: `cp .env.example .env && docker compose up -d --wait`, depois `curl localhos
 - 23/11 · S2 (T5) · Cópia de `tests/core` fora do repositório, numa pasta temporária, só com o cast `::text`, montada no `dev` com `alembic.ini`, `migrations/` e `src/` em modo só leitura → `3 passed` em `test_migracoes.py`. Nenhum arquivo de `tests/` mudou.
 - 23/11 · S2 (T5) · `docker compose build api` → Built; a imagem tem `alembic.ini`, `migrations` e `src`, e `alembic 1.20.1`.
 - 23/11 · S2 · Fim: `sh tools/hx verify` → ruff `All checks passed!`; pytest `1 failed, 304 passed, 2 warnings` em 20,25 s (23,0 s no total), e a falha é só a do bloqueio 5. `sh tools/hx check-clean` → 0 achados, `RESULTADO: OK`. `git diff 59452ed -- tests/` → vazio (0 bytes). Sobraram 0 `postgres:18` depois das execuções.
+- 23/11 · S2 (T6, rodado pelo humano e relatado ao agente) · Clone limpo do commit `1325dee`, projeto `lastro-t6`: `cp .env.example .env` → `docker compose up -d --wait` → `curl localhost:8000/api/v1/health`.
+  - **1ª tentativa: falhou.** A porta 8000 estava ocupada por outro projeto (`django-api`). O Docker criou o `lastro-t6-api-1`, mas falhou ao ligá-lo à rede (`failed to set up container networking ... port is already allocated`). O `up` seguinte reaproveitou esse container sem rede (`Networks: {}`, `resolv.conf` do host).
+  - **2ª tentativa: passou.** Depois de liberar a porta, `docker compose down -v` e `docker compose up -d --wait`: `db` e `api` healthy; a saúde respondeu `{"api":"up","database":"connected"}`. Isso confirma, de forma indireta, o `create_roles.sh` e o comando da `api`: a `api` conectou como `lastro_app` com a senha do `.env` e as migrações rodaram como `lastro_owner` antes do Uvicorn.
+  - Consulta dos papéis: registrada na nova subida, com o healthcheck novo (entrada "pós-T6, rodado pelo humano" abaixo).
+- 23/11 · S2 (pós-T6) · Healthcheck do `db` trocado para `pg_isready -h 127.0.0.1 -U ... -d ...`. Não rodei de novo o `up` com essa mudança; o teste estático do Compose roda no `hx verify` abaixo.
+- 23/11 · S2 (pós-T6, rodado pelo humano e relatado ao agente) · Nova subida com o healthcheck `pg_isready -h 127.0.0.1`, a partir de uma cópia limpa da pasta de trabalho, sem o `.env` local: `db` Healthy (6,6 s), `api` Healthy (11,9 s); `GET /api/v1/health` → `{"api":"up","database":"connected"}`. Consulta dos papéis no `db` do Compose:
+  ```
+     rolname    | rolsuper | rolcreatedb | rolcreaterole | rolbypassrls
+  --------------+----------+-------------+---------------+--------------
+   lastro_owner | f        | f           | f             | f
+   lastro_app   | f        | f           | f             | f
+  ```
+  Dono do banco: `lastro_owner`. Confirma o `create_roles.sh` rodando de verdade: os dois papéis criados, nenhum é superusuário nem tem `CREATEDB`, `CREATEROLE` ou `BYPASSRLS`, e o banco foi passado para `lastro_owner`.
+- 23/11 · S2 (pós-T6) · `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, `RESULTADO: OK` (exit 0, cerca de 26 s). `sh tools/hx check-clean` → 0 achados, `RESULTADO: OK`. `git diff cacb33a -- tests/` → vazio (0 bytes). Sobraram 0 `postgres:18`.
 
 ## Falhou
 - 23/11 · S2 (T2) · Primeiro teste c6 pelo proxy: 403 em `/exec/<id>/start` (EXEC desligado); depois, conexão recusada em `docker-proxy:<porta>` (host padrão). As duas causas foram corrigidas no Compose; ver Rodei.
 - 23/11 · S2 (T4) · `test_esqueleto_da_api_tem_pontos_de_extensao_fixos`: `AttributeError: '_IncludedRouter' object has no attribute 'path'` (bloqueio 1). `_IncludedRouter` aparece em `fastapi/routing.py` a partir da 0.137.0 (contei a palavra no wheel de 0.136.0 → 0 e de 0.137.0 → 14).
 
 - 23/11 · S2 (T5) · `test_migracoes_reaplicadas_nao_mudam_nada`: SQL do teste inválido no PostgreSQL 18 (bloqueio 5).
+- 23/11 · S2 (T6) · Primeiro `up` no clone limpo: a porta 8000 estava ocupada, e o container da `api` ficou sem rede e foi reaproveitado no `up` seguinte. Resolvido com `docker compose down -v` e um novo `up` (ver Rodei).
 
 ## Decisões
 - 23/11 · S1 (T1) · O `5e5c8c6` foi o commit original dos testes; o `7c567ee` passa a ser a referência da T7 (`git diff 7c567ee -- tests/`) porque mudou só as mensagens de erro de subprocesso (stdout e stderr no lugar de só stderr), com autorização do humano, sem mudar assert, condição nem valor esperado.
@@ -100,6 +116,8 @@ T6: `cp .env.example .env && docker compose up -d --wait`, depois `curl localhos
 - 23/11 · S2 (T5) · Parei no bloqueio 5, conforme a regra 3, sem editar `tests/`.
 - 23/11 · S2 · O humano autorizou só casts no SQL de `tests/core/test_migracoes.py`. A busca por colunas `"char"` (tipos conferidos em `pg_attribute` num `postgres:18`) achou só `pg_default_acl.defaclobjtype`. O humano fez o commit só-de-testes `cacb33a`, que passa a ser a referência da T7 (`git diff cacb33a -- tests/`) no lugar do `59452ed`. Depois dele, `pytest tests/core -q -rA` → 16 passed (8 da NUC-01, 8 da NUC-02).
 - 23/11 · S2 · `tasks.md`: T2, T3, T4 e T5 marcadas como feitas. Ficaram desmarcados, com nota: os "a conferir" da D1 (faltam Docker Desktop e CI), o `create_roles.sh` e o comando da `api` com `alembic upgrade head` (só a T6 confirma). O `downgrade` da `0001` está escrito, mas não foi executado.
+- 23/11 · S2 (T6) · Healthcheck do `db` com `-h 127.0.0.1`, para só passar com o servidor definitivo, e não com o temporário do initdb (decidido pelo humano; registrado nos riscos do plan). O README ganhou "Subir o ambiente" (com o aviso da porta 8000) e a tabela de arquivos da raiz atualizada, com `alembic.ini` na raiz, como manda a c2 da ficha. A seção "Testar o ambiente" passou a usar `docker compose --profile dev build`. `tasks.md`: a T6 foi marcada, e também o `create_roles.sh` e o comando da `api`, com nota de que a consulta dos papéis ainda falta.
+- 23/11 · S2 (pós-T6) · Pendência da consulta dos papéis resolvida: a saída veio da nova subida com o healthcheck `-h 127.0.0.1` (Rodei). Saíram as notas de pendente do `tasks.md` (T2, T5 e T6) e do topo deste arquivo. No `hx verify` seguinte: `RESULTADO: OK`, e `git diff cacb33a -- tests/` vazio.
 
 ## Fim de sessão
 - [ ] `hx verify` verde, ou a falha está descrita em "Falhou"

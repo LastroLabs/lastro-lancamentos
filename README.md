@@ -33,10 +33,24 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 
 Ou, no `~/.bashrc`: `alias hx='python3 /caminho/para/LASTRO/tools/harness.py'`
 
+### Subir o ambiente
+
+```sh
+cp .env.example .env
+docker compose up -d --wait
+curl localhost:8000/api/v1/health
+```
+
+O `up` sobe só a `api` (Python 3.14) e o `db` (PostgreSQL 18). Na primeira subida, o `db` cria os papéis `lastro_owner` e `lastro_app`, e a `api` aplica as migrações antes de responder. A saúde responde `{"api": "up", "database": "connected"}`. O `.env` não é versionado; troque as senhas de exemplo antes de usar fora da sua máquina. Para apagar o banco local e começar do zero: `docker compose down -v`.
+
+Se a porta 8000 estiver ocupada, libere-a e rode `docker compose down` antes de subir de novo, porque o Compose pode reaproveitar um container que ficou sem rede.
+
+Os testes (`hx verify`) não usam esse banco: o serviço `dev` cria um PostgreSQL 18 descartável pelo Testcontainers, através do serviço `docker-proxy`. Os dois ficam no perfil `dev`; para derrubá-los: `docker compose --profile dev down`.
+
 ### Testar o ambiente
 
 ```powershell
-docker compose build
+docker compose --profile dev build
 docker compose run --rm dev python --version
 docker compose run --rm dev ruff --version
 docker compose run --rm dev pytest --version
@@ -173,11 +187,11 @@ Só estes. Qualquer outro arquivo na raiz é proibido: documento vai para `docs/
 | `AGENTS.md` | Regras para agentes (roteador, até 100 linhas) |
 | `CLAUDE.md` | Só `@AGENTS.md` |
 | `.gitignore`, `.gitattributes`, `.dockerignore` | Git e Docker |
-| `Dockerfile`, `docker-compose.yml` | Ambiente de desenvolvimento (serviço `dev`, usado pelo `hx`) |
-| `pyproject.toml` | Configuração do Python (ruff; **PROPOSTA:** também a do Alembic, para não criar um `alembic.ini` na raiz) |
-| `requirements-dev.txt` | Dependências de desenvolvimento |
-| `.env.example` | Modelo de variáveis com valores falsos (quando existir) |
-| `uv.lock` | **PROPOSTA:** só quando o uv (previsto na stack) for adotado |
+| `Dockerfile`, `docker-compose.yml` | Ambiente: `api` e `db` no `up`; `dev` (usado pelo `hx`) e `docker-proxy` no perfil `dev` |
+| `pyproject.toml` | Projeto Python: dependências (grupo `dev` à parte) e configuração do ruff |
+| `uv.lock` | Versões travadas de todas as dependências (gerado pelo `uv lock`; o build falha se estiver desatualizado) |
+| `alembic.ini` | Configuração do Alembic, sem URL do banco (as migrações ficam em `migrations/`) |
+| `.env.example` | Modelo de variáveis com valores falsos (copie para `.env`) |
 | `LICENSE` | **PROPOSTA:** só se o time escolher uma licença |
 
 ### O que é gerado e não vai para o Git
