@@ -21,7 +21,7 @@
       "descricao": "Um único comando sobe a API em Python 3.14 e o PostgreSQL 18, em dois serviços, sem configuração manual",
       "exemplo": {
         "entrada": "clone limpo do repositório; Docker no ar; roda 'docker compose up -d --wait' com o arquivo .env criado a partir de .env.example",
-        "saida": "dois serviços saudáveis: 'api' com Python 3.14 e 'db' respondendo como PostgreSQL 18; a URL de conexão vem só da variável DATABASE_URL; nenhuma senha escrita em arquivo versionado além do .env.example com valores de exemplo"
+        "saida": "o 'docker compose up' sobe dois serviços saudáveis: 'api' com Python 3.14 e 'db' respondendo como PostgreSQL 18; os serviços de verificação ('dev' e o proxy do Docker) ficam no perfil 'dev'; a URL de conexão vem só da variável DATABASE_URL; nenhuma senha escrita em arquivo versionado além do .env.example com valores de exemplo"
       }
     },
     {
@@ -29,30 +29,30 @@
       "descricao": "O esqueleto da API fica em src/lastro/core/ (configuração e conexão com o banco) e src/lastro/api/ (criação do app e registro de rotas), em lugares fixos, para as outras fichas só importarem",
       "exemplo": {
         "entrada": "código da ficha pronto; um teste importa os pontos de extensão e registra uma rota de teste sob /api/v1",
-        "saida": "existem src/lastro/core/config.py com as configurações lidas do ambiente, src/lastro/core/db.py com a sessão do banco e src/lastro/api/app.py com criar_app(); a rota de teste responde em /api/v1/<caminho>; importar esses módulos não abre conexão com o banco; nenhum arquivo novo fora de src/lastro/core/, src/lastro/api/, migrations/, tests/core/ e dos arquivos de ambiente (Dockerfile, docker-compose.yml, .env.example, requirements-dev.txt, alembic.ini)"
+        "saida": "existem src/lastro/core/config.py com as configurações lidas do ambiente, src/lastro/core/db.py com a sessão do banco e src/lastro/api/app.py com create_app(); a rota de teste responde em /api/v1/<caminho>; importar esses módulos não abre conexão com o banco; nenhum arquivo novo fora de src/lastro/core/, src/lastro/api/, migrations/ (incluindo migrations/bootstrap/), tests/core/ e dos arquivos de ambiente (Dockerfile, docker-compose.yml, .env.example, pyproject.toml, uv.lock, alembic.ini)"
       }
     },
     {
       "id": "c3",
-      "descricao": "Com o banco no ar e as migrações aplicadas, GET /api/v1/saude responde sucesso dizendo que o banco está conectado, sem pedir login",
+      "descricao": "Com o banco no ar e as migrações aplicadas, GET /api/v1/health responde sucesso dizendo que o banco está conectado, sem pedir login",
       "exemplo": {
-        "entrada": "API e PostgreSQL 18 no ar; banco com todas as migrações aplicadas; nenhuma sessão aberta; cliente HTTP faz GET /api/v1/saude",
-        "saida": "status 200; corpo com exatamente os campos api = 'no_ar' e banco = 'conectado'; nenhum dado de escritório, usuário ou cliente na resposta"
+        "entrada": "API e PostgreSQL 18 no ar; banco com todas as migrações aplicadas; nenhuma sessão aberta; cliente HTTP faz GET /api/v1/health",
+        "saida": "status 200; corpo exatamente {\"api\": \"up\", \"database\": \"connected\"}; nenhum dado de escritório, usuário ou cliente na resposta"
       }
     },
     {
       "id": "c4",
-      "descricao": "Com o banco fora do ar, GET /api/v1/saude responde indisponível em português simples, sem detalhe técnico",
+      "descricao": "Com o banco fora do ar, GET /api/v1/health responde indisponível em português simples, sem detalhe técnico",
       "exemplo": {
-        "entrada": "API no ar; PostgreSQL 18 inacessível; cliente HTTP faz GET /api/v1/saude",
-        "saida": "status 503; mensagem 'O banco de dados não está respondendo. Tente de novo em alguns minutos.'; a resposta não traz endereço do banco, usuário, senha nem rastro de erro"
+        "entrada": "API no ar; PostgreSQL 18 inacessível; cliente HTTP faz GET /api/v1/health",
+        "saida": "status 503 em application/problem+json; campo detail com a mensagem 'O banco de dados não está respondendo. Tente de novo em alguns minutos.'; a resposta não traz endereço do banco, usuário, senha nem rastro de erro"
       }
     },
     {
       "id": "c5",
       "descricao": "As migrações com Alembic levam um banco vazio à última versão, podem ser repetidas, e o banco tem dois papéis: o dono das migrações e o usuário da aplicação, sem superusuário",
       "exemplo": {
-        "entrada": "PostgreSQL 18 com um banco recém-criado; roda a aplicação das migrações duas vezes seguidas; depois a API conecta com o usuário da aplicação",
+        "entrada": "PostgreSQL 18 de teste (Testcontainers) com um banco recém-criado; roda a aplicação das migrações duas vezes seguidas; depois a API conecta com o usuário da aplicação",
         "saida": "a primeira execução termina sem erro e registra a versão da última migração; a segunda termina sem erro, sem aplicar nada e com a mesma versão; o usuário da aplicação lê e grava em tabelas do dono, mas não é superusuário, não tem BYPASSRLS e não consegue criar nem apagar tabelas"
       }
     },
@@ -61,7 +61,7 @@
       "descricao": "Os testes rodados por hx feature verify usam Python 3.14 e alcançam um PostgreSQL 18 de teste descartável, sem configuração manual",
       "exemplo": {
         "entrada": "clone limpo do repositório; Docker no ar; roda hx feature verify NUC-01",
-        "saida": "c2 a c5 rodam dentro do container sem pular nenhum teste; a versão do Python no container é 3.14; o banco de teste responde como PostgreSQL 18; o banco é descartável e não guarda dados entre execuções"
+        "saida": "c2 a c5 rodam dentro do container sem pular nenhum teste; a versão do Python no container é 3.14; o banco de teste é um PostgreSQL 18 descartável (imagem oficial), criado pelo Testcontainers e alcançado por um proxy do Docker; não guarda dados entre execuções"
       }
     }
   ],
