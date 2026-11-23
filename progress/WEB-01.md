@@ -25,15 +25,18 @@ Entregar o projeto `web/` (React 19, TypeScript, Vite, pnpm, Biome, Vitest) com 
 - O `tools/harness.py` trazido de `developer` exige Python 3.11+ (`from datetime import UTC`). Com o `python3` do sistema (3.10), `./tools/hx` falha. Foi preciso chamar o harness com o Python 3.14 de `~/.local/bin`.
 
 ## Feito
+- 24/11 · S3 · Ajustes da rubrica: arquivos, identificadores e chaves de `copy/` renomeados para inglês (SignIn, Invitation, NotFound, ManagerHome, AccountantHome, ClientUpload; `copy/{general,manager,accountant,client}.json`); `microcopy.md` com as novas chaves; `docs/modulos/web.md` criado; `HOME` e `CI` retirados do `ENV` do estágio `dev` do Dockerfile (ficam só o cache do pnpm e os diretórios XDG em `/tmp`).
 - 23/11 · S1 · `/planejar WEB-01`: `planos/WEB-01/plan.md` e `tasks.md` (7 tasks); 7 perguntas e D1–D6 respondidas e confirmadas por jvsauma.
 - 23/11 · S2 · `git pull origin developer` (merge automático, sem conflito) na branch. No histórico já estão os commits de testes, implementação e testes de componente da WEB-01 (`46fd870`, `765ee4a`, `bb768d8`), feitos fora desta sessão.
 
 ## Rodei
+- 24/11 · S3 · no contêiner `dev` com `--user`: `pnpm install --frozen-lockfile`, `lint`, `test` (13 passaram) e `build` → OK depois dos renomes
 - 23/11 · S2 · `git pull origin developer --no-rebase --no-edit` → merge feito, 11 arquivos, sem conflito
 - 23/11 · S2 · `sh tools/hx verify` → falhou: `ImportError: cannot import name 'UTC'` (Python 3.10 do sistema)
 - 23/11 · S2 · `~/.local/bin/python3.14 tools/harness.py verify` → ruff OK, pytest OK; Arquitetura e E2E pulados (não implementados); RESULTADO: OK
 
 ## Falhou
+- 24/11 · S3 · `hx verify` falhou duas vezes por arquivos do root (`web/dist/`, `.ruff_cache/`) criados por `docker compose run` sem `--user`. Conserto: apagar como root (ver `docs/modulos/web.md`). Em `git worktree`, c1 e c3 falham porque o `.git` aponta para fora do volume; revisar em clone comum.
 - 23/11 · S2 · `sh tools/hx verify` no Python 3.10 do sistema: o harness atualizado pelo merge precisa de 3.11 ou mais. Causa: `tools/harness.py` (HAR-04). O `tools/hx` ainda aceita "Python 3.10 ou superior" na mensagem.
 
 ## Decisões

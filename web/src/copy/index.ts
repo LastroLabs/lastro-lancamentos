@@ -1,7 +1,7 @@
-import chefe from "./chefe.json";
-import cliente from "./cliente.json";
-import contador from "./contador.json";
-import geral from "./geral.json";
+import accountant from "./accountant.json";
+import client from "./client.json";
+import general from "./general.json";
+import manager from "./manager.json";
 
-/** Todos os textos de tela. Cada texto também está em docs/design/microcopy.md. */
-export const copy = { geral, chefe, contador, cliente } as const;
+/** Every screen text. Each one is also listed in docs/design/microcopy.md. */
+export const copy = { general, manager, accountant, client } as const;

@@ -3,38 +3,38 @@ import { useEffect, useState } from "react";
 import type { ApiClient } from "../api/client";
 import { copy } from "../copy";
 
-type Saude = "verificando" | "no_ar" | "fora_do_ar";
+type HealthState = "checking" | "up" | "down";
 
-function consultarSaude(apiClient: ApiClient): Promise<Saude> {
+function fetchHealth(apiClient: ApiClient): Promise<HealthState> {
   return apiClient
     .GET("/api/v1/health")
-    .then(({ data }): Saude => (data?.api === "up" && data.database === "connected" ? "no_ar" : "fora_do_ar"))
-    .catch((): Saude => "fora_do_ar");
+    .then(({ data }): HealthState => (data?.api === "up" && data.database === "connected" ? "up" : "down"))
+    .catch((): HealthState => "down");
 }
 
 export function Home({ apiClient }: { apiClient: ApiClient }) {
-  const [saude, setSaude] = useState<Saude>("verificando");
+  const [health, setHealth] = useState<HealthState>("checking");
 
   useEffect(() => {
-    let ativo = true;
-    consultarSaude(apiClient).then((resultado) => {
-      if (ativo) setSaude(resultado);
+    let active = true;
+    fetchHealth(apiClient).then((result) => {
+      if (active) setHealth(result);
     });
     return () => {
-      ativo = false;
+      active = false;
     };
   }, [apiClient]);
 
-  const texto = {
-    verificando: copy.geral.saudeVerificando,
-    no_ar: copy.geral.saudeNoAr,
-    fora_do_ar: copy.geral.saudeForaDoAr,
-  }[saude];
+  const text = {
+    checking: copy.general.healthChecking,
+    up: copy.general.healthUp,
+    down: copy.general.healthDown,
+  }[health];
 
   return (
     <main>
-      <p>{texto}</p>
-      <Link to="/entrar">{copy.geral.irParaEntrar}</Link>
+      <p>{text}</p>
+      <Link to="/entrar">{copy.general.goToSignIn}</Link>
     </main>
   );
 }

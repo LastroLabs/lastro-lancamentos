@@ -2,16 +2,16 @@ import createClient from "openapi-fetch";
 import type { paths } from "./schema";
 
 export type ApiClientOptions = {
-  /** Endereço base da API; vazio usa caminho relativo. Padrão: VITE_API_URL. */
+  /** API base address; empty means a path relative to the site. Default: VITE_API_URL. */
   baseUrl?: string;
-  /** Substitui a rede (usado nos testes). */
+  /** Replaces the network (used in tests). */
   fetch?: (request: Request) => Promise<Response>;
 };
 
 /**
- * Cliente HTTP tipado pelo OpenAPI gerado (schema.d.ts).
- * O prefixo /api/v1 já faz parte dos caminhos gerados (ex.: "/api/v1/health"); por isso o
- * endereço base é só o de VITE_API_URL (vazio = caminho relativo ao próprio site).
+ * HTTP client typed by the generated OpenAPI (schema.d.ts).
+ * The /api/v1 prefix is already part of the generated paths (e.g. "/api/v1/health"), so the
+ * base address is only VITE_API_URL (empty = path relative to the site itself).
  */
 export function createApiClient(options: ApiClientOptions = {}) {
   const base = (options.baseUrl ?? import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");

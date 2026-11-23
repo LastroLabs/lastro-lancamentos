@@ -28,19 +28,18 @@ RUN apt-get update \
 
 # Plan WEB-01, D1: Node 24 (copied from the official image by digest, like uv) and pnpm at an
 # exact version. Keep the Node version equal to web/package.json (engines) and web/.nvmrc.
-# The npm cache is only for installing pnpm; HOME and the pnpm store are set for any --user.
+# The npm cache is only for installing pnpm; the pnpm store is set below for any --user.
 COPY --from=node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0 /usr/local/bin/node /usr/local/bin/node
 COPY --from=node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0 /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm install -g pnpm@12.23.0 \
     && rm -rf /root/.npm
-# `docker compose run --user uid:gid` has no HOME: send the pnpm store and caches to /tmp.
-ENV HOME=/tmp \
-    npm_config_store_dir=/tmp/pnpm-store \
+# `docker compose run --user uid:gid` has no HOME: send only the pnpm store and the XDG dirs
+# (used by Node tools) to /tmp. HOME and CI are NOT set, so pytest and ruff behave as before.
+ENV npm_config_store_dir=/tmp/pnpm-store \
     XDG_CACHE_HOME=/tmp/.cache \
     XDG_DATA_HOME=/tmp/.local/share \
-    XDG_STATE_HOME=/tmp/.local/state \
-    CI=true
+    XDG_STATE_HOME=/tmp/.local/state
 
 # --locked: the build fails if uv.lock is out of date with pyproject.toml.
 RUN --mount=type=cache,target=/root/.cache/uv \
