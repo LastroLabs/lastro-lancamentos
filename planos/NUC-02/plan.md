@@ -1,6 +1,6 @@
 # Plan — NUC-02 · Decidir o acesso por escritório, papel e carteira
 
-**Status:** pronto para revisão
+**Status:** aprovado (caio-nascime, 22/11/2026)
 **Branch:** feat/NUC-02-decidir-o-acesso-por-escritorio-papel-e · **Data:** 22/11/2026 · **Responsável:** caio-nascime
 **Tasks:** planos/NUC-02/tasks.md
 
@@ -18,30 +18,43 @@ Cada uma precisa de confirmação humana.
 - **Escolhida:** A — **motivo:** `depende_de` é vazio (DB-01 e NUC-01 não existem); I-4 separa a autorização em `core/` do RLS (NUC-03). Quem consome (ACE-03, CAD-04, ACE-05) carrega o cliente pelo próprio `repository.py` e chama a regra.
 - **Fontes:** ARCHITECTURE.md §1 e I-4; `gitpages/.../decisoes/banco-de-dados.md` (linha 41, duas camadas).
 - **Impacto:** T2 a T5; todos os critérios.
-- [ ] confirmar
+- [x] confirmar
 
 ### D2 · Quatro resultados, não um booleano
 - **Alternativas:** A) `ALLOWED`, `NOT_FOUND`, `NOT_ASSIGNED`, `FORBIDDEN_ROLE` · B) `True`/`False` · C) exceções
 - **Escolhida:** A — **motivo:** a ficha distingue "inexistente" (404, P-01), "falta de atribuição" (403 da P-09, c6/c7) e "negado pelo papel" (403 da P-01, c8). A API traduz cada um em status e mensagem; o texto "Atribua este cliente a você…" fica na API (I-14), não aqui.
 - **Fontes:** DECISIONS.md P-01 e P-09; ficha c6, c7 e c8.
 - **Impacto:** T2, T4, T5.
-- [ ] confirmar
+- [x] confirmar
 
 ### D3 · Três ações num enum
 - **Escolhida:** `Action.LIST` ("ver na lista"), `Action.ACCESS` ("acessar"), `Action.MANAGE_ASSIGNMENT` ("gerir atribuição"). Nomes em inglês pelo glossário (`firm`, `manager`, `accountant`, `client`). Alternativa (strings soltas) aceitaria ação digitada errado sem erro.
-- **Impacto:** T2. [ ] confirmar
+- **Impacto:** T2. [x] confirmar
 
 ### D4 · Cliente inexistente entra como `None`
-- **Motivo:** c7 (d) pede o mesmo resultado para identificador inexistente e para cliente de outro escritório. A regra recebe `None` e devolve `NOT_FOUND`, sem caminho separado. [ ] confirmar
+- **Motivo:** c7 (d) pede o mesmo resultado para identificador inexistente e para cliente de outro escritório. A regra recebe `None` e devolve `NOT_FOUND`, sem caminho separado. [x] confirmar
 
 ### D5 · Ordem das checagens igual à P-09 (5)
-- Vínculo inválido ou sem papel → `NOT_FOUND`; cliente `None` ou de outro escritório → `NOT_FOUND`; depois a regra da ação. Em `MANAGE_ASSIGNMENT`, contador do mesmo escritório → `FORBIDDEN_ROLE` (c8). Alternativa (checar papel antes do escritório) vazaria a existência do cliente de outro escritório. [ ] confirmar
+- Vínculo inválido ou sem papel → `NOT_FOUND`; cliente `None` ou de outro escritório → `NOT_FOUND`; depois a regra da ação. Em `MANAGE_ASSIGNMENT`, contador do mesmo escritório → `FORBIDDEN_ROLE` (c8). Alternativa (checar papel antes do escritório) vazaria a existência do cliente de outro escritório. [x] confirmar
 
 ### D6 · Filtro de lista preserva a ordem de entrada
-- c5 mostra a saída na ordem da entrada; ordenar é tarefa de quem lista (ACE-03). [ ] confirmar
+- c5 mostra a saída na ordem da entrada; ordenar é tarefa de quem lista (ACE-03). [x] confirmar
 
 ### D7 · Sem biblioteca nova
-- Só `dataclasses` e `enum` da biblioteca padrão; o código roda em 3.12 (Dockerfile) e 3.14 (ARQ-08). [ ] confirmar
+- Só `dataclasses` e `enum` da biblioteca padrão; o código roda em 3.12 (Dockerfile) e 3.14 (ARQ-08). [x] confirmar
+
+### D8 · Nomes da interface (fixados pelos testes da T1)
+- **`lastro.core.contracts`:**
+  - `Role`: `MANAGER`, `ACCOUNTANT`
+  - `Action`: `LIST`, `ACCESS`, `MANAGE_ASSIGNMENT`
+  - `AccessDecision`: `ALLOWED`, `NOT_FOUND`, `NOT_ASSIGNED`, `FORBIDDEN_ROLE`
+  - `Membership(member_id, firm_id, role, is_active)`: vínculo da sessão; `firm_id` e `role` aceitam `None`
+  - `ClientScope(client_id, firm_id, responsible_member_id)`: `responsible_member_id` aceita `None`
+- **`lastro.core.service`:**
+  - `decide_access(membership, action, client) -> AccessDecision`: `client` aceita `None` (D4)
+  - `filter_visible_clients(membership, clients) -> list[ClientScope]`: aplica `LIST` e preserva a ordem (D6)
+- **Motivo:** glossário do CODING_STANDARDS §7 e §2 (booleano com `is_`); campos por nome, sem posição. Mudar um nome depois exige mudar `tests/` (regra 3) e abrir issue `contrato:` (regra 11).
+- **Impacto:** T1 (já escrita), T2 a T5. [x] confirmar
 
 ## 3. Resumo e abordagem
 Uma regra única em `core/` responde, para um vínculo (membro), uma ação e um cliente: permitido, inexistente, falta de atribuição ou negado pelo papel. Um filtro aplica "ver na lista" a uma coleção.
@@ -87,5 +100,5 @@ Uma regra única em `core/` responde, para um vínculo (membro), uma ação e um
 
 ## 8. Aprovação
 - [x] Perguntas ATENÇÃO respondidas ou padrão aceito (22/11, caio-nascime)
-- [ ] Decisões do agente confirmadas
-- [ ] Plan e tasks revisados por ________ em __/__
+- [x] Decisões do agente confirmadas (22/11, caio-nascime)
+- [x] Plan e tasks revisados por caio-nascime em 22/11
