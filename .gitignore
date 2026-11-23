@@ -58,3 +58,7 @@ desktop.ini
 
 # Exceção: o modelo de variáveis de ambiente é versionado
 !.env.example
+
+# Front (web/): dependências e cache do pnpm
+web/node_modules/
+.pnpm-store/
