@@ -178,9 +178,14 @@ def run_alembic_upgrade(database):
     )
 
 
+def process_output(result, limit=2000):
+    """stdout and stderr of a finished subprocess, for failure messages (alembic prints to stdout)."""
+    return f"stdout:\n{result.stdout[-limit:]}\nstderr:\n{result.stderr[-limit:]}"
+
+
 @pytest.fixture
 def migrated_database(fresh_database):
     """Fresh database with every migration applied."""
     result = run_alembic_upgrade(fresh_database)
-    assert result.returncode == 0, f"alembic upgrade head failed:\n{result.stderr[-2000:]}"
+    assert result.returncode == 0, f"alembic upgrade head failed:\n{process_output(result)}"
     return fresh_database

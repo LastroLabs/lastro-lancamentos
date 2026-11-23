@@ -16,6 +16,7 @@ from conftest import (
     REPO_ROOT,
     SUPERUSER,
     connect,
+    process_output,
     run_alembic_upgrade,
 )
 
@@ -62,7 +63,7 @@ def _snapshot(database):
 
 def _assert_upgrade_ok(result, attempt):
     assert result.returncode == 0, (
-        f"alembic upgrade head failed on attempt {attempt}:\n{result.stderr[-2000:]}"
+        f"alembic upgrade head failed on attempt {attempt}:\n{process_output(result)}"
     )
 
 

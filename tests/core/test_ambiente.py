@@ -14,7 +14,7 @@ import subprocess
 import sys
 
 import yaml
-from conftest import REPO_ROOT, SUPERUSER, FreshDatabase, connect
+from conftest import REPO_ROOT, SUPERUSER, FreshDatabase, connect, process_output
 
 COMPOSE = REPO_ROOT / "docker-compose.yml"
 DOCKERFILE = REPO_ROOT / "Dockerfile"
@@ -195,7 +195,9 @@ def test_esqueleto_da_api_tem_pontos_de_extensao_fixos(monkeypatch):
         timeout=60,
         check=False,
     )
-    assert imported.returncode == 0, f"import without DATABASE_URL failed:\n{imported.stderr}"
+    assert imported.returncode == 0, (
+        f"import without DATABASE_URL failed:\n{process_output(imported)}"
+    )
 
     # A listening socket as a trap: the URL points to it, and no connection may arrive
     # while importing, creating the app and calling a route that does not use the database.
