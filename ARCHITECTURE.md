@@ -45,6 +45,7 @@ fixtures/                   dados sintéticos gerados (`hx fixtures build`)
 layouts/dominio.yaml        layout da planilha do Domínio (PROVISÓRIO, D-05)
 features/ planos/ progress/ processo: fichas, planos e diário (ver AGENTS.md)
 tools/                      harness: harness.py, hx, hx.ps1
+tools/fixtures_sinteticas.py gerador do `hx fixtures build` (só biblioteca padrão, HAR-03)
 docs/                       decisões, requisitos, segurança, templates, docs/modules/
 gitpages/                   site de documentação (Astro/Starlight, pnpm)
 ```

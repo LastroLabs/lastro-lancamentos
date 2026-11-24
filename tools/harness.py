@@ -1503,7 +1503,15 @@ def _criar_parser() -> argparse.ArgumentParser:
     sub_fixtures = p_fixtures.add_subparsers(dest="acao", required=True, metavar="<ação>")
     p_fbuild = sub_fixtures.add_parser(
         "build",
-        help=f"gera {PASTA_FIXTURES}/ a partir de uma semente fixa (mesma semente, mesmos bytes)",
+        help=(
+            f"gera {PASTA_FIXTURES}/ a partir de uma semente fixa e apaga dela o que o "
+            "gerador não produz (exceto .gitkeep)"
+        ),
+        description=(
+            f"Gera {PASTA_FIXTURES}/ a partir de uma semente fixa (mesma semente, mesmos bytes). "
+            f"Atenção: sem --check, apaga de {PASTA_FIXTURES}/ os arquivos que o gerador não "
+            "produz (exceto .gitkeep)."
+        ),
     )
     p_fbuild.add_argument(
         "--semente", type=_semente, default=None, metavar="N",

@@ -88,7 +88,7 @@ lastro-lancamentos/
 │   ├── qualidade.md
 │   └── rubrica-revisao.md
 ├── features/                 # <SIGLA>-nn.json: fichas (o estado só muda pelo hx)
-├── fixtures/                 # GERADO por hx fixtures build; fora do Git
+├── fixtures/                 # GERADO por hx fixtures build; conteúdo fora do Git, exceto o .gitkeep
 ├── gitpages/                 # site Astro + Starlight (regra de sincronização abaixo)
 ├── layouts/
 │   └── dominio.yaml          # layout do Domínio, PROVISORIO (D-05) (a criar)
