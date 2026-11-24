@@ -79,3 +79,28 @@ Dados de referência (inventados, iguais aos da ficha): escritório `ESC-1`; `ch
   - [x] `hx check-clean` e `hx verify` em OK
   - [x] `hx feature verify ACE-01` grava `passing`
 - **Pronto quando:** os três comandos do `hx` terminam com código 0
+
+---
+
+Respostas às perguntas 1 e 2 (caio-nascime, 24/11, na revisão do #57). A T3 trocou de prazo: as 8 h corridas viram D9.
+
+## [ ] T7 · Testes de inatividade e de quem tem dois escritórios
+- **Decisões relacionadas:** D9, D10
+- **Regra de negócio (em linguagem simples):** a sessão cai depois de 2 h sem uso e nunca passa de 12 h. Quem tem vínculo em dois escritórios não entra no MVP; com a senha certa recebe um aviso próprio, com a errada a recusa de sempre.
+- **Critérios de aceite:**
+  - [ ] Novo arquivo `tests/access/test_login_prazo_e_escritorio.py`; `tests/access/test_login.py` não muda
+  - [ ] Pedido aceito renova `expira_em` para agora + 2 h, sem passar de `criada_em` + 12 h
+  - [ ] Sessão parada além de `expira_em` ou com mais de 12 h → 401 "Sua sessão terminou. Entre de novo."
+  - [ ] Dois vínculos ativos: senha errada → 401 de sempre; senha certa → 409 "Este usuário está em mais de um escritório. Peça ao chefe um usuário para cada escritório."; sem nome de escritório, sem cookie, sem sessão
+  - [ ] Falham hoje pelo motivo certo
+- **Arquivos:** `tests/access/test_login_prazo_e_escritorio.py`
+- **Pronto quando:** `pytest tests/access/test_login_prazo_e_escritorio.py -q` mostra só falhas esperadas
+
+## [ ] T8 · Implementar D9 e D10
+- **Critérios de aceite:**
+  - [ ] `SESSION_IDLE_TIMEOUT` (2 h) e `SESSION_MAX_DURATION` (12 h) em `access/service.py`; `identify` renova o prazo
+  - [ ] `MultipleFirmsError` em `access/contracts.py`; 409 na API, só depois da senha certa
+  - [ ] OpenAPI e `schema.d.ts` regenerados; `docs/modulos/access.md` e `docs/decisoes/DECISIONS.md` (seção 7) atualizados
+  - [ ] `git diff <novo-hash-dos-testes> -- tests/` vazio; `hx verify`, `hx check-clean` e `hx feature verify ACE-01` em OK
+- **Arquivos:** `src/lastro/access/`, `src/lastro/api/routes.py`, `docs/api/openapi.json`, `web/src/api/schema.d.ts`, `docs/modulos/access.md`
+- **Pronto quando:** `pytest tests/access -q` passa

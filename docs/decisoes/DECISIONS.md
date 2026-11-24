@@ -113,3 +113,12 @@ Raissa aprovou o plano e as tarefas da DB-02 nesta data, incluindo as escolhas D
 | DB-02/B1 | Enquanto HAR-03 não gerar fixtures, os testes de esquema da DB-02 podem criar apenas registros sintéticos transitórios no banco descartável, com nomes fictícios e CNPJ de verificador inválido. Nenhum dado real ou fixture persistida. |
 | DB-02/B2 | Preservar os nomes físicos em português e os quatro nomes de teste definidos pela ficha; classes e auxiliares Python seguem a convenção em inglês. |
 | DB-02/B3 | A DB-02 entrega as restrições do esquema. As políticas RLS seguem na NUC-03, cuja conclusão é obrigatória antes de dados de piloto. |
+
+## 7. Decisões da ACE-01 — 24/11/2026
+
+Respostas às perguntas 1 e 2 do plano da ACE-01, dadas por caio-nascime (dono da ACE-02) na revisão do PR #57. Valem para o MVP.
+
+| Referência | Decisão e alcance |
+|---|---|
+| ACE-01/E1 | **Prazo da sessão:** a sessão cai depois de 2 h sem uso e nunca passa de 12 h desde a entrada. Cada pedido aceito renova `sessao.expira_em` (agora + 2 h, limitado a `criada_em` + 12 h); o token não muda. Detalhe em `planos/ACE-01/plan.md`, D9. |
+| ACE-01/E2 | **Um escritório por usuário:** entrar exige um único vínculo ativo, em escritório ativo. Quem trabalha em dois escritórios usa um usuário em cada. Se houver dois vínculos, a entrada responde 409 "Este usuário está em mais de um escritório. Peça ao chefe um usuário para cada escritório.", só depois da senha certa (com a senha errada, continua a 401 de sempre). Escolher o escritório na entrada foi descartado: muda a lógica do convite (ACE-02) e não cabe no prazo. Detalhe em `planos/ACE-01/plan.md`, D10. |

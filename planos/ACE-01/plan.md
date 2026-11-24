@@ -5,11 +5,11 @@
 **Tasks:** planos/ACE-01/tasks.md
 
 ## 1. A decidir (humano)
-Nenhuma pergunta BLOQUEANTE. As ATENÇÕES abaixo seguem o padrão sugerido até alguém dizer o contrário.
+Nenhuma pergunta BLOQUEANTE. As perguntas 1 e 2 foram respondidas em 24/11 (D9 e D10, registradas no `DECISIONS.md`); as ATENÇÕES 3 e 4 seguem o padrão sugerido até alguém dizer o contrário.
 | # | Pergunta | Gravidade | Sugestão de padrão | Decide |
 |---|---|---|---|---|
-| 1 | Prazo da sessão. A modelagem (SESSAO) diz que "o prazo não foi fixado" e a página de segurança pede "expiração por inatividade". A tabela `sessao` só tem `expira_em`. | ATENÇÃO | 8 horas corridas a partir da entrada (um dia de trabalho), numa constante do `access/`. Expiração por inatividade fica para quando o front existir (exige renovar `expira_em` a cada pedido) | líder |
-| 2 | O `usuario` é global e pode ter vínculo (`membro`) em mais de um escritório. A ficha não diz em qual escritório a sessão abre nesse caso. | ATENÇÃO | Entrar exige **um** vínculo ativo, em escritório ativo. Com zero ou com dois ou mais, a recusa é a mesma de senha errada (c2). Escolher o escritório no login fica para quando um piloto precisar | líder + dono da ACE-02 (caio-nascime) |
+| 1 | Prazo da sessão. A modelagem (SESSAO) diz que "o prazo não foi fixado" e a página de segurança pede "expiração por inatividade". A tabela `sessao` só tem `expira_em`. | RESPONDIDA | ~~8 horas corridas a partir da entrada~~ → expira depois de **2 h sem uso**, renovando `expira_em` a cada pedido, com **teto de 12 h** desde a entrada (D9; seção 5) | caio-nascime, 24/11 |
+| 2 | O `usuario` é global e pode ter vínculo (`membro`) em mais de um escritório. A ficha não diz em qual escritório a sessão abre nesse caso. | RESPONDIDA | Um vínculo ativo por usuário no MVP; com dois ou mais, erro próprio (409), só depois da senha certa (D10; seção 5) | caio-nascime (dono da ACE-02), 24/11 |
 | 3 | Proteção contra CSRF (página de segurança: "proteção CSRF nas rotas que alteram dados"). Esta ficha cria duas rotas que alteram dados: entrar e sair. | ATENÇÃO | Cookie `SameSite=Lax` e entrada só com corpo JSON (navegador não envia JSON de outro site sem pedir permissão antes). Token CSRF próprio fica para uma ficha de segurança, antes do piloto | líder |
 | 4 | `usuario.identificador_login` é único com diferença entre maiúsculas e minúsculas (DB-01). | ATENÇÃO | Comparar em minúsculas e sem espaço nas pontas (`lower()` no banco). A ACE-02 grava o login já em minúsculas; dois logins que só diferem na caixa são recusados como senha errada | arthurlleite + caio-nascime |
 
@@ -66,6 +66,18 @@ Cada uma precisa de confirmação humana.
 - O `conftest.py` de `tests/access/` fixa a revisão `0002` para os testes da DB-01; o teste desta ficha migra até `head` numa fixture própria, sem mexer no `conftest.py`.
 - **Impacto:** T1. [ ] confirmar
 
+### D9 · Expiração por inatividade com teto (resposta à pergunta 1)
+- **Escolhida:** a entrada grava `expira_em` = agora + 2 h. Cada pedido aceito renova `expira_em` para o menor entre agora + 2 h e `criada_em` + 12 h. Passou de `expira_em` ou de 12 h desde a entrada: "Sua sessão terminou. Entre de novo." O token não muda; só o prazo no banco anda. O cookie vale até o teto de 12 h, porque quem decide é o servidor.
+- **Custo:** um `UPDATE` em `sessao` por pedido autenticado. Aceitável no MVP; dá para espaçar a renovação depois, se pesar.
+- **Impacto:** T7, T8. [ ] confirmar
+
+### D10 · Um escritório por usuário, com erro próprio (resposta à pergunta 2)
+- **Escolhida:** entrar exige um vínculo ativo, em escritório ativo. Quem tem dois ou mais recebe **409** `application/problem+json`, título "Mais de um escritório", `detail` "Este usuário está em mais de um escritório. Peça ao chefe um usuário para cada escritório.", sem cookie e sem linha em `sessao`. O caso não deve acontecer no MVP (a ACE-02 convida para um escritório); o erro próprio dá contexto a quem for dar suporte.
+- **Só depois da senha certa:** com senha errada, a resposta continua a 401 de sempre (D5), então o 409 não revela a um estranho que a conta existe. O corpo não cita os escritórios.
+- **Alternativas:** A) a 401 de senha errada (confunde quem acertou a senha) · B) escolher o escritório na entrada (proposto e descartado em 24/11: muda a lógica do convite e não cabe no prazo do MVP).
+- **Registro:** `docs/decisoes/DECISIONS.md`, seção 7 (ACE-01/E2).
+- **Impacto:** T7, T8. [ ] confirmar
+
 ## 3. Resumo e abordagem
 O contador entra com usuário e senha, recebe um cookie de sessão guardada no servidor, pergunta "quem sou eu" e sai. Erros não dizem qual campo errou nem se o usuário existe.
 1. T1: testes da ficha em `tests/access/test_login.py`.
@@ -74,6 +86,8 @@ O contador entra com usuário e senha, recebe um cookie de sessão guardada no s
 4. T4: rotas, cookie e erros RFC 9457 na API.
 5. T5: OpenAPI e cliente do front regenerados; doc do módulo.
 6. T6: verificação final.
+7. T7: testes das respostas às perguntas 1 e 2 (D9 e D10), em commit só de testes.
+8. T8: implementação de D9 e D10; OpenAPI, doc e `DECISIONS.md` atualizados; verificação de novo.
 
 ## 4. Contexto encontrado
 - **Código relacionado:** modelos `User`, `Member`, `Firm` e `Session` em `src/lastro/access/models.py` (DB-01); `Role` e `Membership` em `src/lastro/core/contracts.py` (NUC-02); `get_session` em `src/lastro/core/db.py` e `create_app` em `src/lastro/api/app.py` (NUC-01).
@@ -87,18 +101,21 @@ O contador entra com usuário e senha, recebe um cookie de sessão guardada no s
 - 18/11 · ARQ-03: sessão no servidor, não JWT.
 - 18/11 · P-01: 401 sem sessão ou com sessão encerrada.
 - 18/11 · Stack: cookie `HttpOnly`, `Secure`, `SameSite=Lax` e senha com Argon2.
+- 24/11 · Pergunta 1 (D9): sessão expira por inatividade de 2 h, com teto de 12 h desde a entrada (caio-nascime, na revisão do #57).
+- 24/11 · Pergunta 2: um vínculo ativo por usuário no MVP, com erro próprio (409) para quem tem dois (D10). Quem precisar de dois escritórios usa um usuário em cada. Escolher o escritório na entrada chegou a ser proposto, mas mudaria a lógica do convite (ACE-02) e não cabe no prazo (caio-nascime, dono da ACE-02, na revisão do #57).
 
 ## 6. Avaliação da ficha
 | # | Achado | Gravidade | Critério |
 |---|---|---|---|
 | 1 | 6 critérios (> 4), mas todos sobre o mesmo fluxo de sessão. Cabe em uma sessão de testes e uma de implementação. Não sugiro dividir. | ATENÇÃO | todos |
-| 2 | Prazo da sessão e vários escritórios por usuário não estão na ficha (perguntas 1 e 2). | ATENÇÃO | c1 |
+| 2 | Prazo da sessão e vários escritórios por usuário não estão na ficha (perguntas 1 e 2, respondidas). Os testes de D9 e D10 ficam em `tests/access/test_login_prazo_e_escritorio.py`, fora da `verificacao` da ficha; rodam no `hx verify`. Sugestão (o humano aplica em PR): acrescentar c7 (inatividade) e c8 (dois escritórios, 409) à ficha. | ATENÇÃO | c1 |
 | 3 | "Mesma recusa" vira regra checável: status, corpo inteiro igual e nenhuma linha nova em `sessao`. | — | c2, c6 |
 | 4 | Exemplos claros, com usuários inventados e senhas geradas na hora. | — | c1–c6 |
 
 ## 7. Riscos
 - RLS da NUC-03: a entrada procura o usuário antes de saber o escritório. As políticas precisam deixar essa consulta passar sem abrir o resto → avisar o dono da NUC-03 (guin409) no PR.
-- Sessão sem expiração por inatividade (pergunta 1): um computador esquecido aberto fica logado até 8 h.
+- Sessão parada cai em 2 h (D9); um computador esquecido em uso contínuo fica logado até o teto de 12 h.
+- Quem trabalha em dois escritórios precisa de um usuário em cada (D10); revisar se um piloto precisar.
 - Sem token CSRF (pergunta 3): depende do `SameSite=Lax` até a ficha de segurança.
 - Mudar `SignedInMember` ou a dependência depois exige issue `contrato:` (regra 11).
 
