@@ -16,13 +16,12 @@ Como preencher (agente, ao encerrar a sessão):
 `hx fixtures build [--semente N] [--check]` gera em `fixtures/` o cadastro sintético, uma planilha de plano por cliente e, por conta bancária, um OFX e um gabarito, sempre iguais para a mesma semente. O `--check` confere a pasta sem regravar, e o check-clean passa a varrer `fixtures/`.
 
 ## Próxima ação
-Feature concluída (T1 a T7) e documentação ajustada após a revisão do PR #58. Falta rodar o `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida e registrar o resultado (ver Bloqueios), e decidir o texto da exceção DB-01 em `docs/SECURITY.md`. Depois, as pendências abaixo, cada uma no seu PR, fora desta branch.
+Feature concluída (T1 a T7); documentação e ficha (c4, c5, `verificacao`) ajustadas após a revisão do PR #58, com novo `hx feature verify` OK. Falta rodar o `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida e registrar o resultado (ver Bloqueios), e decidir o texto da exceção DB-01 em `docs/SECURITY.md`. Depois, as pendências abaixo, cada uma no seu PR, fora desta branch.
 
 ## Bloqueios e perguntas
 - `hx check-clean` com a lista real de `LASTRO_NOMES_PROIBIDOS`: a execução de 24/11 (S4, ver Rodei) mostrou "verificação de nomes pulada (variável não definida)", então a lista não foi aplicada. camposs04 define a variável no mesmo shell, roda de novo e registra.
 - `docs/SECURITY.md` §3, exceção DB-01 ("enquanto `hx fixtures build` estiver indisponível"): o comando já existe. Encerrar ou reescrever a exceção muda uma regra de segurança decidida pelo responsável da DB-01 (`DECISIONS.md` §5, DB-01/B3). Proposta levada a camposs04; não editado.
 - Pendências fora do escopo da HAR-03:
-  - PR na ficha, feito por humano: c4 com o caso (d), arquivo a mais em `fixtures/`, e `test_check_com_arquivo_a_mais_falha_sem_apagar` em `verificacao`; c5 com o check-clean varrendo `fixtures/` mesmo fora do Git (aceitas em 24/11).
   - PR de docs com a versão do Python (`tools/hx`, cabeçalho do `harness.py`, AGENTS.md), resposta 4 do plan, incluindo a mensagem "requer Python 3.11+".
   - Traceback quando `fixtures/` existe como arquivo, e não como pasta: o `build` deveria sair com ERRO/MOTIVO/CORREÇÃO (apontado na revisão do PR #58).
   - `docs/modules/harness.md` com o contrato v0 do `hx fixtures build` (formato do c6, caminhos relativos a `fixtures/`, `cnpjs_dos_clientes`).
@@ -35,6 +34,7 @@ Feature concluída (T1 a T7) e documentação ajustada após a revisão do PR #5
 - 24/11 · S3 · T2 a T6: `tools/fixtures_sinteticas.py` (modelo em memória, `cadastro.json`, .xlsx com `zipfile`, OFX 1.0.2 e gabarito; função pura semente → {caminho: bytes}) e, em `tools/harness.py`, `hx fixtures build [--semente N] [--check]` e o `varrer` incluindo `fixtures/`. Commit da implementação: `b2a8443`.
 - 24/11 · S3 · T7: verificação final (ver Rodei). `hx feature verify HAR-03` gravou o estado na ficha, commit `bec9f04`. `git diff 49751a5 -- tests/` vazio.
 - 24/11 · S4 · Ajustes de documentação pedidos pelas duas revisões do PR #58 (ACEITAR): desvio da D7 e extras registrados no plan; T1 a T7 marcadas em `tasks.md`; ARCHITECTURE.md lista `tools/fixtures_sinteticas.py`; README corrigido (`.gitkeep` versionado); ajuda do `hx fixtures build` avisa que apaga o que o gerador não produz. Sem mudança de comportamento nem em `tests/`.
+- 24/11 · S4 · Ficha ajustada no PR #58, por decisão de camposs04: c4 com o caso (d), arquivo a mais; c5 com o check-clean varrendo `fixtures/` mesmo fora do Git; `test_check_com_arquivo_a_mais_falha_sem_apagar` em `verificacao` (commit `aa057a6`). Novo `hx feature verify HAR-03` gravou a evidência (commit `4ca2bdc`).
 
 ## Rodei
 - 24/11 · S2 · `pytest tests/harness/test_fixtures.py --collect-only -q` (host) → 23 coletados
@@ -52,6 +52,7 @@ Feature concluída (T1 a T7) e documentação ajustada após a revisão do PR #5
 - 24/11 · S3 · `hx feature verify HAR-03` → OK, c1 a c6 (14 testes), estado gravado no commit `bec9f04` (informado por camposs04)
 - 24/11 · S3 · `git diff 49751a5 -- tests/` → vazio
 - 24/11 · S4 · `python3 tools/harness.py check-clean` (rodado e informado por camposs04, que pretendia usar a lista real) → saída exata: "AVISO: verificação de nomes pulada (variável não definida)" / "check-clean: 0 achado(s)" / "RESULTADO: OK". A variável não chegou ao processo: os nomes **não** foram conferidos.
+- 24/11 · S4 · `sh tools/hx feature verify HAR-03` depois do commit `aa057a6` → RESULTADO: OK, 15 testes (c1: 2, c2: 4, c3: 2, c4: 4, c5: 2, c6: 1); evidência gravada no commit `4ca2bdc`
 
 ## Falhou
 - 24/11 · S2 · Os 23 testes de `tests/harness/test_fixtures.py` falham de propósito (T1, testes antes do código): o subcomando `fixtures` e `tools/fixtures_sinteticas.py` ainda não existem. Por isso `hx verify` não foi rodado: ficaria vermelho até a T5/T6.
@@ -71,6 +72,7 @@ Feature concluída (T1 a T7) e documentação ajustada após a revisão do PR #5
 - 24/11 · S3 · OFX com CRLF e todas as datas em `AAAAMMDD` (8 dígitos, inclusive `DTSERVER`): um carimbo de 14 dígitos seria candidato ao detector de CNPJ. FITID = `F` + 5 dígitos da conta + 4 da sequência (nunca 11 nem 14 caracteres).
 - 24/11 · S4 · Desvio da D7 (trava no comando, aborto com código 2) e os extras (`--semente` negativa → código 2; `build` apaga pastas vazias) confirmados por camposs04 e registrados em `planos/HAR-03/plan.md` §5, sem alterar D1 a D7.
 - 24/11 · S4 · Ficam fora do PR #58: traceback com `fixtures/` como arquivo, mensagem "requer Python 3.11+", ficha c4(d)/c5 e o teste extra em `verificacao` (PR de humano), `docs/modules/harness.md`.
+- 24/11 · S4 · camposs04 mudou a decisão acima sobre a ficha: c4(d), c5 e o teste extra em `verificacao` entram no próprio PR #58 (commit `aa057a6`), como o plan propunha. Os demais itens seguem fora.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"

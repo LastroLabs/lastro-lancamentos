@@ -1,6 +1,6 @@
 # Plan — HAR-03 · Gerar fixtures e gabarito sintéticos por semente fixa
 
-**Status:** aprovado (camposs04, 24/11/2026) — perguntas 1–4 respondidas e D1–D7 confirmadas; as duas mudanças na ficha estão aceitas e aguardam PR
+**Status:** aprovado (camposs04, 24/11/2026) — perguntas 1–4 respondidas e D1–D7 confirmadas; as duas mudanças na ficha foram aceitas e aplicadas em `aa057a6`
 **Branch:** feat/HAR-03-gerar-fixtures-e-gabarito-sinteticos-por · **Data:** 24/11/2026 · **Responsável:** camposs04
 **Tasks:** planos/HAR-03/tasks.md
 
@@ -12,9 +12,9 @@
 | 3 | Quem gera `fixtures/` para os testes das consumidoras (CAD-05, IA-02)? A CI roda só `hx verify` e a pasta não é versionada | ATENÇÃO (não bloqueia a HAR-03) | **Respondida 24/11:** uma fixture de pytest de sessão gera em `tmp_path` chamando o gerador; nada depende da pasta da raiz. Fica para a CAD-05 e a IA-02, sem task na HAR-03 | camposs04 |
 | 4 | Versão de Python do harness: `tools/hx` diz 3.10+, o cabeçalho de `harness.py` diz 3.11+, o AGENTS.md pede compatibilidade de biblioteca com 3.12 e a stack é 3.14 | ATENÇÃO | **Respondida 24/11:** gerador compatível com Python 3.11+ (o do harness), sem biblioteca nova; a correção dos textos (`tools/hx`, cabeçalho do `harness.py`, AGENTS.md) vai num PR de docs separado, fora desta branch | camposs04 |
 
-Mudanças na ficha, **aceitas por camposs04 em 24/11 e ainda pendentes** (a ficha não foi alterada; camposs04 aplica em PR):
-- c4: incluir o caso "(d) arquivo a mais em fixtures/" (pergunta 2) e um teste novo em `verificacao`, sugestão `test_check_com_arquivo_a_mais_falha_sem_apagar`.
-- c5: trocar "roda hx check-clean" por "roda hx check-clean, que varre fixtures/ mesmo fora do Git" (pergunta 1).
+Mudanças na ficha, **aceitas por camposs04 em 24/11 e aplicadas no PR #58** (commit `aa057a6`, por decisão de camposs04 após a revisão):
+- [x] c4: incluir o caso "(d) arquivo a mais em fixtures/" (pergunta 2) e um teste novo em `verificacao`, sugestão `test_check_com_arquivo_a_mais_falha_sem_apagar`. Aplicada em `aa057a6`.
+- [x] c5: trocar "roda hx check-clean" por "roda hx check-clean, que varre fixtures/ mesmo fora do Git" (pergunta 1). Aplicada em `aa057a6`.
 
 ## 2. Decisões tomadas pelo agente
 ### D1 · Gerador em `tools/fixtures_sinteticas.py`, só biblioteca padrão; `hx fixtures build` em `harness.py`
