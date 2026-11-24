@@ -192,7 +192,8 @@ def test_adm01_cria_escritorio_e_chefe_que_consegue_entrar(head_database, caplog
     assert identity.status_code == 200, identity.text
     body = identity.json()
     assert body["username"] == MANAGER_1
-    assert body["role"] == "chefe"
+    # The API names the role in English ("manager"); the database keeps "chefe".
+    assert body["role"] == "manager"
     assert body["firm_name"] == FIRM_1
     assert PASSWORD_1 not in sign_in.text + identity.text
 
