@@ -24,7 +24,7 @@ result = validate_cnpj(raw_cnpj)
 | Situação | `error_message` |
 |---|---|
 | Entrada vazia ou só com espaços | `"Informe o CNPJ do cliente."` |
-| Tamanho errado, caractere fora do padrão, máscara mal posicionada, 14 caracteres iguais ou dígito verificador incorreto | `"O CNPJ informado não é válido. Confira os caracteres."` |
+| Tamanho errado, caractere fora do padrão, máscara mal posicionada, 14 caracteres iguais ou dígito verificador incorreto | `"O CNPJ informado não é válido. Confira os números."` |
 
 > **Versionamento (v0):** qualquer mudança de campo, assinatura ou mensagem oficial deve avisar a responsável pela `CAD-03` (`RaissaOliveira19`), consumidora direta deste contrato.
 
@@ -39,7 +39,7 @@ result = validate_cnpj(raw_cnpj)
 
 ## Consumidores e impactos conhecidos
 
-- **CAD-03 (consumidora direta, `not_started`):** a ficha `features/CAD-03.json` (critério `c2`, linha 35) ainda cita `"Confira os números."`, enquanto o validador devolve `"Confira os caracteres."`. Ao implementar a `CAD-03`, consumir `result.error_message` diretamente em vez de duplicar a string, e alinhar a ficha da `CAD-03` no planejamento/PR dela.
+- **CAD-03 (consumidora direta, `not_started`):** a ficha `features/CAD-03.json` (critério `c2`, linha 35) está alinhada com `"O CNPJ informado não é válido. Confira os números."`. Ainda assim, ao implementar a `CAD-03`, consumir `result.error_message` diretamente em vez de duplicar a string.
 - **DB-01 (`cliente.cnpj_normalizado`):** a persistência precisa aceitar 14 caracteres alfanuméricos em texto (`TEXT`), nunca inteiro nem restrição apenas de dígitos.
 - **P-13 (status HTTP de dado inválido):** continua pendente em `docs/decisoes/DECISIONS.md`. Este contrato devolve apenas a mensagem de erro; a tradução para status HTTP (RFC 9457) pertence à camada `api/`.
 - **`tools/harness.py` (`check-clean`):** a função `cnpj_valido` do harness é propositalmente separada de `src/lastro/` (o código de produção não importa `tools/`). A `HAR-04` trata a parte alfanumérica no harness; manter atenção para que as duas regras não divirjam.

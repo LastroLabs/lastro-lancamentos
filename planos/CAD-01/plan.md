@@ -81,7 +81,7 @@ Validação e normalização pura de CNPJ numérico e alfanumérico (padrão jul
 - 23/11 . Aceitar apenas os 14 caracteres sem máscara ou a máscara oficial exata `XX.XXX.XXX/XXXX-XX`, conforme e organização sugerida (pergunta 1, Thomaz).
 - 23/11 . CNPJs com todos os 14 caracteres iguais devem ser recusados, conforme a organização sugerida (pergunta 2, Thomaz).
 - 23/11 . Aceitar todo o alfabeto ASCII `A–Z` nas 12 primeiras posições, conforme a organização sugerida (pergunta 3, Thomaz).
-- 23/11 . Na frase, trocar a palavra números pela palavra caracteres (pergunta 4, Thomaz). 
+- 24/11 . Manter o texto literal original `'O CNPJ informado não é válido. Confira os números.'` para compatibilidade com `CAD-01` e `CAD-03` (reversão da troca anterior de 23/11, seguindo o padrão sugerido da pergunta 4 sem alterar texto ao usuário sem aprovação prévia da liderança; Thomaz).
 - 23/11 . Sim: manter os nomes da ficha nos testes (`CODING_STANDARDS.md` §9.4) e escrever o código em `src/lastro/registry/` em inglês (§9.1), conforme a orientação sugerida (pergunta 5, Thomaz).
 
 ## 6. Avaliação da ficha

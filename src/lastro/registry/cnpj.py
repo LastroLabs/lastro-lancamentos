@@ -10,18 +10,18 @@ import re
 from lastro.registry.contracts import CnpjValidationResult
 
 EMPTY_CNPJ_MESSAGE = "Informe o CNPJ do cliente."
-INVALID_CNPJ_MESSAGE = "O CNPJ informado não é válido. Confira os caracteres."
+INVALID_CNPJ_MESSAGE = "O CNPJ informado não é válido. Confira os números."
 
-_RAW_CNPJ_PATTERN = re.compile(r"^[A-Z0-9]{12}[0-9]{2}$", re.ASCII)
+_RAW_CNPJ_PATTERN = re.compile(r"[A-Z0-9]{12}[0-9]{2}", re.ASCII)
 _MASKED_CNPJ_PATTERN = re.compile(
-    r"^[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}/[A-Z0-9]{4}-[0-9]{2}$",
+    r"[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}/[A-Z0-9]{4}-[0-9]{2}",
     re.ASCII,
 )
 _FIRST_DIGIT_WEIGHTS = (5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
 _SECOND_DIGIT_WEIGHTS = (6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
 
 
-def validate_cnpj(cnpj: str) -> CnpjValidationResult:
+def _validate_cnpj(cnpj: str) -> CnpjValidationResult:
     """Validate and normalize a numeric or alphanumeric CNPJ.
 
     Leading and trailing whitespace are stripped before checking emptiness.

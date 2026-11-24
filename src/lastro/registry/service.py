@@ -3,7 +3,7 @@
 Pure domain functions exposed to other modules and the API layer.
 """
 
-from lastro.registry.cnpj import validate_cnpj as _validate_cnpj
+from lastro.registry.cnpj import _validate_cnpj
 from lastro.registry.contracts import CnpjValidationResult
 
 

@@ -27,7 +27,7 @@
       "descricao": "CNPJ com dígito verificador errado é recusado com mensagem em português simples",
       "exemplo": {
         "entrada": "o CNPJ de c1 com o último dígito trocado por outro",
-        "saida": "recusado com a mensagem 'O CNPJ informado não é válido. Confira os caracteres.'"
+        "saida": "recusado com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
       }
     },
     {
@@ -35,7 +35,7 @@
       "descricao": "CNPJ alfanumérico (padrão de julho/2026) com dígitos verificadores corretos é aceito, inclusive em minúsculas",
       "exemplo": {
         "entrada": "um CNPJ alfanumérico (12 primeiros caracteres com letras e números, 2 dígitos verificadores numéricos corretos), gerado na hora pelo teste; valida (a) em maiúsculas e (b) o mesmo em minúsculas; valida também (c) o mesmo CNPJ com um dígito verificador trocado",
-        "saida": "(a) e (b) aceitos, com o mesmo valor normalizado em maiúsculas; (c) recusado com a mensagem 'O CNPJ informado não é válido. Confira os caracteres.'"
+        "saida": "(a) e (b) aceitos, com o mesmo valor normalizado em maiúsculas; (c) recusado com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
       }
     },
     {
@@ -43,7 +43,7 @@
       "descricao": "CNPJ vazio, com tamanho errado ou com caractere fora do padrão é recusado",
       "exemplo": {
         "entrada": "valida (a) texto vazio, (b) 13 caracteres, (c) 15 caracteres e (d) 14 caracteres com um '#' no meio",
-        "saida": "(a) recusado com a mensagem 'Informe o CNPJ do cliente.'; (b), (c) e (d) recusados com a mensagem 'O CNPJ informado não é válido. Confira os caracteres.'"
+        "saida": "(a) recusado com a mensagem 'Informe o CNPJ do cliente.'; (b), (c) e (d) recusados com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
       }
     }
   ],

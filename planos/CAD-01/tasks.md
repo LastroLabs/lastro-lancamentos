@@ -5,7 +5,7 @@
 
 Mensagens oficiais da ficha (exatas):
 - Vazio: `'Informe o CNPJ do cliente.'`
-- Inválido (DV errado, tamanho errado, caractere fora do padrão, máscara malformada ou todos os caracteres iguais): `'O CNPJ informado não é válido. Confira os caracteres.'`
+- Inválido (DV errado, tamanho errado, caractere fora do padrão, máscara malformada ou todos os caracteres iguais): `'O CNPJ informado não é válido. Confira os números.'`
 
 ---
 
@@ -18,7 +18,7 @@ Mensagens oficiais da ficha (exatas):
   - [x] Os CNPJs válidos usados nos testes são montados em tempo de execução por uma função auxiliar local independente (cálculo Módulo 11 com `ASCII − 48`), sem nenhum CNPJ válido literal no arquivo (evita disparo no `hx check-clean` hoje e após `HAR-04`)
   - [x] c1 valida sem máscara e com máscara (`XX.XXX.XXX/XXXX-XX`) e confere que o `normalized` tem 14 caracteres e é igual nos dois casos; c2 altera o último dígito e confere a mensagem exata; c3 valida maiúsculas, minúsculas (e versão mascarada) e confere normalização em maiúsculas + recusa com DV trocado; c4 valida `""`, `"   "`, 13 caracteres, 15 caracteres, 14 caracteres com `'#'`, máscara mal posicionada e `00.000.000/0000-00`
   - [x] Todos os 5 testes falham hoje por ausência de `lastro.registry.service` (`ModuleNotFoundError`/`ImportError`), não por erro de sintaxe ou no próprio teste
-- **Exemplos:** raiz sintética de 12 dígitos + DV calculado na hora (sem e com máscara) → `is_valid=True`, `normalized` com 14 dígitos iguais nos dois casos, `error_message=None`; mesma raiz + DV errado (`00`) → `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os caracteres.'`; `""` → `is_valid=False`, `error_message='Informe o CNPJ do cliente.'`
+- **Exemplos:** raiz sintética de 12 dígitos + DV calculado na hora (sem e com máscara) → `is_valid=True`, `normalized` com 14 dígitos iguais nos dois casos, `error_message=None`; mesma raiz + DV errado (`00`) → `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os números.'`; `""` → `is_valid=False`, `error_message='Informe o CNPJ do cliente.'`
 - **Arquivos:** `tests/registry/test_cnpj.py`
 - **Reaproveitar:** padrão de montagem dinâmica de dados sintéticos de `tests/harness/test_fase_b.py` · **Não criar:** código de produção, `conftest.py` compartilhado, nem literais de CNPJ com DV válido
 - **Fora do escopo:** qualquer arquivo em `src/lastro/registry/`, persistência em banco, rotas HTTP
@@ -46,9 +46,9 @@ Mensagens oficiais da ficha (exatas):
 - **Critérios de aceite:**
   - [x] `""` e `"   "` retornam `is_valid=False`, `normalized=None`, `error_message='Informe o CNPJ do cliente.'`
   - [x] Regex com `re.ASCII` aceita exclusivamente sem máscara (`^[A-Z0-9]{12}[0-9]{2}$`) ou máscara oficial (`^[A-Z0-9]{2}\.[A-Z0-9]{3}\.[A-Z0-9]{3}/[A-Z0-9]{4}-[0-9]{2}$`) após `.strip().upper()`
-  - [x] Tamanho diferente de 14 (13 ou 15), caractere fora do padrão (`'#'`, letra acentuada, dígito não-ASCII), letra nos 2 últimos dígitos, pontuação mal posicionada e 14 caracteres todos iguais (`00000000000000`) retornam `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os caracteres.'`
+  - [x] Tamanho diferente de 14 (13 ou 15), caractere fora do padrão (`'#'`, letra acentuada, dígito não-ASCII), letra nos 2 últimos dígitos, pontuação mal posicionada e 14 caracteres todos iguais (`00000000000000`) retornam `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os números.'`
   - [x] Entradas bem formadas produzem string normalizada de 14 caracteres em maiúsculas sem `.`, `/` ou `-` para a etapa de DV
-- **Exemplos:** `""` → `'Informe o CNPJ do cliente.'`; `"1234567890123"` (13 chars) → `'O CNPJ informado não é válido. Confira os caracteres.'`; `"123456789012345"` (15 chars) → inválido; `"123456#8901234"` → inválido; `"00.000.000/0000-00"` → inválido
+- **Exemplos:** `""` → `'Informe o CNPJ do cliente.'`; `"1234567890123"` (13 chars) → `'O CNPJ informado não é válido. Confira os números.'`; `"123456789012345"` (15 chars) → inválido; `"123456#8901234"` → inválido; `"00.000.000/0000-00"` → inválido
 - **Arquivos:** `src/lastro/registry/cnpj.py`, `src/lastro/registry/service.py`
 - **Reaproveitar:** `CnpjValidationResult` da T2 · **Não criar:** import de `tools/harness.py`, biblioteca externa ou substituição genérica de qualquer pontuação fora de lugar
 - **Fora do escopo:** cálculo de dígito verificador (T4), formatação de exibição com máscara
@@ -62,7 +62,7 @@ Mensagens oficiais da ficha (exatas):
   - [x] Cálculo do 1º DV usa os 12 primeiros caracteres com pesos `(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)` e `valor = ord(char) - 48`; resto `< 2` gera `0`, senão `11 - resto`
   - [x] Cálculo do 2º DV usa os 12 primeiros caracteres mais o 1º DV com pesos `(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)` e a mesma regra de resto
   - [x] Funciona igualmente para CNPJs puramente numéricos e alfanuméricos (com ou sem máscara, maiúsculas ou minúsculas na entrada), devolvendo `normalized` com 14 caracteres maiúsculos sem máscara
-  - [x] Qualquer divergência no 1º ou no 2º DV retorna `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os caracteres.'`
+  - [x] Qualquer divergência no 1º ou no 2º DV retorna `is_valid=False`, `normalized=None`, `error_message='O CNPJ informado não é válido. Confira os números.'`
   - [x] Nenhum literal de CNPJ válido em código ou docstrings
 - **Exemplos:** `<CNPJ numérico válido>` sem máscara e com máscara → ambos `is_valid=True` e mesmo `normalized`; último dígito trocado → `is_valid=False` com mensagem de c2; `<CNPJ alfanumérico válido>` em maiúsculas e minúsculas → ambos `is_valid=True` e mesmo `normalized` em maiúsculas; DV alterado → `is_valid=False` com mensagem de c3
 - **Arquivos:** `src/lastro/registry/cnpj.py`
