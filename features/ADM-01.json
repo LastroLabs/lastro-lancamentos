@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "in_progress",
   "responsavel": "jvsauma",
   "depende_de": [
     "DB-01",
