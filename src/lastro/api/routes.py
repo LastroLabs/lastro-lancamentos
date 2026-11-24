@@ -2,8 +2,9 @@
 
 Session routes (plan ACE-01, D1 and D2): `POST /session` signs in, `GET /session` says who is
 signed in and `DELETE /session` signs out. The token travels only in the `lastro_session`
-cookie (`HttpOnly`, `Secure`, `SameSite=Lax`). Protected routes of later features depend on
-`require_signed_in_member`.
+cookie (`HttpOnly`, `Secure`, `SameSite=Lax`), kept by the browser up to the 12-hour cap;
+the 2-hour idle expiry is decided on the server (plan D9). Protected routes of later
+features depend on `require_signed_in_member`.
 """
 
 from typing import Annotated, Literal
@@ -16,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lastro.access import service as access
 from lastro.access.contracts import (
     InvalidCredentialsError,
+    MultipleFirmsError,
     SessionEndedError,
     SignedInMember,
 )
@@ -33,6 +35,11 @@ UNAUTHORIZED_TITLE = "Sem acesso"
 WRONG_CREDENTIALS_DETAIL = "Usuário ou senha incorretos."
 SESSION_ENDED_DETAIL = "Sua sessão terminou. Entre de novo."
 SIGN_IN_REQUIRED_DETAIL = "Entre para continuar."
+MULTIPLE_FIRMS_TITLE = "Mais de um escritório"
+MULTIPLE_FIRMS_DETAIL = (
+    "Este usuário está em mais de um escritório. "
+    "Peça ao chefe um usuário para cada escritório."
+)
 
 router = APIRouter()
 
@@ -103,9 +110,16 @@ async def _sign_in_required(_request: Request, _error: Exception) -> JSONRespons
     return _unauthorized(SIGN_IN_REQUIRED_DETAIL)
 
 
-# Registered by `create_app()`: the 401 answers in RFC 9457 (plan ACE-01, D6; I-14).
+async def _multiple_firms(_request: Request, _error: Exception) -> JSONResponse:
+    return _problem(
+        status.HTTP_409_CONFLICT, MULTIPLE_FIRMS_TITLE, MULTIPLE_FIRMS_DETAIL
+    )
+
+
+# Registered by `create_app()`: 401 and 409 answers in RFC 9457 (plan ACE-01, D6, D10; I-14).
 EXCEPTION_HANDLERS = {
     InvalidCredentialsError: _invalid_credentials,
+    MultipleFirmsError: _multiple_firms,
     SessionEndedError: _session_ended,
     SignInRequiredError: _sign_in_required,
 }
@@ -162,19 +176,21 @@ async def health(
 
 
 @router.post(
-    "/session", response_model=SessionIdentity, responses=UNAUTHORIZED_RESPONSES
+    "/session",
+    response_model=SessionIdentity,
+    responses={**UNAUTHORIZED_RESPONSES, status.HTTP_409_CONFLICT: {"model": Problem}},
 )
 async def sign_in(
     credentials: SignInRequest,
     response: Response,
     db: Annotated[AsyncSession, Depends(get_session)],
 ) -> SessionIdentity:
-    """Sign in with an individual login and open a session (ACE-01, c1, c2 and c6)."""
+    """Sign in with an individual login and open a session (ACE-01, c1, c2, c6; D10)."""
     opened = await access.sign_in(db, credentials.username, credentials.password)
     response.set_cookie(
         SESSION_COOKIE,
         opened.token,
-        expires=opened.expires_at,
+        max_age=int(access.SESSION_MAX_DURATION.total_seconds()),
         path=SESSION_COOKIE_PATH,
         secure=True,
         httponly=True,

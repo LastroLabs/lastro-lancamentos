@@ -54,3 +54,12 @@ class InvalidCredentialsError(Exception):
 
 class SessionEndedError(Exception):
     """The session token is unknown, ended, expired or bound to an inactive membership."""
+
+
+class MultipleFirmsError(Exception):
+    """Right password, but the user has active memberships in more than one firm (plan D10).
+
+    The MVP keeps one active membership per user: whoever works for two firms gets one
+    user per firm. Raised only after the password matched, so it never tells a stranger
+    that the account exists. No session is opened.
+    """

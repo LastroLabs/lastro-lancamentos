@@ -43,6 +43,7 @@ class SessionRow:
 
     session_id: UUID
     firm_id: UUID
+    created_at: datetime
     expires_at: datetime
     ended_at: datetime | None
     membership: MembershipRow
@@ -115,6 +116,7 @@ async def find_session(db: AsyncSession, token_hash: str) -> SessionRow | None:
         select(
             Session.id,
             Session.escritorio_id,
+            Session.criada_em,
             Session.expira_em,
             Session.encerrada_em,
             *_membership_columns(),
@@ -129,9 +131,14 @@ async def find_session(db: AsyncSession, token_hash: str) -> SessionRow | None:
     row = (await db.execute(statement)).one_or_none()
     if row is None:
         return None
-    session_id, firm_id, expires_at, ended_at, *membership = row
+    session_id, firm_id, created_at, expires_at, ended_at, *membership = row
     return SessionRow(
-        session_id, firm_id, expires_at, ended_at, MembershipRow(*membership)
+        session_id,
+        firm_id,
+        created_at,
+        expires_at,
+        ended_at,
+        MembershipRow(*membership),
     )
 
 
@@ -147,4 +154,19 @@ async def end_session(
             Session.encerrada_em.is_(None),
         )
         .values(encerrada_em=ended_at)
+    )
+
+
+async def renew_session(
+    db: AsyncSession, firm_id: UUID, session_id: UUID, expires_at: datetime
+) -> None:
+    """Move the expiry of an open session (plan D9)."""
+    await db.execute(
+        update(Session)
+        .where(
+            Session.escritorio_id == firm_id,
+            Session.id == session_id,
+            Session.encerrada_em.is_(None),
+        )
+        .values(expira_em=expires_at)
     )

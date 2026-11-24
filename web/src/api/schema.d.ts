@@ -39,7 +39,7 @@ export interface paths {
         put?: never;
         /**
          * Sign In
-         * @description Sign in with an individual login and open a session (ACE-01, c1, c2 and c6).
+         * @description Sign in with an individual login and open a session (ACE-01, c1, c2, c6; D10).
          */
         post: operations["sign_in_api_v1_session_post"];
         /**
@@ -224,6 +224,15 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

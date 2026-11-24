@@ -247,7 +247,7 @@
         "summary": "Current Session"
       },
       "post": {
-        "description": "Sign in with an individual login and open a session (ACE-01, c1, c2 and c6).",
+        "description": "Sign in with an individual login and open a session (ACE-01, c1, c2, c6; D10).",
         "operationId": "sign_in_api_v1_session_post",
         "requestBody": {
           "content": {
@@ -279,6 +279,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
           },
           "422": {
             "content": {

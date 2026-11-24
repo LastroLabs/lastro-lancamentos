@@ -46,4 +46,3 @@ def verify_password(stored_hash: str | None, password: str) -> bool:
     except VerificationError, InvalidHashError:
         return False
     return matches and stored_hash is not None
-
