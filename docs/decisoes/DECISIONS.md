@@ -110,7 +110,7 @@ Raissa aprovou o plano e as tarefas da DB-02 nesta data, incluindo as escolhas D
 
 | Referência | Decisão e alcance |
 |---|---|
-| DB-02/B1 | Enquanto HAR-03 não gerar fixtures, os testes de esquema da DB-02 podem criar apenas registros sintéticos transitórios no banco descartável, com nomes fictícios e CNPJ de verificador inválido. Nenhum dado real ou fixture persistida. |
+| DB-02/B1 | Enquanto HAR-03 não gerar fixtures, os testes de esquema da DB-02 podem criar apenas registros sintéticos transitórios no banco descartável, com nomes fictícios e CNPJ de verificador inválido. Nenhum dado real ou fixture persistida. **Atualização de 24/11/2026 (decisão da responsável).** A exceção se encerra quando a HAR-03 (PR #58) disponibilizar `hx fixtures build` na `developer`. A partir daí, testes novos da DB-02 que precisarem de dados de fixture usam o comando. Cada teste existente da DB-02 pode manter os registros sintéticos transitórios até a próxima alteração de seus dados, quando migra para `hx fixtures build`. |
 | DB-02/B2 | Preservar os nomes físicos em português e os quatro nomes de teste definidos pela ficha; classes e auxiliares Python seguem a convenção em inglês. |
 | DB-02/B3 | A DB-02 entrega as restrições do esquema. As políticas RLS seguem na NUC-03, cuja conclusão é obrigatória antes de dados de piloto. |
 
