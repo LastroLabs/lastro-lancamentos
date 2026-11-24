@@ -128,8 +128,8 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-24T15:44:58Z",
-    "commit": "b2a8443cddd4",
+    "verificado_em": "2026-11-24T18:47:28Z",
+    "commit": "aa057a6f8ce0",
     "resultados": [
       {
         "criterio": "c1",
@@ -184,6 +184,11 @@
       {
         "criterio": "c4",
         "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_a_mais_falha_sem_apagar -q",
         "resultado": "ok"
       },
       {
