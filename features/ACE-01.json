@@ -93,8 +93,8 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-24T14:06:09Z",
-    "commit": "8abc786e67fb",
+    "verificado_em": "2026-11-24T16:15:01Z",
+    "commit": "5808c87352d9",
     "resultados": [
       {
         "criterio": "c1",
