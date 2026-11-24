@@ -48,5 +48,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.database = database
     app.state.name_protection_level = name_protection_level
+    for error, handler in routes.EXCEPTION_HANDLERS.items():
+        app.add_exception_handler(error, handler)
     app.include_router(routes.router, prefix=API_V1_PREFIX)
     return app
