@@ -24,10 +24,10 @@ from test_login import (  # noqa: F401 (fixtures, resolved by name below)
 from lastro.access.passwords import verify_password
 from lastro.access.service import hash_password
 
-PASSWORD_VARIABLE = "LASTRO_SENHA_CHEFE"
+MANAGER_ENV = "LASTRO_SENHA_CHEFE"
 PASSWORD_1 = "senha-teste-123"
 PASSWORD_2 = "outra-senha"
-PASSWORD_3 = "terceira-senha-teste"
+PASSWORD_3 = "terceira-1234"
 
 FIRM_1 = "ESCRITORIO TESTE 1"
 FIRM_2 = "ESCRITORIO TESTE 2"
@@ -66,9 +66,9 @@ def _run(database, *, firm, username, name, password=None, extra=()):
         "DATABASE_URL": database.database_url,
         "MIGRATIONS_DATABASE_URL": database.migrations_database_url,
     }
-    env.pop(PASSWORD_VARIABLE, None)
+    env.pop(MANAGER_ENV, None)
     if password is not None:
-        env[PASSWORD_VARIABLE] = password
+        env[MANAGER_ENV] = password
     return subprocess.run(
         [
             sys.executable,
