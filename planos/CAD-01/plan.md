@@ -104,4 +104,4 @@ Validação e normalização pura de CNPJ numérico e alfanumérico (padrão jul
 ## 8. Aprovação
 - [x] Perguntas ATENÇÃO respondidas ou padrão aceito
 - [x] Decisões do agente confirmadas (D1 a D6)
-- [ ] Plan e tasks revisados por marrathomaz em 23/11
+- [x] Plan e tasks revisados por marrathomaz em 23/11

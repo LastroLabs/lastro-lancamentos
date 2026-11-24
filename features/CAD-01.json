@@ -27,7 +27,7 @@
       "descricao": "CNPJ com dígito verificador errado é recusado com mensagem em português simples",
       "exemplo": {
         "entrada": "o CNPJ de c1 com o último dígito trocado por outro",
-        "saida": "recusado com a mensagem 'O CNPJ informado não é válido. Confira os números.'"
+        "saida": "recusado com a mensagem 'O CNPJ informado não é válido. Confira os caracteres.'"
       }
     },
     {

@@ -5,7 +5,7 @@
 
 Mensagens oficiais da ficha (exatas):
 - Vazio: `'Informe o CNPJ do cliente.'`
-- Inválido (DV errado, tamanho errado, caractere fora do padrão, máscara malformada ou todos os caracteres iguais): `'O CNPJ informado não é válido. Confira os números.'`
+- Inválido (DV errado, tamanho errado, caractere fora do padrão, máscara malformada ou todos os caracteres iguais): `'O CNPJ informado não é válido. Confira os caracteres.'`
 
 ---
 
