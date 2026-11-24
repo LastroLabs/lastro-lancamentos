@@ -118,6 +118,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | classification → review | `Sugestao` |
 | questions → review | `RespostaCliente` |
 | review → export | `ItemRevisado` |
+| access → api e módulos com rota protegida | `SignedInMember` (`access/contracts.py`, ACE-01): quem está conectado, com `member_id`, `firm_id` e `role` |
 
 `[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
 
