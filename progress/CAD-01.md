@@ -13,28 +13,34 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+Validação e normalização pura de CNPJ numérico e alfanumérico (padrão julho/2026, IN RFB nº 2.229/2024) no módulo `registry` (sem banco nem HTTP), devolvendo 14 caracteres maiúsculos sem máscara ou mensagem de erro em português simples (RF-CAD-01).
 
 ## Próxima ação
-(a primeira coisa a fazer ao retomar; de preferência um comando ou um arquivo)
+Rodar `hx check-clean` localmente com `LASTRO_NOMES_PROIBIDOS` definida, fazer `git push` da branch `feat/CAD-01-validar-cnpj-numerico-e-alfanumerico-do` e finalizar o PR para revisão na `developer`.
 
 ## Bloqueios e perguntas
 - (nenhum)
 
 ## Feito
-- DD/MM · S1 ·
+- 23/11 · S1 · Feature iniciada (commit `3f3aff2`), plano e tasks aprovados em `planos/CAD-01/` (commit `fc9b44e`).
+- 23/11 · S1 · Testes dos critérios c1 a c4 escritos em `tests/registry/test_cnpj.py` com geração dinâmica de CNPJ válido em runtime (commit só de testes `2c31a61`).
+- 24/11 · S1 · Mensagem ajustada para `'Confira os caracteres.'` (commit `ffdac94`); implementados `src/lastro/registry/contracts.py`, `src/lastro/registry/service.py` e `src/lastro/registry/cnpj.py` (commit `7ee296c`), sem editar `tests/`.
+- 24/11 · S2 · Alinhadas as mensagens de exemplo em c3 e c4 de `features/CAD-01.json` (`'Confira os caracteres.'`) e preenchido `progress/CAD-01.md`.
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
+- 24/11 · S1 · `hx feature verify CAD-01` → c1 a c4 ok; evidência registrada no commit `c0c3cd7` (sobre o commit `7ee296c2f0d3`).
+- 24/11 · S2 · `git diff 2c31a61 -- tests/` → vazio (testes intactos desde o commit só de testes).
+- 24/11 · S2 · `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, Arquitetura e E2E pulados; `RESULTADO: OK`.
+- 24/11 · S2 · `sh tools/hx check-clean` → `0 achado(s)`, `RESULTADO: OK` (aviso: `LASTRO_NOMES_PROIBIDOS` não definida neste ambiente).
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
+- 24/11 · S2 · Nenhuma falha de código ou teste; apenas aviso de `LASTRO_NOMES_PROIBIDOS` não definida ao rodar `hx check-clean` sem a variável no ambiente.
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+- 23/11 · S1 · Implementação própria em Python puro sem lib externa (D1); regra pura em `registry/` sem banco/HTTP (D2); retorno estruturado `CnpjValidationResult` sem exceção (D3); regex ASCII estrita, rejeição de 14 caracteres iguais e Módulo 11 com `ord(c) - 48` (D4); contrato v0 em `lastro.registry.contracts`/`service` (D5); geração dinâmica de CNPJs válidos nos testes para não commitar literais válidos (D6); aceitação de `A–Z` completo e mensagem padronizada com `'Confira os caracteres.'` (perguntas 1 a 5). Detalhes em `planos/CAD-01/plan.md`.
 
 ## Fim de sessão
-- [ ] `hx verify` verde, ou a falha está descrita em "Falhou"
-- [ ] Nada quebrado nem pela metade na branch; commit feito
-- [ ] "Próxima ação" atualizada
-- [ ] Nenhum dado real nem segredo nas anotações
+- [x] `hx verify` verde, ou a falha está descrita em "Falhou"
+- [x] Nada quebrado nem pela metade na branch; commit feito
+- [x] "Próxima ação" atualizada
+- [x] Nenhum dado real nem segredo nas anotações
