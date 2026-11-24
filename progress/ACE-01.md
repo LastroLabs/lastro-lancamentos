@@ -7,7 +7,7 @@
 Cada pessoa do escritório entra com o próprio usuário e senha, a API sabe quem ela é (usuário, papel, escritório) por uma sessão guardada no servidor, e sair encerra essa sessão na hora.
 
 ## Próxima ação
-Revisão do PR. Um humano aprova o plan (`planos/ACE-01/plan.md`, seção 8) e responde as 4 perguntas ATENÇÃO, ou aceita o padrão sugerido.
+Revisão do PR #57. Um humano aprova o plan (`planos/ACE-01/plan.md`, seção 8) e responde as 4 perguntas ATENÇÃO, ou aceita o padrão sugerido.
 
 ## Bloqueios e perguntas
 - Perguntas 1 a 4 do plan (prazo da sessão, usuário com dois escritórios, CSRF, login em minúsculas) seguem o padrão sugerido até alguém decidir.
