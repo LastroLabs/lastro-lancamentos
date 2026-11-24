@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "arthurlleite",
   "depende_de": [
     "NUC-01",
@@ -92,5 +92,40 @@
       "comando": "pytest tests/access/test_login.py::test_usuario_sem_senha_recebe_mesma_recusa -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-24T14:06:09Z",
+    "commit": "8abc786e67fb",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_login.py::test_login_valido_abre_sessao_identificada -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/access/test_login.py::test_senha_errada_e_usuario_inexistente_mesma_recusa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_login.py::test_sessoes_simultaneas_identificam_cada_contador -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/access/test_login.py::test_sair_encerra_a_sessao -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/access/test_login.py::test_pedido_sem_sessao_recusado_sem_dado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/access/test_login.py::test_usuario_sem_senha_recebe_mesma_recusa -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
