@@ -18,6 +18,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       MIGRATIONS_DATABASE_URL: ${MIGRATIONS_DATABASE_URL}
+      # IA-01: name protection before any LLM call; an unknown value stops the API.
+      NAME_PROTECTION_LEVEL: ${NAME_PROTECTION_LEVEL:-estrito}
     ports:
       - "8000:8000"
     depends_on:
