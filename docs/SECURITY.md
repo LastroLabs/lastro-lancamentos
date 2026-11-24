@@ -31,7 +31,7 @@ Vale também para **issues, PRs e comentários**: não cole trecho de extrato re
 ## 3. Dados de teste
 
 - Tudo vem de `hx fixtures build` (razão sintético que gera OFX/PDF e o gabarito). Não escreva fixture à mão com dado que pareça real.
-- **Exceção DB-01 (responsável, 23/11/2026):** enquanto `hx fixtures build` estiver indisponível, seus testes podem gerar dados sintéticos determinísticos, com nomes fictícios, hashes inventados e CNPJs com DV inválido nos testes que não verificam validação fiscal. A exceção não autoriza dados reais nem se estende automaticamente a outras features. Ver `docs/decisoes/DECISIONS.md`, seção 5.
+- **Exceção DB-01 (decisão do responsável em 23/11/2026).** A exceção se encerra quando `hx fixtures build` estiver disponível na `developer` com a integração da HAR-03 (PR #58). Até esse marco, os testes da DB-01 podem usar dados sintéticos determinísticos. A partir desse marco, testes novos que precisarem de fixtures usam o comando. Os testes existentes da DB-01 podem manter seus nomes fictícios, hashes inventados e CNPJs com DV inválido nos casos sem validação fiscal até a próxima alteração nos dados de cada teste, quando devem migrar para `hx fixtures build`. A permissão se limita aos testes da DB-01 e a dados sintéticos. Ver [DB-01/B3](decisoes/DECISIONS.md#5-revisão-documental-da-db-01--23112026).
 - **CPF e CNPJ de teste com dígito verificador inválido.** O `hx check-clean` trata número com DV válido como possível dado real; DV inválido passa como sintético. Exemplo: `111.222.333-00`.
 - Nomes de contrapartes inventados e identificáveis como falsos: `CONTRAPARTE_001`, `CLIENTE_TESTE`.
 - Valores, datas e descrições são inventados. Não adapte um extrato real "trocando só os nomes": a estrutura de valores e datas também identifica.
@@ -109,7 +109,7 @@ Aja nesta ordem. Não espere para "ver se alguém notou".
 ## 10. Checklist antes de abrir um PR
 
 - [ ] `hx check-clean` verde, com `LASTRO_NOMES_PROIBIDOS` definida na sua máquina
-- [ ] Nenhuma fixture escrita à mão; CPF/CNPJ de teste com DV inválido
+- [ ] Fixtures geradas conforme a seção 3, que registra a exceção da DB-01. CPF/CNPJ de teste com DV inválido
 - [ ] Nada de dado real em descrição, comentário ou captura de tela
 - [ ] Chamadas a LLM só por `src/lastro/ai/`, depois de `anonimizar()`
 - [ ] Nenhum segredo, `.env` ou chave nos arquivos nem nos logs
