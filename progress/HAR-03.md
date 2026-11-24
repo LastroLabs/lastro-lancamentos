@@ -16,16 +16,15 @@ Como preencher (agente, ao encerrar a sessão):
 `hx fixtures build [--semente N] [--check]` gera em `fixtures/` o cadastro sintético, uma planilha de plano por cliente e, por conta bancária, um OFX e um gabarito, sempre iguais para a mesma semente. O `--check` confere a pasta sem regravar, e o check-clean passa a varrer `fixtures/`.
 
 ## Próxima ação
-Feature concluída (T1 a T7); documentação e ficha (c4, c5, `verificacao`) ajustadas após a revisão do PR #58, com novo `hx feature verify` OK. Falta rodar o `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida e registrar o resultado (ver Bloqueios), e decidir o texto da exceção DB-01 em `docs/SECURITY.md`. Depois, as pendências abaixo, cada uma no seu PR, fora desta branch.
+Feature concluída (T1 a T7); documentação e ficha (c4, c5, `verificacao`) ajustadas após a revisão do PR #58, com novo `hx feature verify` OK. Falta rodar o `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida e registrar o resultado (ver Bloqueios). A exceção DB-01 em `docs/SECURITY.md` foi tratada pelo responsável da DB-01 no PR #64 (guin409): a exceção se encerra quando o #58 entrar na developer. Depois, as pendências abaixo, cada uma no seu PR, fora desta branch.
 
 ## Bloqueios e perguntas
 - `hx check-clean` com a lista real de `LASTRO_NOMES_PROIBIDOS`: a execução de 24/11 (S4, ver Rodei) mostrou "verificação de nomes pulada (variável não definida)", então a lista não foi aplicada. camposs04 define a variável no mesmo shell, roda de novo e registra.
-- `docs/SECURITY.md` §3, exceção DB-01 ("enquanto `hx fixtures build` estiver indisponível"): o comando já existe. Encerrar ou reescrever a exceção muda uma regra de segurança decidida pelo responsável da DB-01 (`DECISIONS.md` §5, DB-01/B3). Proposta levada a camposs04; não editado.
 - Pendências fora do escopo da HAR-03:
   - PR de docs com a versão do Python (`tools/hx`, cabeçalho do `harness.py`, AGENTS.md), resposta 4 do plan, incluindo a mensagem "requer Python 3.11+".
   - Traceback quando `fixtures/` existe como arquivo, e não como pasta: o `build` deveria sair com ERRO/MOTIVO/CORREÇÃO (apontado na revisão do PR #58).
   - `docs/modules/harness.md` com o contrato v0 do `hx fixtures build` (formato do c6, caminhos relativos a `fixtures/`, `cnpjs_dos_clientes`).
-  - Fixture de pytest de sessão que gera as fixtures em `tmp_path` para a CAD-05 e a IA-02 (resposta 3 do plan).
+  - **Urgente:** fixture de pytest de sessão que gera as fixtures em `tmp_path` para a CAD-05 e a IA-02 (resposta 3 do plan). Motivo: com o #64, a DB-01 passa a exigir o comando nos testes novos assim que o #58 entrar.
   - O texto "(padrão: 1)" na ajuda do `--semente` repete `SEMENTE_PADRAO` do gerador; se a semente padrão mudar, o texto precisa mudar junto.
 
 ## Feito
@@ -73,6 +72,7 @@ Feature concluída (T1 a T7); documentação e ficha (c4, c5, `verificacao`) aju
 - 24/11 · S4 · Desvio da D7 (trava no comando, aborto com código 2) e os extras (`--semente` negativa → código 2; `build` apaga pastas vazias) confirmados por camposs04 e registrados em `planos/HAR-03/plan.md` §5, sem alterar D1 a D7.
 - 24/11 · S4 · Ficam fora do PR #58: traceback com `fixtures/` como arquivo, mensagem "requer Python 3.11+", ficha c4(d)/c5 e o teste extra em `verificacao` (PR de humano), `docs/modules/harness.md`.
 - 24/11 · S4 · camposs04 mudou a decisão acima sobre a ficha: c4(d), c5 e o teste extra em `verificacao` entram no próprio PR #58 (commit `aa057a6`), como o plan propunha. Os demais itens seguem fora.
+- 24/11 · S4 · Resolvida a pendência da exceção DB-01 em `docs/SECURITY.md` §3 ("enquanto `hx fixtures build` estiver indisponível"): tratada pelo responsável da DB-01 no PR #64 (guin409); a exceção se encerra quando o #58 entrar na developer. Sem edição em `docs/SECURITY.md` neste PR.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
