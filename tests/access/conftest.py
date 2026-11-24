@@ -1,8 +1,12 @@
 """Reuse NUC-01 fixtures under an unambiguous module name, without a second bootstrap."""
 
 import importlib.util
+import os
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 _MODULE_NAME = "_lastro_db01_core_fixtures"
 _PATH = Path(__file__).resolve().parents[1] / "core" / "conftest.py"
@@ -24,4 +28,24 @@ process_output = _CORE.process_output
 run_alembic_upgrade = _CORE.run_alembic_upgrade
 postgres_server = _CORE.postgres_server
 fresh_database = _CORE.fresh_database
-migrated_database = _CORE.migrated_database
+
+
+@pytest.fixture
+def migrated_database(fresh_database):
+    """Keep DB-01 checks pinned to revision 0002 as later features add tables."""
+    result = subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "0002"],
+        cwd=REPO_ROOT,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(REPO_ROOT / "src"),
+            "DATABASE_URL": fresh_database.database_url,
+            "MIGRATIONS_DATABASE_URL": fresh_database.migrations_database_url,
+        },
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert result.returncode == 0, process_output(result)
+    return fresh_database

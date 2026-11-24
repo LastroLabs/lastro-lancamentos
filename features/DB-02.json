@@ -12,7 +12,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "RaissaOliveira19",
   "depende_de": [
     "DB-01"
@@ -71,5 +71,30 @@
       "comando": "pytest tests/registry/test_registry_schema.py::test_db02_codigos_em_texto_e_migracao_reversivel -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-24T13:06:35Z",
+    "commit": "f733c4f62139",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/registry/test_registry_schema.py::test_migracao_db02_cria_tabelas_de_cadastro_com_colunas_e_chaves -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/registry/test_registry_schema.py::test_db02_conta_contabil_nao_cruza_cliente_nem_plano -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_registry_schema.py::test_db02_contas_de_configuracao_sao_do_plano_atual -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_registry_schema.py::test_db02_codigos_em_texto_e_migracao_reversivel -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

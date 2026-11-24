@@ -103,3 +103,13 @@ O responsável definiu os nomes abaixo e autorizou registrar este complemento no
 - Único parcial: `uq_convite_escritorio_id_membro_id_pendente`, `UNIQUE` em `(escritorio_id, membro_id)` com `WHERE usado_em IS NULL AND revogado_em IS NULL`.
 
 Somente os nomes distinguem os dois índices; suas colunas, unicidade e predicados permanecem como aprovados. A decisão não autoriza implementação, migrações ou commit nesta etapa e não altera critérios, estado ou evidência da ficha.
+
+## 6. Decisões da DB-02 — 23/11/2026
+
+Raissa aprovou o plano e as tarefas da DB-02 nesta data, incluindo as escolhas D1–D3 e os pontos abaixo:
+
+| Referência | Decisão e alcance |
+|---|---|
+| DB-02/B1 | Enquanto HAR-03 não gerar fixtures, os testes de esquema da DB-02 podem criar apenas registros sintéticos transitórios no banco descartável, com nomes fictícios e CNPJ de verificador inválido. Nenhum dado real ou fixture persistida. |
+| DB-02/B2 | Preservar os nomes físicos em português e os quatro nomes de teste definidos pela ficha; classes e auxiliares Python seguem a convenção em inglês. |
+| DB-02/B3 | A DB-02 entrega as restrições do esquema. As políticas RLS seguem na NUC-03, cuja conclusão é obrigatória antes de dados de piloto. |
