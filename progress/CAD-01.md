@@ -16,7 +16,7 @@ Como preencher (agente, ao encerrar a sessão):
 Validação e normalização pura de CNPJ numérico e alfanumérico (padrão julho/2026, IN RFB nº 2.229/2024) no módulo `registry` (sem banco nem HTTP), devolvendo 14 caracteres maiúsculos sem máscara ou mensagem de erro em português simples (RF-CAD-01).
 
 ## Próxima ação
-Alinhar a descrição do PR #56 quanto à checagem de nomes (ou rodar `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida), rodar `sh tools/hx verify` com Docker ativo se quiser reconfirmar localmente, e fazer `git push` da branch `feat/CAD-01-validar-cnpj-numerico-e-alfanumerico-do`.
+No PR #56 (já aberto e aprovado), alinhar a descrição quanto à checagem de nomes local (ou rodar `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida), fazer `git push` da branch `feat/CAD-01-validar-cnpj-numerico-e-alfanumerico-do` e responder às threads da revisão.
 
 ## Bloqueios e perguntas
 - (nenhum)
@@ -28,6 +28,8 @@ Alinhar a descrição do PR #56 quanto à checagem de nomes (ou rodar `hx check-
 - 24/11 · S2 · Alinhadas as mensagens de exemplo em c3 e c4 de `features/CAD-01.json` (`'Confira os caracteres.'`) e preenchido `progress/CAD-01.md`.
 - 24/11 · S3 · Documentado o contrato v0 (`CnpjValidationResult` e `validate_cnpj`) na seção 6 do `ARCHITECTURE.md` e criada a página `docs/modulos/registry.md` (campos, mensagens oficiais, aviso à responsável da `CAD-03` e impactos em `CAD-03`, `DB-01`, `P-13` e `tools/harness.py`).
 - 24/11 · S3 · Atualizado o status de `planos/CAD-01/plan.md` para aprovado e corrigidas 4 ocorrências residuais de `'Confira os números.'` e checkboxes em `planos/CAD-01/tasks.md`.
+- 24/11 · S4 · Revertida a mensagem oficial de CNPJ inválido para o texto literal original `'O CNPJ informado não é válido. Confira os números.'` (alinhando `CAD-01` e `CAD-03` sem alterar texto ao usuário sem aprovação prévia da liderança): atualizados `tests/registry/test_cnpj.py` (1 linha em `MSG_INVALID`, commit `8149c98`, a pedido explícito do responsável da feature após revisão do PR), `src/lastro/registry/cnpj.py`, `features/CAD-01.json`, `ARCHITECTURE.md`, `docs/modulos/registry.md`, `planos/CAD-01/plan.md` e `planos/CAD-01/tasks.md` (commit `c1b5814`).
+- 24/11 · S4 · Aplicados os dois ajustes de revisão em `src/lastro/registry/cnpj.py` e `service.py`: removidas as âncoras `^`/`$` redundantes nos regexes usados com `fullmatch()` e renomeada `validate_cnpj` interna de `cnpj.py` para `_validate_cnpj` (commit `c1b5814`).
 
 ## Rodei
 - 24/11 · S1 · `hx feature verify CAD-01` → c1 a c4 ok; evidência registrada no commit `c0c3cd7` (sobre o commit `7ee296c2f0d3`).
@@ -37,16 +39,23 @@ Alinhar a descrição do PR #56 quanto à checagem de nomes (ou rodar `hx check-
 - 24/11 · S3 · `sh tools/hx check-clean` → `0 achado(s)`, `RESULTADO: OK` (aviso: `LASTRO_NOMES_PROIBIDOS` não definida neste ambiente).
 - 24/11 · S3 · `git diff 2c31a61 -- tests/` → vazio (testes intactos).
 - 24/11 · S3 · Execução direta em Python dos 5 testes de `tests/registry/test_cnpj.py` (`PYTHONPATH=src python3 ...`) → 5/5 OK (nenhum arquivo `.py` alterado na S3).
+- 24/11 · S4 · `docker compose run --rm dev ruff format --check src/lastro/registry tests/registry` → `5 files already formatted` (fecha a pendência da T5).
+- 24/11 · S4 · `sh tools/hx verify` → `[1/2] ruff check . OK`, `[2/2] pytest -q OK`, Arquitetura e E2E pulados; `RESULTADO: OK`.
+- 24/11 · S4 · `sh tools/hx check-clean` → `0 achado(s)`, `RESULTADO: OK` (aviso: `LASTRO_NOMES_PROIBIDOS` não definida neste ambiente).
+- 24/11 · S4 · `sh tools/hx feature verify CAD-01` → c1, c2, c3 (2 comandos) e c4 OK; evidência atualizada sobre o commit `c1b5814`.
 
 ## Falhou
 - 24/11 · S2 · Nenhuma falha de código ou teste; apenas aviso de `LASTRO_NOMES_PROIBIDOS` não definida ao rodar `hx check-clean` sem a variável no ambiente.
 - 24/11 · S3 · `sh tools/hx verify` não pôde rodar nesta sessão porque o daemon Docker estava indisponível neste ambiente (`docker info` falhou); apenas arquivos Markdown foram alterados na S3.
+- 24/11 · S4 · Nenhuma falha de código, formatação ou teste; apenas o aviso esperado de `LASTRO_NOMES_PROIBIDOS` não definida no `hx check-clean`.
 
 ## Decisões
 - 23/11 · S1 · Implementação própria em Python puro sem lib externa (D1); regra pura em `registry/` sem banco/HTTP (D2); retorno estruturado `CnpjValidationResult` sem exceção (D3); regex ASCII estrita, rejeição de 14 caracteres iguais e Módulo 11 com `ord(c) - 48` (D4); contrato v0 em `lastro.registry.contracts`/`service` (D5); geração dinâmica de CNPJs válidos nos testes para não commitar literais válidos (D6); aceitação de `A–Z` completo e mensagem padronizada com `'Confira os caracteres.'` (perguntas 1 a 5). Detalhes em `planos/CAD-01/plan.md`.
+- 24/11 · S4 · Reversão da pergunta 4 para manter o texto literal original `'O CNPJ informado não é válido. Confira os números.'` (alinhado com `CAD-01` e `CAD-03` sem precisar alterar `features/CAD-03.json` nem mudar texto ao usuário sem aprovação prévia da liderança). A única alteração em `tests/registry/test_cnpj.py` (linha 15, `MSG_INVALID`, commit `8149c98`) foi autorizada pelo responsável da feature para refletir essa reversão.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
 - [x] Nada quebrado nem pela metade na branch; commit feito
 - [x] "Próxima ação" atualizada
 - [x] Nenhum dado real nem segredo nas anotações
+
