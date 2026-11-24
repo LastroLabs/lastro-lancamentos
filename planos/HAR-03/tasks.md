@@ -6,7 +6,7 @@
 
 ---
 
-## [ ] T1 · Escrever os testes dos critérios
+## [x] T1 · Escrever os testes dos critérios
 - **Critérios da ficha:** c1 a c6
 - **Regra de negócio (em linguagem simples):** todo teste do projeto precisa de extratos e cadastros que pareçam reais sem ser. O gerador cria sempre o mesmo conjunto a partir de um número (a semente), junto com a resposta certa (o gabarito), para provar leitura, conferência de saldo e classificação.
 - **Critérios de aceite:**
@@ -23,7 +23,7 @@
 - **Fora do escopo:** código de produção
 - **Pronto quando:** `docker compose run --rm dev pytest tests/harness/test_fixtures.py -q` mostra 14 falhas esperadas e `sh tools/hx check-clean` segue com 0 achados
 
-## [ ] T2 · Modelo sintético em memória
+## [x] T2 · Modelo sintético em memória
 - **Critérios da ficha:** c1, c2, c5 (parte de dados)
 - **Regra de negócio:** um escritório tem chefe e contadores; cada cliente tem um contador responsável, contas bancárias, sócios e um plano de contas com uma conta "transitória" (onde vai o que ninguém soube classificar). Cada movimentação do extrato já nasce com a conta certa, que é o gabarito.
 - **Critérios de aceite:**
@@ -39,7 +39,7 @@
 - **Decisões relacionadas:** D1, D3, D5
 - **Pronto quando:** `pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q` passa
 
-## [ ] T3 · Escrever cadastro.json e planilhas .xlsx
+## [x] T3 · Escrever cadastro.json e planilhas .xlsx
 - **Critérios da ficha:** c1, c6 (cadastro)
 - **Regra de negócio:** o contador carrega o plano de contas do cliente por planilha (CAD-05); por isso cada plano também sai em .xlsx com `código` e `nome` na linha 1.
 - **Critérios de aceite:**
@@ -53,7 +53,7 @@
 - **Decisões relacionadas:** D2
 - **Pronto quando:** `pytest tests/harness/test_fixtures.py -q -k "cadastro_dos_dois or planilha_do_plano"` passa
 
-## [ ] T4 · Escrever OFX e gabarito por conta bancária
+## [x] T4 · Escrever OFX e gabarito por conta bancária
 - **Critérios da ficha:** c2, c6 (gabarito)
 - **Regra de negócio:** o extrato é conferido por cálculo: o saldo inicial mais todas as entradas e saídas tem de dar o saldo final. O gabarito diz, linha a linha, o que está no OFX e qual é a conta certa.
 - **Critérios de aceite:**
@@ -67,7 +67,7 @@
 - **Decisões relacionadas:** D4
 - **Pronto quando:** `pytest tests/harness/test_fixtures.py -q -k "ofx_e_gabarito or saldo_do_ofx or conta_correta or documentos_de_teste or formato_do_cadastro"` passa
 
-## [ ] T5 · Comando `hx fixtures build [--semente N] [--check]`
+## [x] T5 · Comando `hx fixtures build [--semente N] [--check]`
 - **Critérios da ficha:** c1, c3, c4
 - **Regra de negócio:** quem roda o comando sempre obtém a mesma pasta; o `--check` só confere, para a CI e o dev saberem se a pasta está velha sem que nada seja sobrescrito.
 - **Critérios de aceite:**
@@ -83,7 +83,7 @@
 - **Decisões relacionadas:** D1, D6, D7
 - **Pronto quando:** `pytest tests/harness/test_fixtures.py -q -k "mesma_semente or outra_semente or check_"` passa
 
-## [ ] T6 · check-clean varre `fixtures/` (pergunta 1, aceita em 24/11)
+## [x] T6 · check-clean varre `fixtures/` (pergunta 1, aceita em 24/11)
 - **Critérios da ficha:** c5
 - **Regra de negócio:** a pasta gerada fica fora do Git, mas é ela que mais corre risco de ter documento parecido com real; o check-clean precisa olhar para ela mesmo assim.
 - **Critérios de aceite:**
@@ -96,7 +96,7 @@
 - **Fora do escopo:** mudar o `.gitignore`; varrer outras pastas ignoradas
 - **Pronto quando:** `pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean tests/harness/test_fase_b.py -q` passa
 
-## [ ] T7 · Verificação final
+## [x] T7 · Verificação final
 - **Critérios de aceite:**
   - [ ] `git diff <hash-dos-testes> -- tests/` vazio
   - [ ] `ruff check .` limpo
