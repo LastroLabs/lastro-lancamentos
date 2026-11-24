@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "marrathomaz",
   "depende_de": [],
   "bloqueada_por": null,
@@ -69,5 +69,35 @@
       "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_vazio_ou_fora_do_padrao_recusado -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-24T03:30:40Z",
+    "commit": "7ee296c2f0d3",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_numerico_valido_aceito_com_e_sem_mascara -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_com_digito_errado_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_alfanumerico_valido_aceito -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_alfanumerico_com_digito_errado_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_cnpj.py::test_cnpj_vazio_ou_fora_do_padrao_recusado -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
