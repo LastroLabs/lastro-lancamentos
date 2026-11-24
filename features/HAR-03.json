@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "camposs04",
   "depende_de": [
     "HAR-04"
@@ -123,5 +123,80 @@
       "comando": "pytest tests/harness/test_fixtures.py::test_formato_do_cadastro_e_do_gabarito -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-24T15:44:58Z",
+    "commit": "b2a8443cddd4",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_ofx_e_gabarito_tem_mesmas_movimentacoes -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_saldo_do_ofx_fecha_em_centavos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_conta_correta_existe_no_plano_do_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_descricoes_trazem_documentos_de_teste -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_fixtures.py::test_mesma_semente_gera_saida_identica -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_fixtures.py::test_outra_semente_gera_saida_diferente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_sem_divergencia_passa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_alterado_falha_sem_regravar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/harness/test_fixtures.py::test_formato_do_cadastro_e_do_gabarito -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
