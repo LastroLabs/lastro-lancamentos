@@ -12,7 +12,7 @@ ModuleNotFoundError instead of breaking collection.
 import importlib
 
 MSG_EMPTY = "Informe o CNPJ do cliente."
-MSG_INVALID = "O CNPJ informado não é válido. Confira os caracteres."
+MSG_INVALID = "O CNPJ informado não é válido. Confira os números."
 
 _WEIGHTS_FIRST = (5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
 _WEIGHTS_SECOND = (6, *_WEIGHTS_FIRST)
