@@ -16,17 +16,21 @@ Como preencher (agente, ao encerrar a sessão):
 `hx fixtures build [--semente N] [--check]` gera em `fixtures/` o cadastro sintético, uma planilha de plano por cliente e, por conta bancária, um OFX e um gabarito, sempre iguais para a mesma semente. O `--check` confere a pasta sem regravar, e o check-clean passa a varrer `fixtures/`.
 
 ## Próxima ação
-Em sessão nova, sem editar `tests/`: T2 de `planos/HAR-03/tasks.md` (modelo em memória em `tools/fixtures_sinteticas.py`), depois T3 a T7. Primeiro alvo: `docker compose run --rm dev pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q`. Âncora dos testes: commit `49751a5` (`git diff 49751a5 -- tests/` deve continuar vazio).
+Feature concluída (T1 a T7). Falta registrar o resultado do `hx check-clean` com a lista real de `LASTRO_NOMES_PROIBIDOS` (ver Bloqueios). Depois, as pendências abaixo, cada uma no seu PR, fora desta branch.
 
 ## Bloqueios e perguntas
-- CONTRATO A CONFIRMAR (marcado nos testes): tipo do retorno de `cnpjs_dos_clientes` (o teste aceita dict cliente → CNPJ ou lista).
-- CONTRATO A CONFIRMAR: `plano_planilha` relativo a `fixtures/`, como `ofx` e `gabarito` (o c6 não diz a quê).
-- CONTRATO A CONFIRMAR: na D7, o gerador chama `harness.tipos_da_linha` (o teste troca a função no `harness` e, se importada pelo nome, também no gerador); o código de saída do aborto não está fixado (o teste exige só ≠ 0).
-- Mudanças aceitas na ficha (c4 com arquivo a mais, c5 com check-clean varrendo `fixtures/`) ainda aguardam o PR de camposs04.
+- Resultado do `hx check-clean` com a lista real de `LASTRO_NOMES_PROIBIDOS`: não informado no encerramento da S3. camposs04 roda e registra.
+- Pendências fora do escopo da HAR-03:
+  - PR na ficha: c4 com o caso (d), arquivo a mais em `fixtures/`; c5 com o check-clean varrendo `fixtures/` mesmo fora do Git (aceitas em 24/11).
+  - PR de docs com a versão do Python (`tools/hx`, cabeçalho do `harness.py`, AGENTS.md), resposta 4 do plan.
+  - Fixture de pytest de sessão que gera as fixtures em `tmp_path` para a CAD-05 e a IA-02 (resposta 3 do plan).
+  - O texto "(padrão: 1)" na ajuda do `--semente` repete `SEMENTE_PADRAO` do gerador; se a semente padrão mudar, o texto precisa mudar junto.
 
 ## Feito
 - 24/11 · S1 · Feature iniciada (commit da790af); plan e tasks aprovados por camposs04 (commit 3a5b017).
 - 24/11 · S2 · T1: `tests/harness/test_fixtures.py` com 23 testes (os 14 da ficha, com os nomes exatos de `verificacao`, e 9 das decisões do plan: pergunta 2, D1 a D7). Todo build roda em `tmp_path`; CPF/CNPJ válidos só calculados em tempo de execução. Commit só de testes: `49751a5` (âncora).
+- 24/11 · S3 · T2 a T6: `tools/fixtures_sinteticas.py` (modelo em memória, `cadastro.json`, .xlsx com `zipfile`, OFX 1.0.2 e gabarito; função pura semente → {caminho: bytes}) e, em `tools/harness.py`, `hx fixtures build [--semente N] [--check]` e o `varrer` incluindo `fixtures/`. Commit da implementação: `b2a8443`.
+- 24/11 · S3 · T7: verificação final (ver Rodei). `hx feature verify HAR-03` gravou o estado na ficha, commit `bec9f04`. `git diff 49751a5 -- tests/` vazio.
 
 ## Rodei
 - 24/11 · S2 · `pytest tests/harness/test_fixtures.py --collect-only -q` (host) → 23 coletados
@@ -35,15 +39,31 @@ Em sessão nova, sem editar `tests/`: T2 de `planos/HAR-03/tasks.md` (modelo em 
 - 24/11 · S2 · `docker compose run --rm dev ruff check tests/harness/test_fixtures.py` → All checks passed
 - 24/11 · S2 · `sh tools/hx check-clean` (sem `LASTRO_NOMES_PROIBIDOS`: nomes pulados) → 0 achados
 - 24/11 · S2 · `hx check-clean` com `LASTRO_NOMES_PROIBIDOS` definida → 0 achados (rodado e informado por camposs04)
+- 24/11 · S3 · `pytest tests/harness -q` → 190 passaram, no host (Python 3.12) e no container (3.14)
+- 24/11 · S3 · `docker compose run --rm dev ruff check tools/ tests/harness/` → All checks passed
+- 24/11 · S3 · `sh tools/hx fixtures build` no host (3.12) → 12 arquivos; `python tools/harness.py fixtures build --check` no container (3.14) → código 0, "fixtures em dia" (mesmos bytes entre as versões)
+- 24/11 · S3 · `sh tools/hx check-clean` sem `LASTRO_NOMES_PROIBIDOS` → 0 achados, já varrendo `fixtures/`
+- 24/11 · S3 · `hx verify` local → OK depois de `docker compose build dev` (informado por camposs04)
+- 24/11 · S3 · CI do PR #58 → verde em verify e check-clean (informado por camposs04)
+- 24/11 · S3 · `hx feature verify HAR-03` → OK, c1 a c6 (14 testes), estado gravado no commit `bec9f04` (informado por camposs04)
+- 24/11 · S3 · `git diff 49751a5 -- tests/` → vazio
 
 ## Falhou
 - 24/11 · S2 · Os 23 testes de `tests/harness/test_fixtures.py` falham de propósito (T1, testes antes do código): o subcomando `fixtures` e `tools/fixtures_sinteticas.py` ainda não existem. Por isso `hx verify` não foi rodado: ficaria vermelho até a T5/T6.
+- 24/11 · S3 · Primeiro `hx verify` local: 4 falhas em `tests/web/test_web_foundation.py` (WEB-01), "Program not found: 'node'". A imagem dev local estava desatualizada, sem `node`; sem relação com a HAR-03. Resolvido com `docker compose build dev`.
+- 24/11 · S3 · Primeiro `hx feature verify HAR-03`: recusado por árvore de trabalho com alterações não commitadas. Rodou depois do commit `b2a8443`.
 
 ## Decisões
 - 24/11 · S1 · Respostas 1 a 4 e D1 a D7 do plan confirmadas por camposs04 (ver `planos/HAR-03/plan.md` §5).
 - 24/11 · S2 · Testes extras com nomes próprios, sem colidir com os 14 da ficha: `test_check_com_arquivo_a_mais_falha_sem_apagar` (nome sugerido no plan), `test_check_em_pasta_vazia_falha_sem_gravar`, `test_semente_invalida_sai_com_codigo_2`, `test_harness_importa_gerador_so_no_comando`, `test_planilha_sem_compressao_e_data_fixa`, `test_sorteio_usa_so_random`, `test_ofx_versao_102_sgml_ascii`, `test_conteudo_minimo_do_modelo`, `test_build_aborta_se_linha_tiver_documento_valido`.
 - 24/11 · S2 · O gerador é importado dentro de cada teste (não no topo), para que cada um falhe pelo próprio motivo enquanto o módulo não existe.
 - 24/11 · S2 · No teste do c5, o git é simulado (responde sem `fixtures/`), para provar que o check-clean varre a pasta mesmo fora do Git, sem depender de git real no container.
+- 24/11 · S3 · Contratos confirmados: `cnpjs_dos_clientes(semente)` devolve `{"EMP-1": cnpj sem máscara, ...}`, com o primeiro alfanumérico; `plano_planilha`, `ofx` e `gabarito` são relativos a `fixtures/`.
+- 24/11 · S3 · Desvio do plan (D7): a trava fica no comando do `harness.py`, e não no gerador. Quando o harness roda como script principal (`tools/hx`), existem duas cópias do módulo, e um `HarnessErro` lançado pelo gerador não seria capturado pelo `main`.
+- 24/11 · S3 · O aborto da D7 sai com código 2 (convenção do `main` para `HarnessErro`); o teste exige só ≠ 0.
+- 24/11 · S3 · `--semente` negativa é recusada com código 2: `Random(-N)` sorteia o mesmo que `Random(N)`, e o cadastro gravaria uma semente que não bate com os dados.
+- 24/11 · S3 · O `build` também apaga as pastas que ficam vazias depois de remover as sobras.
+- 24/11 · S3 · OFX com CRLF e todas as datas em `AAAAMMDD` (8 dígitos, inclusive `DTSERVER`): um carimbo de 14 dígitos seria candidato ao detector de CNPJ. FITID = `F` + 5 dígitos da conta + 4 da sequência (nunca 11 nem 14 caracteres).
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
