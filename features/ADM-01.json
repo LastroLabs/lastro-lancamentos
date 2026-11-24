@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "camposs04",
+  "responsavel": "jvsauma",
   "depende_de": [
     "DB-01",
     "ACE-01"
