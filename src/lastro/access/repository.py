@@ -1,0 +1,172 @@
+"""Reads and writes of the identity tables used by sign-in and sessions (ACE-01, I-7).
+
+Only this file touches `usuario`, `membro`, `escritorio` and `sessao` for the access
+module. The caller owns the transaction: nothing here commits.
+"""
+
+from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID
+
+from sqlalchemy import func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from lastro.access.models import Firm, Member, Session, User
+
+
+@dataclass(frozen=True, slots=True)
+class SignInCandidate:
+    """User found by login, with what sign-in needs to check."""
+
+    user_id: UUID
+    credential_hash: str | None
+    is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MembershipRow:
+    """Membership joined with its user and firm."""
+
+    user_id: UUID
+    member_id: UUID
+    firm_id: UUID
+    username: str
+    name: str
+    role: str
+    firm_name: str
+    is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
+class SessionRow:
+    """Stored session with the membership it is bound to."""
+
+    session_id: UUID
+    firm_id: UUID
+    created_at: datetime
+    expires_at: datetime
+    ended_at: datetime | None
+    membership: MembershipRow
+
+
+def _membership_columns():
+    return (
+        User.id,
+        Member.id,
+        Firm.id,
+        User.identificador_login,
+        User.nome,
+        Member.papel,
+        Firm.nome,
+        User.ativo & Member.ativo & Firm.ativo,
+    )
+
+
+def _membership_joins(statement):
+    return statement.join(User, User.id == Member.usuario_id).join(
+        Firm, Firm.id == Member.escritorio_id
+    )
+
+
+async def find_users_by_login(
+    db: AsyncSession, normalized_login: str
+) -> list[SignInCandidate]:
+    """Users whose login, in lower case, equals `normalized_login` (plan, question 4)."""
+    rows = await db.execute(
+        select(User.id, User.credencial_hash, User.ativo).where(
+            func.lower(User.identificador_login) == normalized_login
+        )
+    )
+    return [SignInCandidate(*row) for row in rows]
+
+
+async def find_active_memberships(
+    db: AsyncSession, user_id: UUID
+) -> list[MembershipRow]:
+    """Active memberships of a user in active firms."""
+    statement = _membership_joins(
+        select(*_membership_columns()).select_from(Member)
+    ).where(Member.usuario_id == user_id, Member.ativo, Firm.ativo, User.ativo)
+    return [MembershipRow(*row) for row in await db.execute(statement)]
+
+
+async def insert_session(
+    db: AsyncSession,
+    membership: MembershipRow,
+    token_hash: str,
+    created_at: datetime,
+    expires_at: datetime,
+) -> None:
+    """Store a new session for a membership."""
+    db.add(
+        Session(
+            escritorio_id=membership.firm_id,
+            membro_id=membership.member_id,
+            hash_token=token_hash,
+            criada_em=created_at,
+            expira_em=expires_at,
+        )
+    )
+    await db.flush()
+
+
+async def find_session(db: AsyncSession, token_hash: str) -> SessionRow | None:
+    """The session with this token hash, with its membership, or None."""
+    statement = _membership_joins(
+        select(
+            Session.id,
+            Session.escritorio_id,
+            Session.criada_em,
+            Session.expira_em,
+            Session.encerrada_em,
+            *_membership_columns(),
+        )
+        .select_from(Session)
+        .join(
+            Member,
+            (Member.escritorio_id == Session.escritorio_id)
+            & (Member.id == Session.membro_id),
+        )
+    ).where(Session.hash_token == token_hash)
+    row = (await db.execute(statement)).one_or_none()
+    if row is None:
+        return None
+    session_id, firm_id, created_at, expires_at, ended_at, *membership = row
+    return SessionRow(
+        session_id,
+        firm_id,
+        created_at,
+        expires_at,
+        ended_at,
+        MembershipRow(*membership),
+    )
+
+
+async def end_session(
+    db: AsyncSession, firm_id: UUID, session_id: UUID, ended_at: datetime
+) -> None:
+    """Mark a session as ended, if it was still open."""
+    await db.execute(
+        update(Session)
+        .where(
+            Session.escritorio_id == firm_id,
+            Session.id == session_id,
+            Session.encerrada_em.is_(None),
+        )
+        .values(encerrada_em=ended_at)
+    )
+
+
+async def renew_session(
+    db: AsyncSession, firm_id: UUID, session_id: UUID, expires_at: datetime
+) -> None:
+    """Move the expiry of an open session (plan D9)."""
+    await db.execute(
+        update(Session)
+        .where(
+            Session.escritorio_id == firm_id,
+            Session.id == session_id,
+            Session.encerrada_em.is_(None),
+        )
+        .values(expira_em=expires_at)
+    )

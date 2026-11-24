@@ -119,6 +119,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | classification → review | `Sugestao` |
 | questions → review | `RespostaCliente` |
 | review → export | `ItemRevisado` |
+| access → api e módulos com rota protegida | `SignedInMember` (`access/contracts.py`, ACE-01): quem está conectado, com `member_id`, `firm_id` e `role` |
 
 **`registry` (`CnpjValidationResult` / `validate_cnpj`, versão 0):**
 - **Assinatura:** `validate_cnpj(cnpj: str) -> CnpjValidationResult` (`src/lastro/registry/service.py`).

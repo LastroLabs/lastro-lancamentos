@@ -6,6 +6,8 @@ requires-python = ">=3.14,<3.15"
 # Plan NUC-01, D3. Exact versions live in uv.lock (D6); here only the lower bounds.
 dependencies = [
     "alembic>=1.20",
+    # ACE-01, plan D4: password hashing with Argon2 (stack: "senha com Argon2").
+    "argon2-cffi>=25.1",
     "fastapi>=0.165",
     "psycopg[binary]>=3.3",
     "pydantic>=2.12",
