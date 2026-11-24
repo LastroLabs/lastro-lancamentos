@@ -63,3 +63,20 @@ class MultipleFirmsError(Exception):
     user per firm. Raised only after the password matched, so it never tells a stranger
     that the account exists. No session is opened.
     """
+
+
+@dataclass(frozen=True, slots=True)
+class CreatedFirm:
+    """Firm and first manager created together (ADM-01).
+
+    Attributes:
+        firm_name: name of the new firm.
+        username: login stored for the manager, in lower case.
+    """
+
+    firm_name: str
+    username: str
+
+
+class UsernameTakenError(Exception):
+    """The login already exists (any letter case, active or not); nothing was written."""
