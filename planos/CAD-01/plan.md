@@ -1,6 +1,6 @@
 # Plan — CAD-01 · Validar CNPJ numérico e alfanumérico do cliente
 
-**Status:** pronto para revisão
+**Status:** aprovado (marrathomaz, 23/11/2026)
 **Branch:** feat/CAD-01-validar-cnpj-numerico-e-alfanumerico-do · **Data:** 23/11/2026 · **Responsável:** marrathomaz
 **Tasks:** planos/CAD-01/tasks.md
 
