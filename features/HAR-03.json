@@ -44,15 +44,15 @@
       "id": "c4",
       "descricao": "hx fixtures build --check confirma a pasta em dia e falha, sem regravar nada, quando um arquivo diverge ou falta",
       "exemplo": {
-        "entrada": "fixtures/ gerada com a semente padrão; (a) roda --check; (b) altera 1 byte de um OFX e roda --check; (c) restaura, apaga um gabarito e roda --check",
-        "saida": "(a) código 0 e mensagem dizendo que as fixtures estão em dia; (b) e (c) código diferente de 0, com ERRO, MOTIVO e CORREÇÃO citando o arquivo alterado ou ausente e mandando rodar hx fixtures build; em (b) o byte alterado continua lá e em (c) o gabarito continua ausente depois do --check"
+        "entrada": "fixtures/ gerada com a semente padrão; (a) roda --check; (b) altera 1 byte de um OFX e roda --check; (c) restaura, apaga um gabarito e roda --check; (d) restaura, cria em fixtures/ um arquivo a mais, que o gerador não produz, roda --check e depois hx fixtures build",
+        "saida": "(a) código 0 e mensagem dizendo que as fixtures estão em dia; (b), (c) e (d) código diferente de 0, com ERRO, MOTIVO e CORREÇÃO citando o arquivo alterado, ausente ou a mais e mandando rodar hx fixtures build; em (b) o byte alterado continua lá, em (c) o gabarito continua ausente e em (d) o arquivo a mais continua lá depois do --check; em (d), o hx fixtures build seguinte apaga o arquivo a mais e mantém o .gitkeep"
       }
     },
     {
       "id": "c5",
       "descricao": "Nenhum arquivo gerado contém CPF ou CNPJ válido; os CNPJs válidos dos clientes só existem em tempo de execução",
       "exemplo": {
-        "entrada": "fixtures/ gerada com a semente padrão; roda hx check-clean; um teste pede ao gerador, duas vezes, os CNPJs dos clientes da semente padrão",
+        "entrada": "fixtures/ gerada com a semente padrão; roda hx check-clean, que varre fixtures/ mesmo fora do Git; um teste pede ao gerador, duas vezes, os CNPJs dos clientes da semente padrão",
         "saida": "hx check-clean (que detecta CNPJ numérico e alfanumérico, HAR-04) sem nenhum achado em fixtures/; os CNPJs devolvidos têm dígito verificador válido, são distintos entre si, as duas consultas devolvem os mesmos valores e ao menos um é alfanumérico (padrão de julho/2026); nenhum desses CNPJs aparece em arquivo de fixtures/"
       }
     },
@@ -109,6 +109,10 @@
     {
       "criterio": "c4",
       "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_a_mais_falha_sem_apagar -q"
     },
     {
       "criterio": "c5",
