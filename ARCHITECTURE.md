@@ -113,6 +113,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | De → para | Contrato |
 |---|---|
 | registry → api, registry (`CAD-03`) | `CnpjValidationResult` (`lastro.registry.contracts`), `validate_cnpj` (`lastro.registry.service`) |
+| registry → registry (`CAD-05`), api | `ChartAccountEntry`, `ChartSpreadsheetResult` (`lastro.registry.contracts`), `read_chart_of_accounts_spreadsheet` (`lastro.registry.service`) |
 | parsing → validation | `ExtratoLido` |
 | parsing → classification | `MovimentacaoLida` |
 | validation → review, export | `ResultadoConferencia` |
@@ -126,6 +127,12 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 - **Campos (`CnpjValidationResult` em `src/lastro/registry/contracts.py`):** `is_valid: bool`, `normalized: str | None` (14 caracteres maiúsculos, sem máscara, quando válido; `None` caso contrário) e `error_message: str | None` (`None` quando válido).
 - **Mensagens oficiais:** vazio → `"Informe o CNPJ do cliente."`; inválido → `"O CNPJ informado não é válido. Confira os números."`.
 - **Fronteira e impactos:** o contrato devolve apenas a mensagem de recusa — o status HTTP de dado inválido (`P-13`) fica na camada `api/`. Qualquer mudança de campo, assinatura ou mensagem deve avisar a responsável pela `CAD-03` (consumidora direta). Detalhes, notas para `CAD-03`, `DB-01` e `tools/harness.py` ficam em `docs/modulos/registry.md`. Os demais contratos `registry → classification/export` seguem `[definir]` na seção 10.
+
+**`registry` (`ChartAccountEntry` / `ChartSpreadsheetResult` / `read_chart_of_accounts_spreadsheet`, versão 0):**
+- **Assinatura:** `read_chart_of_accounts_spreadsheet(source: bytes | Path) -> ChartSpreadsheetResult` (`src/lastro/registry/service.py`).
+- **Campos (`src/lastro/registry/contracts.py`):** `ChartAccountEntry(code: str, name: str)` e `ChartSpreadsheetResult(accounts: tuple[ChartAccountEntry, ...], errors: tuple[str, ...])`, ambos `@dataclass(frozen=True, slots=True)`.
+- **Mensagens oficiais:** planilha sem contas → `"A planilha não tem nenhuma conta."`; arquivo inválido → `"Este arquivo não é uma planilha. Envie um arquivo .xlsx."`; cabeçalho sem `código` ou `nome` na linha 1 → `"A planilha precisa ter as colunas 'código' e 'nome' na primeira linha."`; linha sem código → `"Linha {n}: falta o código da conta."`; linha sem nome → `"Linha {n}: falta o nome da conta."`; código repetido → `"Linha {n}: o código {codigo} já apareceu na linha {primeira}."`.
+- **Fronteira e impactos:** leitura pura em streaming (`openpyxl`, primeira aba, limite de 20 MiB), sem acesso a banco nem HTTP (`P-13` fica em `api/`). Depende da suposição `P-10` (cabeçalho na linha 1, a confirmar com os pilotos). Qualquer mudança de assinatura, campo ou mensagem deve avisar a `CAD-05` (consumidora direta). Detalhes em `docs/modules/registry.md`.
 
 `[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
 

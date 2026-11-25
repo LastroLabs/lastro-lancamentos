@@ -1,7 +1,8 @@
-"""Contracts of the registry module (CAD-01, RF-CAD-01).
+"""Contracts of the registry module (CAD-01, CAD-02).
 
 Immutable data exchanged between `registry.service` and the modules that consume
-CNPJ validation (such as client registration and the API layer).
+registry domain operations (such as client registration, chart of accounts
+import, and the API layer).
 """
 
 from dataclasses import dataclass
@@ -22,3 +23,31 @@ class CnpjValidationResult:
     is_valid: bool
     normalized: str | None
     error_message: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChartAccountEntry:
+    """A validated ledger account entry parsed from a chart spreadsheet.
+
+    Attributes:
+        code: Account code normalized as text (preserving leading zeros and dots).
+        name: Account name with leading and trailing whitespace removed.
+    """
+
+    code: str
+    name: str
+
+
+@dataclass(frozen=True, slots=True)
+class ChartSpreadsheetResult:
+    """Outcome of reading and validating a chart of accounts `.xlsx` spreadsheet.
+
+    Attributes:
+        accounts: Accepted ledger accounts in the exact order they appeared in
+            the spreadsheet.
+        errors: Plain-Portuguese messages pointing out invalid rows, duplicate
+            codes, or whole-file refusal reasons.
+    """
+
+    accounts: tuple[ChartAccountEntry, ...]
+    errors: tuple[str, ...]
