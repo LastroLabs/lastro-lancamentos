@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [
     "IA-01",
@@ -80,5 +80,35 @@
       "comando": "pytest tests/ai/test_gateway_vazamento.py::test_conta_fora_do_plano_vira_nao_sei -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-25T05:16:53Z",
+    "commit": "c48c20522137",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_cada_requisicao_leva_um_unico_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_conta_fora_do_plano_vira_nao_sei -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
