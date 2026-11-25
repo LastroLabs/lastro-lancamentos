@@ -53,8 +53,8 @@
       "id": "c5",
       "descricao": "Conta sugerida que não existe no plano do cliente vira \"não sei\"",
       "exemplo": {
-        "entrada": "plano de EMP-1 do gabarito (formato da HAR-03 c6) com a conta 4.1.02 e sem a 9.9.99; serviço de IA falso que responde 9.9.99 para uma descrição de EMP-1 e 4.1.02 para outra; um terceiro item de EMP-9, cujo plano não tem 4.1.02, também recebe a resposta 4.1.02",
-        "saida": "o resultado é None para a conta 9.9.99, 4.1.02 para a conta que está no plano de EMP-1 e None para a 4.1.02 de EMP-9, sem erro"
+        "entrada": "plano de EMP-1 do gabarito (formato da HAR-03 c6) com a conta 4.1.02 e sem a 7.7.77 (conta que não existe em nenhum plano da fixture); serviço de IA falso que responde 7.7.77 para uma descrição de EMP-1 e 4.1.02 para outra; um terceiro item de EMP-9, cujo plano não tem 4.1.02, também recebe a resposta 4.1.02",
+        "saida": "o resultado é None para a conta 7.7.77, 4.1.02 para a conta que está no plano de EMP-1 e None para a 4.1.02 de EMP-9, sem erro"
       }
     }
   ],
