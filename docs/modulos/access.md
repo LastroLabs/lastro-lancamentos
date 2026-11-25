@@ -48,6 +48,49 @@ acesso (`lastro.core.service.decide_access`) precisa para montar o `Membership`.
 `lastro.access.service.hash_password(senha)` devolve o hash Argon2 (`argon2-cffi`, parâmetros
 padrão) para `usuario.credencial_hash`. A ACE-02 usa ao aceitar o convite.
 
+## Primeiro acesso (ADM-01)
+
+Antes de existir convite (ACE-02), quem instala o sistema cria o primeiro escritório e o seu chefe
+por comando. Escritório, usuário e vínculo `chefe` ativo entram numa transação só: ou criam os
+três, ou nenhum. O comando não cria contador, cliente nem convite.
+
+```bash
+LASTRO_SENHA_CHEFE='<senha do chefe>' \
+python -m lastro.access.admin criar-escritorio \
+  --escritorio '<nome do escritório>' --usuario '<login do chefe>' --nome '<nome do chefe>'
+```
+
+- **Senha só pela variável `LASTRO_SENHA_CHEFE`.** `--senha` é recusado, porque a senha vazaria no
+  histórico do shell e em `ps`. Sem a variável e com terminal, o comando pede a senha duas vezes,
+  sem eco. Sem terminal, recusa. A senha tem no mínimo 8 caracteres e nunca aparece na saída.
+- **Códigos de saída:** `0` criado (saída padrão); `1` usuário já existe ou banco inacessível; `2`
+  dado faltando ou senha na linha de comando (os dois últimos na saída de erro).
+- **Mensagens:** "Informe o nome do escritório.", "Informe o usuário do chefe.", "Informe o nome do
+  chefe.", "Defina a senha do chefe na variável LASTRO_SENHA_CHEFE.", "Não escreva a senha no
+  comando. Use a variável LASTRO_SENHA_CHEFE.", "A senha do chefe deve ter pelo menos 8
+  caracteres.", "O usuário `<login>` já existe. Nada foi alterado."
+- **Usuário que já existe** (em qualquer caixa, ativo ou não) é recusado sem alterar nada, nem a
+  senha, e sem criar escritório. O login é gravado em minúsculas.
+- **Nome de escritório repetido é permitido.** O que identifica é o login do chefe.
+- **Aviso NUC-03:** a gravação usa o papel da aplicação (`DATABASE_URL`). Quando entrar a RLS, a
+  política precisa deixar o comando inserir `escritorio`, `usuario` e `membro`.
+- **Papel na identificação:** o banco guarda `chefe`; a rota `GET /api/v1/session` devolve
+  `manager` (ver "Rotas").
+
+Lógica em `service.create_firm_with_manager`; `admin.py` só lê argumentos e escreve a saída.
+
+**Contrato novo (versão 0, issue `contrato:` [#68](https://github.com/LastroLabs/lastro-lancamentos/issues/68)),
+aprovado em 25/11/2026:**
+
+| Item | Onde | Para que serve |
+|---|---|---|
+| `CreatedFirm(firm_name, username)` | `contracts.py` | Resultado da criação; `username` é o login gravado, em minúsculas |
+| `UsernameTakenError` | `contracts.py` | Login já existe; nada foi gravado nem alterado |
+| `create_firm_with_manager(db, firm_name, username, name, password)` | `service.py` | Grava escritório, usuário e vínculo `chefe` numa transação, com um só `commit` |
+
+A ACE-02 deve reaproveitar `hash_password` e gravar o login em minúsculas. Mudou o contrato?
+Comente na #68 e avise caio-nascime (ACE-02) e guin409 (NUC-03).
+
 ## Armadilhas
 
 - **Cookie `Secure`.** O navegador aceita em `http://localhost`. Em teste, use

@@ -63,3 +63,27 @@ class MultipleFirmsError(Exception):
     user per firm. Raised only after the password matched, so it never tells a stranger
     that the account exists. No session is opened.
     """
+
+
+@dataclass(frozen=True, slots=True)
+class CreatedFirm:
+    """Firm and first manager created together (ADM-01).
+
+    Contract in version 0 (issue `contrato:` #68), with `UsernameTakenError` and
+    `service.create_firm_with_manager`. Used by the first-access command and, later, by
+    ACE-02. If it changes, comment on #68 and warn the module owners.
+
+    Attributes:
+        firm_name: name of the new firm.
+        username: login stored for the manager, in lower case.
+    """
+
+    firm_name: str
+    username: str
+
+
+class UsernameTakenError(Exception):
+    """The login already exists (any letter case, active or not); nothing was written.
+
+    Contract in version 0 (issue `contrato:` #68).
+    """

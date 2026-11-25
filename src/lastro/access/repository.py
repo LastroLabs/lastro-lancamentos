@@ -170,3 +170,19 @@ async def renew_session(
         )
         .values(expira_em=expires_at)
     )
+
+
+async def insert_firm_with_manager(
+    db: AsyncSession,
+    firm_name: str,
+    login: str,
+    name: str,
+    credential_hash: str,
+) -> None:
+    """Add a firm, its user and an active `chefe` membership, without committing."""
+    firm = Firm(nome=firm_name)
+    user = User(identificador_login=login, nome=name, credencial_hash=credential_hash)
+    db.add_all([firm, user])
+    await db.flush()
+    db.add(Member(escritorio_id=firm.id, usuario_id=user.id, papel="chefe"))
+    await db.flush()

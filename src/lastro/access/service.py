@@ -12,15 +12,18 @@ import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lastro.access import passwords, repository
 from lastro.access.contracts import (
+    CreatedFirm,
     InvalidCredentialsError,
     MultipleFirmsError,
     OpenedSession,
     SessionEndedError,
     SignedInMember,
+    UsernameTakenError,
 )
 from lastro.core.contracts import Role
 
@@ -134,6 +137,45 @@ async def sign_out(db: AsyncSession, token: str) -> None:
         db, stored.firm_id, stored.session_id, datetime.now(UTC)
     )
     await db.commit()
+
+
+async def create_firm_with_manager(
+    db: AsyncSession, firm_name: str, username: str, name: str, password: str
+) -> CreatedFirm:
+    """Create a firm, its first manager and the active `chefe` membership (ADM-01).
+
+    Everything is written in one transaction with a single commit. The login is stored in
+    lower case and compared the same way as in `sign_in`.
+
+    Args:
+        db: database session; committed when all three rows are stored.
+        firm_name: name of the new firm (repeated names are allowed).
+        username: login of the manager.
+        name: display name of the manager.
+        password: password in clear; only its Argon2 hash is stored.
+
+    Returns:
+        The firm name and the stored login.
+
+    Raises:
+        UsernameTakenError: the login already exists; nothing was written or changed.
+    """
+    login = username.strip().lower()
+    if await repository.find_users_by_login(db, login):
+        raise UsernameTakenError
+    try:
+        await repository.insert_firm_with_manager(
+            db, firm_name, login, name, hash_password(password)
+        )
+        await db.commit()
+    except IntegrityError as error:
+        # Another command took the login between the check and the insert.
+        await db.rollback()
+        raise UsernameTakenError from error
+    except BaseException:
+        await db.rollback()
+        raise
+    return CreatedFirm(firm_name=firm_name, username=login)
 
 
 async def _open_session(db: AsyncSession, token: str) -> repository.SessionRow:
