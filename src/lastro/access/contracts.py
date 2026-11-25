@@ -69,6 +69,10 @@ class MultipleFirmsError(Exception):
 class CreatedFirm:
     """Firm and first manager created together (ADM-01).
 
+    Contract in version 0 (issue `contrato:` #68), with `UsernameTakenError` and
+    `service.create_firm_with_manager`. Used by the first-access command and, later, by
+    ACE-02. If it changes, comment on #68 and warn the module owners.
+
     Attributes:
         firm_name: name of the new firm.
         username: login stored for the manager, in lower case.
@@ -79,4 +83,7 @@ class CreatedFirm:
 
 
 class UsernameTakenError(Exception):
-    """The login already exists (any letter case, active or not); nothing was written."""
+    """The login already exists (any letter case, active or not); nothing was written.
+
+    Contract in version 0 (issue `contrato:` #68).
+    """

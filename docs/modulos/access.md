@@ -79,6 +79,18 @@ python -m lastro.access.admin criar-escritorio \
 
 Lógica em `service.create_firm_with_manager`; `admin.py` só lê argumentos e escreve a saída.
 
+**Contrato novo (versão 0, issue `contrato:` [#68](https://github.com/LastroLabs/lastro-lancamentos/issues/68)),
+aprovado em 25/11/2026:**
+
+| Item | Onde | Para que serve |
+|---|---|---|
+| `CreatedFirm(firm_name, username)` | `contracts.py` | Resultado da criação; `username` é o login gravado, em minúsculas |
+| `UsernameTakenError` | `contracts.py` | Login já existe; nada foi gravado nem alterado |
+| `create_firm_with_manager(db, firm_name, username, name, password)` | `service.py` | Grava escritório, usuário e vínculo `chefe` numa transação, com um só `commit` |
+
+A ACE-02 deve reaproveitar `hash_password` e gravar o login em minúsculas. Mudou o contrato?
+Comente na #68 e avise caio-nascime (ACE-02) e guin409 (NUC-03).
+
 ## Armadilhas
 
 - **Cookie `Secure`.** O navegador aceita em `http://localhost`. Em teste, use
