@@ -122,3 +122,12 @@ Respostas às perguntas 1 e 2 do plano da ACE-01, dadas por caio-nascime (dono d
 |---|---|
 | ACE-01/E1 | **Prazo da sessão:** a sessão cai depois de 2 h sem uso e nunca passa de 12 h desde a entrada. Cada pedido aceito renova `sessao.expira_em` (agora + 2 h, limitado a `criada_em` + 12 h); o token não muda. Detalhe em `planos/ACE-01/plan.md`, D9. |
 | ACE-01/E2 | **Um escritório por usuário:** entrar exige um único vínculo ativo, em escritório ativo. Quem trabalha em dois escritórios usa um usuário em cada. Se houver dois vínculos, a entrada responde 409 "Este usuário está em mais de um escritório. Peça ao chefe um usuário para cada escritório.", só depois da senha certa (com a senha errada, continua a 401 de sempre). Escolher o escritório na entrada foi descartado: muda a lógica do convite (ACE-02) e não cabe no prazo. Detalhe em `planos/ACE-01/plan.md`, D10. |
+
+## 8. Decisões da DB-03 — 25/11/2026
+
+Respostas de camposs04 (responsável da DB-03) às perguntas 1 e 2 de `planos/DB-03/plan.md`. A responsável aceitou a sugestão de padrão do plano nas duas. camposs04 aprovou o plano e as tarefas da DB-03 nesta data, incluindo as escolhas D1–D6.
+
+| Referência | Decisão e alcance |
+|---|---|
+| DB-03/B1 | Os testes de esquema da DB-03 podem criar escritório, usuário, membro e cliente transitórios no próprio teste, no banco descartável, nos moldes da DB-02/B1: nomes fictícios `*_TESTE_DB03`, CNPJ com dígito verificador inválido, hashes inventados (`"a"*64`), UUIDs gerados pelo banco e nenhum arquivo em `fixtures/`. Motivo: o `cadastro.json` de `synthetic_fixtures_dir` (HAR-03) não traz CNPJ, que é obrigatório em `cliente`. Nenhum dado real. A exceção vale só para os testes da DB-03. Aval dado por camposs04 em 25/11/2026, como responsável pelo `SECURITY.md`. Ver [Dados de teste](../SECURITY.md#3-dados-de-teste). |
+| DB-03/B2 | Estende a exceção de nomes da DB-01 às tabelas da DB-03 no módulo `access`. Os nomes físicos de tabelas e colunas ficam em português, exatamente como na ficha (`competencia`, `link_cliente`, `hash_token`...), assim como os quatro nomes de teste. As classes Python seguem em inglês (`Period` e `ClientLink`, D1 do plano). |
