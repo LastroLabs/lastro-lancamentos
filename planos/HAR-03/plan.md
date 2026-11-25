@@ -91,6 +91,7 @@ Ordem: T1 testes → T2 modelo em memória (cadastro, plano, movimentações, CN
 - **D7 no comando, e não no gerador:** a trava com `harness.tipos_da_linha` roda em `_exigir_sem_documentos`, dentro do comando `hx fixtures build` em `tools/harness.py`. **Motivo:** quando o harness roda como script principal (`tools/hx`), o módulo existe em duas cópias (`__main__` e `harness`), e um `HarnessErro` lançado pelo gerador não seria capturado pelo `main`. Um achado aborta o build com **código 2** (convenção do `main` para `HarnessErro`); o teste exige só código ≠ 0. Confirmado por camposs04 em 24/11/2026.
 - **Extra: `--semente` negativa sai com código 2.** `Random(-N)` sorteia o mesmo que `Random(N)`, e o cadastro gravaria uma semente que não bate com os dados. Confirmado por camposs04 em 24/11/2026.
 - **Extra: o `build` apaga as pastas que ficam vazias** depois de remover os arquivos que o gerador não produz (resposta 2). Confirmado por camposs04 em 24/11/2026.
+- **Resposta 3 antecipada:** a fixture de pytest de sessão (`synthetic_fixtures_dir`, em `tests/conftest.py`) entrou neste PR, e não na CAD-05/IA-02. **Motivo:** com o PR #64, os testes novos da DB-01 passam a precisar das fixtures assim que o #58 entrar. Testes em `tests/harness/test_session_fixture.py`. Feito por caio-nascime em 25/11/2026, com autorização de camposs04 para codificar na branch; aguarda confirmação dela na revisão.
 
 ## 6. Avaliação da ficha
 | # | Achado | Gravidade | Critério |

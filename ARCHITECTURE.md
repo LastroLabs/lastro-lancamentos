@@ -40,6 +40,7 @@ web/src/                    frontend
   pages/client/             cliente final (celular)
 tests/<module>/             testes de cada módulo, mesmo nome da pasta de src/lastro/
 tests/harness/, tests/ci/   testes do harness e da CI (não mexer ao implementar feature)
+tests/conftest.py           fixtures comuns a todos os módulos (`synthetic_fixtures_dir`, HAR-03)
 migrations/                 Alembic, uma migração por PR
 fixtures/                   dados sintéticos gerados (`hx fixtures build`)
 layouts/dominio.yaml        layout da planilha do Domínio (PROVISÓRIO, D-05)
