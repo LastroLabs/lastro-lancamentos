@@ -65,3 +65,68 @@ nomes do IBGE (se aparecer, vai para `conflito`) e rode
 - **Palavra colada** (`POSTOTESTE`) nunca casa com a lista: vira pseudônimo inteiro.
 - **Sem log:** este módulo não registra o texto original. Log do que vai à IA só com o texto já
   anonimizado (SECURITY.md §5).
+
+# Gateway ao serviço de IA (IA-02)
+
+`suggest_accounts()` é a única entrada para pedir à IA a conta de uma movimentação. Decisões em
+`planos/IA-02/plan.md` (D1 a D8). Contrato `ai → classification`, versão 0 (`ARCHITECTURE.md` §6).
+
+## Uso
+
+```python
+from lastro.ai.contracts import CandidateAccount, ClientDescription
+from lastro.ai.service import suggest_accounts
+
+sugestoes = suggest_accounts(
+    [ClientDescription(firm_id, client_id, descricao, valor_centavos), ...],
+    llm_client=adaptador,                      # implementa LLMClient
+    accounts_by_client={(firm_id, client_id): (CandidateAccount("4.1.01", "Aluguel"), ...)},
+    partners_by_client={(firm_id, client_id): ("NOME DO SOCIO",)},
+)
+```
+
+- Devolve uma conta (código) ou `None` ("não sei") por item, na ordem da entrada.
+- Agrupa por `(firm_id, client_id)`: **cada requisição leva um único cliente**; o mesmo
+  `client_id` em dois escritórios gera duas requisições. Cada cliente passa por um `anonymize()`.
+- Lista vazia devolve `[]` sem chamar o serviço. Cliente sem contas não é enviado: `None`.
+- O nível de proteção de nomes é lido uma vez, antes de qualquer chamada. Nível inválido falha
+  sem chamar o serviço.
+- `amount_cents` só aceita `int` (centavos, com sinal). `float` e `bool` dão `TypeError`.
+
+## O que vai na requisição (`LLMRequest`)
+
+| Campo | Conteúdo |
+|---|---|
+| `entries[].description` | descrição já anonimizada (IA-01): sem CPF, CNPJ, agência, conta; nomes como `PESSOA_nnn`/`EMPRESA_nnn` |
+| `entries[].amount_cents` | valor **exato** em centavos, com sinal (D8) |
+| `accounts[].code` | código da conta, sem alteração |
+| `accounts[].name` | nome da conta sem documentos, agência, conta e sem nomes de sócios cadastrados (D7, opção B) |
+
+**Fica de fora:** id de escritório e de cliente, texto original, qualquer outro campo.
+
+- **Sócio no nome da conta** vira o mesmo pseudônimo que ele tem nas descrições do lote
+  (comparação palavra a palavra, sem caixa nem acento). Nome truncado do sócio no nome da conta
+  não é reconhecido.
+- **O plano de contas não deve levar nome de pessoa.** Nome de pessoa que não é sócio
+  cadastrado (ex.: "Empréstimo Fulano") segue em claro no nome da conta: risco aceito em 25/11.
+- **Valor exato aguarda confirmação** do líder (e do guardião de dados, quando houver) antes do
+  piloto (pergunta 6 do plan). Se não aceitarem, troca-se por valor arredondado ou só o sinal.
+
+## Resposta
+
+- O serviço devolve uma resposta por descrição, na mesma ordem. Tamanho diferente →
+  `InvalidLLMResponseError`, e nenhuma sugestão do pedido é usada.
+- **Tudo ou nada na chamada:** se a resposta de um cliente vier com tamanho errado, a chamada
+  de `suggest_accounts` falha inteira, e as sugestões já obtidas para os outros clientes da mesma
+  chamada são descartadas. Para perder menos, chame uma vez por cliente. Isolar a falha por
+  cliente (devolver `None` só para o grupo) é decisão do dono do módulo, pois muda o contrato.
+- Cada código é conferido **em código** contra as contas daquele cliente; código fora da lista
+  vira `None` (regra 5 do `AGENTS.md`).
+
+## Armadilhas
+
+- **Sem log do original:** o gateway não registra descrição, nome nem valor. Log do que vai à IA,
+  se um dia existir, só com o texto já anonimizado (SECURITY.md §5, §8).
+- **O teste prova o que chega à porta `LLMClient`.** O adaptador do provedor, quando existir,
+  precisa de teste próprio de vazamento no nível HTTP.
+- **Pseudônimo reinicia por cliente:** `PESSOA_001` de um cliente não tem relação com o de outro.

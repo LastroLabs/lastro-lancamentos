@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [
     "IA-01",
@@ -48,6 +48,14 @@
         "entrada": "serviço de IA falso; pede-se a sugestão de conta de uma lista vazia de descrições de EMP-1",
         "saida": "o serviço falso recebeu 0 requisições; o resultado é uma lista vazia, sem erro"
       }
+    },
+    {
+      "id": "c5",
+      "descricao": "Conta sugerida que não existe no plano do cliente vira \"não sei\"",
+      "exemplo": {
+        "entrada": "plano de EMP-1 do gabarito (formato da HAR-03 c6) com a conta 4.1.02 e sem a 7.7.77 (conta que não existe em nenhum plano da fixture); serviço de IA falso que responde 7.7.77 para uma descrição de EMP-1 e 4.1.02 para outra; um terceiro item de EMP-9, cujo plano não tem 4.1.02, também recebe a resposta 4.1.02",
+        "saida": "o resultado é None para a conta 7.7.77, 4.1.02 para a conta que está no plano de EMP-1 e None para a 4.1.02 de EMP-9, sem erro"
+      }
     }
   ],
   "verificacao": [
@@ -66,7 +74,41 @@
     {
       "criterio": "c4",
       "comando": "pytest tests/ai/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/ai/test_gateway_vazamento.py::test_conta_fora_do_plano_vira_nao_sei -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-25T05:16:53Z",
+    "commit": "c48c20522137",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_cada_requisicao_leva_um_unico_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_lista_vazia_nao_chama_servico -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/ai/test_gateway_vazamento.py::test_conta_fora_do_plano_vira_nao_sei -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
