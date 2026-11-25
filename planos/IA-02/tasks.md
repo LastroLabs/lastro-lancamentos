@@ -12,7 +12,7 @@
 - **Regra de negócio (em linguagem simples):** antes de qualquer descrição ir ao serviço de IA, CPF, CNPJ, agência, conta e nomes têm de ter sumido, e cada pedido ao serviço leva só um cliente. Sem descrição, o serviço nem é chamado. A conta que a IA devolver só vale se existir no plano daquele cliente; senão vira "não sei".
 - **Critérios de aceite:**
   - [ ] Existem, em `tests/ai/test_gateway_vazamento.py`, os 4 testes com os nomes de `verificacao`: `test_requisicao_sem_cpf_cnpj_agencia_conta`, `test_nome_de_socio_vai_como_pseudonimo`, `test_cada_requisicao_leva_um_unico_cliente`, `test_lista_vazia_nao_chama_servico`
-  - [ ] Mais 9 (D6, D8): `test_conta_fora_do_plano_vira_nao_sei` (c5 sugerido), `test_valor_segue_a_descricao_certa`, `test_valor_float_e_recusado`, `test_nome_de_conta_vai_anonimizado`, `test_cliente_sem_contas_nao_chama_servico`, `test_resultado_volta_na_ordem_do_pedido`, `test_resposta_com_tamanho_errado_e_recusada`, `test_nivel_invalido_falha_antes_de_chamar_servico`, `test_gateway_nao_registra_texto_original_em_log`
+  - [ ] Mais 9 (D6, D8): `test_conta_fora_do_plano_vira_nao_sei` (c5 sugerido), `test_valor_segue_a_descricao_certa`, `test_valor_float_e_recusado`, `test_nome_de_conta_sai_sem_documento_e_socio`, `test_cliente_sem_contas_nao_chama_servico`, `test_resultado_volta_na_ordem_do_pedido`, `test_resposta_com_tamanho_errado_e_recusada`, `test_nivel_invalido_falha_antes_de_chamar_servico`, `test_gateway_nao_registra_texto_original_em_log`
   - [ ] O serviço falso (classe no próprio arquivo) implementa `LLMClient`, grava cada `LLMRequest` e nunca usa rede
   - [ ] Todos falham hoje pelo motivo certo (`suggest_accounts` e os contratos não existem)
   - [ ] Só dados da `synthetic_fixtures_dir` e inventados; CNPJ válido só em tempo de execução
@@ -23,7 +23,7 @@
   - c4: lista vazia → 0 requisições, resultado `[]`, sem erro
   - c5 (sugerido): plano de EMP-1 com `4.1.01` e `4.1.02`; falso responde `9.9.99` → `None`; responde `4.1.02` → `4.1.02` · EMP-9 com plano que não tem `4.1.02`, falso responde `4.1.02` → `None`
   - valor: movimentação do gabarito com `valor_centavos` `-4590` e outra `+800000` → a requisição tem `-4590` e `800000` nas entradas das descrições certas, como `int`; `45.90` (float) ou `True` → `TypeError`/`ValueError` e 0 requisições; o valor não aparece em `caplog`
-  - contas: conta `ADIANTAMENTO SOCIO TESTE 01` do plano → na requisição sem `SOCIO TESTE`; código `4.1.04` igual ao original · EMP sem contas → 0 requisições, resultado `None`
+  - contas (D7, opção B): `ADIANTAMENTO SOCIO TESTE 01` → `ADIANTAMENTO PESSOA_001` (o mesmo da descrição `PIX …`); `Reembolso 111.222.333-00` → `Reembolso [CPF]`; `Despesas bancarias` e `Aluguel` ficam iguais; os códigos não mudam · EMP sem contas → 0 requisições, resultado `None`
   - extras: itens EMP-1, EMP-9, EMP-1 → resposta na posição de cada item; falso devolve 1 resposta para 2 descrições → `InvalidLLMResponseError`; nível `medio` → erro e 0 requisições; `caplog` sem CPF, CNPJ nem nome originais
 - **Arquivos:** `tests/ai/test_gateway_vazamento.py`
 - **Fora do escopo:** código de produção; editar `tests/ai/test_anonimizar.py`
@@ -65,19 +65,20 @@
 
 ## [ ] T4 · Montar a requisição só com texto anonimizado
 - **Critérios da ficha:** c1, c2
-- **Regra de negócio (em linguagem simples):** o que vai ao serviço é o resultado da anonimização, nunca o texto original. Os sócios cadastrados do cliente ajudam a reconhecer o nome mesmo cortado no extrato. As contas candidatas (código e nome) vão junto para a IA escolher; o nome da conta também é anonimizado, porque pode ter nome de pessoa.
+- **Regra de negócio (em linguagem simples):** o que vai ao serviço é o resultado da anonimização, nunca o texto original. Os sócios cadastrados do cliente ajudam a reconhecer o nome mesmo cortado no extrato. As contas candidatas (código e nome) vão junto para a IA escolher; do nome da conta saem só documentos, agência, conta e nomes de sócios (D7, opção B), para o nome continuar legível ("Aluguel" não vira pseudônimo).
 - **Critérios de aceite:**
-  - [ ] Cada grupo passa por **um** `anonymize(descrições + nomes das contas, partners=…, level=…)` da IA-01 (D7), separa a saída e monta a `LLMRequest` **só** com ela; o código da conta vai sem alteração
+  - [ ] Cada grupo passa por **um** `anonymize(descrições, partners=…, level=…)` da IA-01 e a `LLMRequest` é montada **só** com a saída
+  - [ ] Nome de conta: `replace_identifiers()` tira documentos, agência e conta; nome de sócio cadastrado vira o **mesmo** `PESSOA_nnn` das descrições do lote; o resto do nome fica igual. Nível `desligado`: só documentos saem. O código da conta vai sem alteração (D7)
   - [ ] Cada `RequestEntry` leva o `amount_cents` do mesmo item de origem, sem alteração e sem passar pelo `anonymize()` (D8)
   - [ ] Os sócios de cada cliente vêm de `partners_by_client` (chave `(firm_id, client_id)`); cliente sem sócios usa `()`
   - [ ] O texto original não é guardado em campo da requisição nem em exceção
   - [ ] Nenhum CPF, CNPJ (numérico ou alfanumérico), agência, conta, nome de sócio, de pessoa ou de empresa aparece na requisição
 - **Exemplos:** `PIX SOCIO TESTE 01` com sócio `SOCIO TESTE 01` → `PIX PESSOA_001 01`; `BOLETO PADARIA TESTE LTDA` → `BOLETO EMPRESA_001`; `AG 6512 CC 51233-0` → `[AGENCIA] [CONTA]`
 - **Arquivos:** `src/lastro/ai/gateway.py`
-- **Reaproveitar:** `lastro.ai.service.anonymize` · **Não criar:** outro anonimizador, regex de CPF/CNPJ, lista de nomes
+- **Reaproveitar:** `lastro.ai.service.anonymize`, `lastro.ai.anonymization.replace_identifiers` · **Não criar:** outro anonimizador, regex de CPF/CNPJ, lista de nomes, pseudonimização completa dos nomes de conta
 - **Fora do escopo:** mudar as listas ou regras da IA-01 (se faltar palavra, abrir issue na IA-01)
 - **Decisões relacionadas:** D4, D5, D7, D8
-- **Pronto quando:** `pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo tests/ai/test_gateway_vazamento.py::test_nome_de_conta_vai_anonimizado tests/ai/test_gateway_vazamento.py::test_valor_segue_a_descricao_certa -q` passa
+- **Pronto quando:** `pytest tests/ai/test_gateway_vazamento.py::test_requisicao_sem_cpf_cnpj_agencia_conta tests/ai/test_gateway_vazamento.py::test_nome_de_socio_vai_como_pseudonimo tests/ai/test_gateway_vazamento.py::test_nome_de_conta_sai_sem_documento_e_socio tests/ai/test_gateway_vazamento.py::test_valor_segue_a_descricao_certa -q` passa
 
 ## [ ] T5 · Função pública `suggest_accounts`, nível e logs
 - **Critérios da ficha:** c1, c2, c3, c4
@@ -98,7 +99,7 @@
 - **Critérios da ficha:** (suporte: regras 9 e 11 do `AGENTS.md`)
 - **Regra de negócio (em linguagem simples):** quem for classificar ou ligar um provedor precisa achar como chamar o gateway e o que ele garante.
 - **Critérios de aceite:**
-  - [ ] `docs/modulos/ai.md` ganha seção do gateway: uso, o que sai na requisição, o que vai (descrições e nomes de conta anonimizados, código da conta e valor exato em centavos com sinal), o que fica de fora (ids de escritório e cliente), o aviso de que o valor exato aguarda confirmação do líder/guardião antes do piloto (pergunta 6), a validação da resposta contra o plano, regra de não registrar o original
+  - [ ] `docs/modulos/ai.md` ganha seção do gateway: uso, o que sai na requisição, o que vai (descrições anonimizadas; nomes de conta sem documentos nem sócios, e o aviso de que o plano de contas não deve levar nome de pessoa; código da conta e valor exato em centavos com sinal), o que fica de fora (ids de escritório e cliente), o aviso de que o valor exato aguarda confirmação do líder/guardião antes do piloto (pergunta 6), a validação da resposta contra o plano, regra de não registrar o original
   - [ ] `ARCHITECTURE.md` §6: linha `ai → classification` com `ClientDescription`, `CandidateAccount`, `suggest_accounts` (versão 0), no mesmo PR (§9), com uma nota: "sem consumidor ainda; avisar o dono da `classification` por issue `contrato:` quando a ficha existir"
   - [ ] Nenhuma issue `contrato:` é aberta nesta feature (decisão de 25/11, plan §5)
   - [ ] Nenhum dado real; sem copiar nome real de provedor ou cliente
