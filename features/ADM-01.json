@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "jvsauma",
   "depende_de": [
     "DB-01",
@@ -68,5 +68,30 @@
       "comando": "pytest tests/access/test_office_admin.py::test_adm01_dois_escritorios_ficam_separados -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-25T00:19:05Z",
+    "commit": "3c534dead43d",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_office_admin.py::test_adm01_cria_escritorio_e_chefe_que_consegue_entrar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/access/test_office_admin.py::test_adm01_usuario_existente_recusado_sem_alterar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_office_admin.py::test_adm01_dado_faltando_ou_senha_no_comando_recusados -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/access/test_office_admin.py::test_adm01_dois_escritorios_ficam_separados -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
