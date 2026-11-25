@@ -10,7 +10,9 @@ The caller passes the database session; `sign_in`, `identify` (it renews the exp
 
 import hashlib
 import secrets
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -176,6 +178,29 @@ async def create_firm_with_manager(
         await db.rollback()
         raise
     return CreatedFirm(firm_name=firm_name, username=login)
+
+
+async def responsible_member_ids(
+    db: AsyncSession, firm_id: str, client_ids: Sequence[str]
+) -> dict[str, str | None]:
+    """Active responsible member of each client of the firm (plan CAD-03, D3).
+
+    Used by `api/` and passed to `lastro.registry.service`, which does not read
+    `atribuicao`. Nothing is written.
+
+    Args:
+        db: database session.
+        firm_id: firm of the session; clients of other firms never get a responsible.
+        client_ids: ids of the clients to look up.
+
+    Returns:
+        For every given id, the member id of its open assignment, or None.
+    """
+    found = await repository.find_open_assignments(
+        db, UUID(firm_id), [UUID(client_id) for client_id in client_ids]
+    )
+    responsible = {str(client_id): str(member_id) for client_id, member_id in found}
+    return {client_id: responsible.get(client_id) for client_id in client_ids}
 
 
 async def _open_session(db: AsyncSession, token: str) -> repository.SessionRow:

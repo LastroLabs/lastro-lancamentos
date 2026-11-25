@@ -1,7 +1,7 @@
 """Reads and writes of the identity tables used by sign-in and sessions (ACE-01, I-7).
 
-Only this file touches `usuario`, `membro`, `escritorio` and `sessao` for the access
-module. The caller owns the transaction: nothing here commits.
+Only this file touches `usuario`, `membro`, `escritorio`, `sessao` and `atribuicao` for the
+access module. The caller owns the transaction: nothing here commits.
 """
 
 from dataclasses import dataclass
@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lastro.access.models import Firm, Member, Session, User
+from lastro.access.models import Assignment, Firm, Member, Session, User
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,3 +186,19 @@ async def insert_firm_with_manager(
     await db.flush()
     db.add(Member(escritorio_id=firm.id, usuario_id=user.id, papel="chefe"))
     await db.flush()
+
+
+async def find_open_assignments(
+    db: AsyncSession, firm_id: UUID, client_ids: list[UUID]
+) -> list[tuple[UUID, UUID]]:
+    """(client id, member id) of the open assignment (`fim IS NULL`) of each given client."""
+    if not client_ids:
+        return []
+    rows = await db.execute(
+        select(Assignment.cliente_id, Assignment.membro_id).where(
+            Assignment.escritorio_id == firm_id,
+            Assignment.cliente_id.in_(client_ids),
+            Assignment.fim.is_(None),
+        )
+    )
+    return [(client_id, member_id) for client_id, member_id in rows]
