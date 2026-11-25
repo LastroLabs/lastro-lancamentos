@@ -13,35 +13,33 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+Um comando (`python -m lastro.access.admin criar-escritorio`) cria, numa transação só, o escritório, o chefe e o vínculo `chefe` ativo, para o primeiro acesso antes da ACE-02. A senha vem só da variável `LASTRO_SENHA_CHEFE`; login que já existe é recusado sem alterar nada.
 
 ## Próxima ação
-Commitar `features/ADM-01.json` (evidência gravada em 25/11, commit `3c534de`) e abrir o PR com o template de `.github/`, avisando guin409 (NUC-03, RLS no primeiro acesso) e caio-nascime (ACE-02, contrato novo do `access`).
+Atualizar o PR da ADM-01 com o número da issue `contrato:` (#68) no item "Contrato mudou?" e pedir nova revisão. Depois, em PRs de ficha: acertar o texto da c1 ("papel chefe" na identificação é `manager` na API) e decidir se entram em c3 "nome vazio", "senha menor que 8" e "senha no terminal".
 
 ## Bloqueios e perguntas
-- (nenhum) · Avisos pendentes para o PR: guin409 e caio-nascime (ver Próxima ação).
-- Falta preencher o nome do revisor e a data na seção 8 do plan.
+- Nenhum bloqueio. A issue `contrato:` (#68) já avisa caio-nascime (ACE-02) e guin409 (NUC-03).
+- Falta o revisor humano preencher o nome e a data na seção 8 do plan (só um humano marca).
 
 ## Feito
-- DD/MM · S1 ·
+- 25/11 · S3 · Revisão pediu ajustes: abri a issue `contrato:` #68 (CreatedFirm, UsernameTakenError, create_firm_with_manager) e fechei este progress.
 - 25/11 · S2 · Testes commitados antes (TDD: `a4b48df`, `e269ab9`, `d2e8ccc`) e implementação em `3c534de` (`access/admin.py` e o restante), feitos pelo dev fora desta sessão. Aqui só conferi.
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
 - 25/11 · S2 · `python3.14 tools/harness.py verify` → ruff OK, pytest OK; Arquitetura e E2E pulados (não implementados) → RESULTADO OK. (`./tools/hx` falha neste shell: `python3` do sistema é o 3.10.)
 - 25/11 · S2 · `hx feature verify ADM-01` → c1 a c4 OK, `passing`, evidência no commit `3c534de`. A 1ª tentativa foi recusada por árvore suja; a 2ª, com a árvore limpa, gravou.
 - 25/11 · S2 · `hx check-clean` → 0 achados, OK; a verificação de nomes foi pulada ("variável não definida").
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
 - 25/11 · S2 · `hx feature verify ADM-01` recusou na 1ª vez: "árvore de trabalho tem alterações não commitadas". Passou depois do commit.
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+- 25/11 · S3 · Papel na identificação: o banco guarda `chefe` e a API devolve `manager`; o teste foi ajustado a isso antes da implementação (`e269ab9`). Texto da c1 fica para PR de ficha.
 - 24/11 · S1 · Plan aprovado por jvsauma: D1 a D5 confirmadas; senha com mínimo de 8 caracteres.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
-- [ ] Nada quebrado nem pela metade na branch; commit feito
-- [ ] "Próxima ação" atualizada
-- [ ] Nenhum dado real nem segredo nas anotações
+- [x] Nada quebrado nem pela metade na branch; commit feito
+- [x] "Próxima ação" atualizada
+- [x] Nenhum dado real nem segredo nas anotações
