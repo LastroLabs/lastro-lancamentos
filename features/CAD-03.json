@@ -32,7 +32,7 @@
       "descricao": "Cliente sem nome ou com CNPJ inválido não é cadastrado e a mensagem diz o que corrigir",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1 (sessão aberta) e nenhum cliente; chefe_1 tenta cadastrar (a) nome vazio com CNPJ válido gerado na hora e (b) nome 'EMPRESA TESTE 2' com CNPJ de dígito verificador errado",
-        "saida": "(a) status de dado inválido [definir P-13], mensagem 'Informe o nome do cliente.'; (b) status de dado inválido [definir P-13], mensagem 'O CNPJ informado não é válido. Confira os números.'; a lista de ESC-1 continua com 0 clientes"
+        "saida": "(a) status 422, mensagem 'Informe o nome do cliente.'; (b) status 422, mensagem 'O CNPJ informado não é válido. Confira os números.'; a lista de ESC-1 continua com 0 clientes"
       }
     },
     {
