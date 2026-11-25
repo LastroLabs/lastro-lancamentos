@@ -116,6 +116,10 @@ sugestoes = suggest_accounts(
 
 - O serviço devolve uma resposta por descrição, na mesma ordem. Tamanho diferente →
   `InvalidLLMResponseError`, e nenhuma sugestão do pedido é usada.
+- **Tudo ou nada na chamada:** se a resposta de um cliente vier com tamanho errado, a chamada
+  de `suggest_accounts` falha inteira, e as sugestões já obtidas para os outros clientes da mesma
+  chamada são descartadas. Para perder menos, chame uma vez por cliente. Isolar a falha por
+  cliente (devolver `None` só para o grupo) é decisão do dono do módulo, pois muda o contrato.
 - Cada código é conferido **em código** contra as contas daquele cliente; código fora da lista
   vira `None` (regra 5 do `AGENTS.md`).
 

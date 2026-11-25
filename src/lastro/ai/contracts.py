@@ -3,7 +3,7 @@
 Only data and errors live here; the behavior is in `service.py`.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol
 
@@ -60,7 +60,8 @@ class ClientDescription:
     Attributes:
         firm_id: firm (escritório) that owns the client.
         client_id: client inside that firm. Requests are grouped by `(firm_id, client_id)`.
-        description: original description, as read from the statement.
+        description: original description, as read from the statement. Left out of `repr()`
+            so it does not reach logs or tracebacks (SECURITY.md §5).
         amount_cents: signed amount in cents (negative is an outflow).
 
     Raises:
@@ -69,7 +70,7 @@ class ClientDescription:
 
     firm_id: str
     client_id: str
-    description: str
+    description: str = field(repr=False)
     amount_cents: int
 
     def __post_init__(self) -> None:

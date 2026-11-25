@@ -109,7 +109,10 @@ def suggest_accounts(
     Raises:
         InvalidNameProtectionLevelError: if `level` is None and the configured value is
             invalid; no request is made.
-        InvalidLLMResponseError: if the service does not answer once per description.
+        InvalidLLMResponseError: if the service does not answer once per description of any
+            client. All or nothing: the whole call fails, and the suggestions already obtained
+            for other clients of the same call are discarded. To lose less, call once per
+            client.
     """
     if level is None:
         level = load_name_protection_level()
