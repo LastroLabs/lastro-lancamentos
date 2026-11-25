@@ -507,6 +507,42 @@ def test_resposta_com_tamanho_errado_e_recusada():
         )
 
 
+def test_resposta_errada_de_um_cliente_cancela_a_chamada_inteira():
+    """All or nothing (docs/modulos/ai.md): a bad answer for the 2nd client fails the call."""
+    invalid_response = _contracts().InvalidLLMResponseError
+    accounts = (
+        _contracts().CandidateAccount(code="4.1.01", name="Despesas bancarias"),
+    )
+
+    # one answer per request: right for the 1st client (1 entry), short for the 2nd (2 entries)
+    fake = FakeLLMClient(lambda request: ["4.1.01"])
+    items = [
+        _item("ESC-1", "EMP-1", "TARIFA PACOTE SERVICOS", -4417),
+        _item("ESC-1", "EMP-2", "TARIFA PACOTE SERVICOS", -4778),
+        _item("ESC-1", "EMP-2", "TARIFA PACOTE SERVICOS", -4900),
+    ]
+
+    with pytest.raises(invalid_response):
+        _suggest_accounts()(
+            items,
+            llm_client=fake,
+            accounts_by_client={
+                ("ESC-1", "EMP-1"): accounts,
+                ("ESC-1", "EMP-2"): accounts,
+            },
+        )
+
+    assert len(fake.requests) == 2  # the 1st client was asked (and answered) before
+
+
+def test_descricao_original_nao_aparece_no_repr():
+    description = "PIX RECEBIDO SOCIO TESTE"
+    item = _item("ESC-1", "EMP-1", description, -4417)
+
+    assert description not in repr(item)
+    assert description not in f"{[item]}"
+
+
 def test_nivel_invalido_falha_antes_de_chamar_servico(monkeypatch):
     invalid_level = _contracts().InvalidNameProtectionLevelError
     monkeypatch.setenv(LEVEL_VARIABLE, "medio")
