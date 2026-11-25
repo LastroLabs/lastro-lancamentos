@@ -717,6 +717,7 @@ def tipos_da_linha(linha: str, nomes: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 PASTAS_IGNORADAS = frozenset({".git", "node_modules", "__pycache__", ".venv", ".pytest_cache"})
+PASTA_FIXTURES = "fixtures"
 LIMITE_BYTES = 1024 * 1024
 BYTES_PARA_DETECTAR_BINARIO = 8 * 1024
 _COMANDO_GIT = ["git", "-c", "core.quotepath=off", "ls-files", "--cached", "--others", "--exclude-standard"]
@@ -758,11 +759,23 @@ def _ler_texto(caminho: Path) -> str | None:
     return dados.decode("utf-8", errors="replace")
 
 
+def _arquivos_de_fixtures(raiz: Path) -> list[str]:
+    """HAR-03: arquivos de fixtures/ (com o prefixo), mesmo fora do Git (.gitignore)."""
+    pasta = raiz / PASTA_FIXTURES
+    if not pasta.is_dir():
+        return []
+    return [f"{PASTA_FIXTURES}/{relativo}" for relativo in _percorrer_arvore(pasta)]
+
+
 def varrer(raiz: Path, nomes: list[str]) -> list[tuple[str, int, str]]:
-    """Achados como (arquivo, linha, tipo), em ordem. Sem valores."""
+    """Achados como (arquivo, linha, tipo), em ordem. Sem valores.
+
+    Além do que o git lista, varre fixtures/, que fica no .gitignore (HAR-03).
+    """
     raiz = Path(raiz)
     achados: list[tuple[str, int, str]] = []
-    for relativo in _listar_arquivos(raiz):
+    arquivos = sorted({*_listar_arquivos(raiz), *_arquivos_de_fixtures(raiz)})
+    for relativo in arquivos:
         texto = _ler_texto(raiz / relativo)
         if texto is None:
             continue
@@ -1337,6 +1350,111 @@ def cmd_feature_start(args: argparse.Namespace, raiz: Path) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# HAR-03: `hx fixtures build [--semente N] [--check]`
+# ---------------------------------------------------------------------------
+
+ARQUIVOS_PRESERVADOS = frozenset({".gitkeep"})
+
+
+def _semente(texto: str) -> int:
+    """Tipo do argparse para --semente: inteiro ≥ 0 (Random trata -N como N)."""
+    try:
+        valor = int(texto)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"valor inválido {texto!r}: use um inteiro ≥ 0") from None
+    if valor < 0:
+        raise argparse.ArgumentTypeError(f"valor inválido {texto!r}: use um inteiro ≥ 0")
+    return valor
+
+
+def _arquivos_em_disco(pasta: Path) -> set[str]:
+    """Caminhos relativos (com /) dos arquivos de fixtures/, sem os preservados."""
+    if not pasta.is_dir():
+        return set()
+    return {r for r in _percorrer_arvore(pasta) if r.rsplit("/", 1)[-1] not in ARQUIVOS_PRESERVADOS}
+
+
+def _exigir_sem_documentos(arquivos: dict[str, bytes], membros_xlsx) -> None:
+    """D7: aborta se alguma linha gerada tiver achado do check-clean (antes de gravar)."""
+    nomes = _nomes_proibidos()
+    achados: list[str] = []
+    for relativo, dados in arquivos.items():
+        if relativo.endswith(".xlsx"):
+            textos = {f"{relativo}!{m}": t for m, t in membros_xlsx(dados).items()}
+        else:
+            textos = {relativo: dados.decode("utf-8", errors="replace")}
+        for onde, texto in textos.items():
+            for numero, linha in enumerate(texto.split("\n"), start=1):
+                achados += [f"{onde}:{numero} ({tipo})" for tipo in tipos_da_linha(linha, nomes)]
+    if achados:
+        raise HarnessErro(
+            "o gerador produziu linha com documento ou segredo; nada foi gravado",
+            f"{len(achados)} achado(s): " + "; ".join(achados[:10]),
+            "corrija tools/fixtures_sinteticas.py (ou rode com outra --semente) e rode "
+            "hx fixtures build de novo",
+        )
+
+
+def _gravar_fixtures(pasta: Path, arquivos: dict[str, bytes]) -> int:
+    """Grava o mapa e apaga o que o gerador não gera (exceto .gitkeep). Devolve quantos apagou."""
+    sobras = sorted(_arquivos_em_disco(pasta) - set(arquivos))
+    for relativo, dados in arquivos.items():
+        destino = pasta / relativo
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_bytes(dados)
+    for relativo in sobras:
+        (pasta / relativo).unlink()
+    for subpasta in sorted({(pasta / r).parent for r in sobras}, key=lambda p: -len(p.parts)):
+        if subpasta != pasta and subpasta.is_dir() and not any(subpasta.iterdir()):
+            subpasta.rmdir()
+    return len(sobras)
+
+
+def _divergencias(pasta: Path, arquivos: dict[str, bytes]) -> list[str]:
+    """Só lê o disco: arquivos alterados, ausentes e a mais em relação ao mapa gerado."""
+    em_disco = _arquivos_em_disco(pasta)
+    linhas = []
+    for relativo, dados in arquivos.items():
+        if relativo not in em_disco:
+            linhas.append(f"ausente: {PASTA_FIXTURES}/{relativo}")
+        elif (pasta / relativo).read_bytes() != dados:
+            linhas.append(f"alterado: {PASTA_FIXTURES}/{relativo}")
+    linhas += [f"a mais: {PASTA_FIXTURES}/{r}" for r in sorted(em_disco - set(arquivos))]
+    return linhas
+
+
+def cmd_fixtures_build(args: argparse.Namespace, raiz: Path) -> int:
+    """Gera fixtures/ pela semente (função pura do gerador); com --check, só confere."""
+    import fixtures_sinteticas as gerador  # D1: só aqui, para o hx não depender dele ao abrir
+
+    semente = gerador.SEMENTE_PADRAO if args.semente is None else args.semente
+    arquivos = gerador.gerar_arquivos(semente)
+    pasta = raiz / PASTA_FIXTURES
+    comando = "hx fixtures build" + ("" if args.semente is None else f" --semente {semente}")
+
+    if args.check:
+        divergencias = _divergencias(pasta, arquivos)
+        if divergencias:
+            mostrar_erro(HarnessErro(
+                f"{PASTA_FIXTURES}/ não está em dia com a semente {semente} "
+                f"({len(divergencias)} divergência(s)); nada foi gravado",
+                "; ".join(divergencias),
+                f"rode {comando} para gerar a pasta de novo e repita o --check",
+            ))
+            return 1
+        print(f"fixtures em dia: {len(arquivos)} arquivo(s) iguais aos da semente {semente}")
+        return 0
+
+    _exigir_sem_documentos(arquivos, gerador.membros_xlsx)
+    apagados = _gravar_fixtures(pasta, arquivos)
+    print(
+        f"fixtures: {len(arquivos)} arquivo(s) gravado(s) em {PASTA_FIXTURES}/ "
+        f"(semente {semente}); {apagados} arquivo(s) antigo(s) apagado(s)"
+    )
+    return 0
+
+
 def _criar_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="hx", description="Harness do Lastro.")
     sub = parser.add_subparsers(dest="comando", required=True, metavar="<comando>")
@@ -1379,6 +1497,32 @@ def _criar_parser() -> argparse.ArgumentParser:
         help="não cria branch nem commita: só muda a ficha e cria o progress (você cria a sua branch)",
     )
     p_fstart.set_defaults(func=cmd_feature_start)
+    p_fixtures = sub.add_parser(
+        "fixtures", help="dados sintéticos de teste (cadastro, OFX, planilhas e gabarito)"
+    )
+    sub_fixtures = p_fixtures.add_subparsers(dest="acao", required=True, metavar="<ação>")
+    p_fbuild = sub_fixtures.add_parser(
+        "build",
+        help=(
+            f"gera {PASTA_FIXTURES}/ a partir de uma semente fixa e apaga dela o que o "
+            "gerador não produz (exceto .gitkeep)"
+        ),
+        description=(
+            f"Gera {PASTA_FIXTURES}/ a partir de uma semente fixa (mesma semente, mesmos bytes). "
+            f"Atenção: sem --check, apaga de {PASTA_FIXTURES}/ os arquivos que o gerador não "
+            "produz (exceto .gitkeep)."
+        ),
+    )
+    p_fbuild.add_argument(
+        "--semente", type=_semente, default=None, metavar="N",
+        help="semente do sorteio, inteiro ≥ 0 (padrão: 1)",
+    )
+    p_fbuild.add_argument(
+        "--check",
+        action="store_true",
+        help=f"só confere se {PASTA_FIXTURES}/ está em dia com a semente; não grava nada",
+    )
+    p_fbuild.set_defaults(func=cmd_fixtures_build)
     return parser
 
 
