@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "marrathomaz",
   "depende_de": [],
   "bloqueada_por": null,
@@ -69,5 +69,35 @@
       "comando": "pytest tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-26T01:35:04Z",
+    "commit": "01bc3bdebeb2",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/registry/test_planilha_plano.py::test_linha_incompleta_rejeitada_com_numero -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_planilha_plano.py::test_codigo_repetido_rejeitado_com_as_duas_linhas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_sem_contas_recusada -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
