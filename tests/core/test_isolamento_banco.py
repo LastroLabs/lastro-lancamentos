@@ -1,4 +1,4 @@
-"""NUC-03: the database hides the rows of other firms (c1 to c7).
+"""NUC-03: the database hides the rows of other firms (c1 to c8).
 
 The seed is written as the container superuser, which ignores row level security. Every
 check of the criteria runs as `lastro_app`, the role the API uses, inside a transaction
@@ -6,8 +6,8 @@ that names the firm the way the server does (plan D1):
 
     SELECT set_config('app.firm_id', '<firm uuid>', true)      -- same as SET LOCAL
 
-The setting name `app.firm_id` and the four lookup functions come from `planos/NUC-03/plan.md`
-(D1, D3, D4, answer 1). The functions are read by column position (the order of the ficha),
+The setting name `app.firm_id` and the five lookup functions come from `planos/NUC-03/plan.md`
+(D1, D3, D4, D6, answers 1 and 5). The functions are read by column position (the order of the ficha),
 so the tests do not invent column names. Firms, people, clients and hashes are invented
 (ESC-1, ESC-2, EMP-1, EMP-2, EMP-9, contador_a, contador_x); passwords are random at run time.
 No real data.
@@ -18,7 +18,7 @@ import re
 import secrets
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import psycopg
@@ -56,6 +56,8 @@ MEMBERSHIP_LOOKUP = "buscar_vinculos_do_usuario"
 INVITE_LOOKUP = "buscar_convite_por_hash"
 LOGIN_LOOKUP = "buscar_usuario_por_login"
 LOOKUPS = (SESSION_LOOKUP, MEMBERSHIP_LOOKUP, INVITE_LOOKUP, LOGIN_LOOKUP)
+# c8 and plan D6: the lookup of the client link, kept apart so c6 does not change.
+LINK_LOOKUP = "buscar_link_por_hash"
 
 _cnpj_counter = iter(range(1, 10_000))
 
@@ -708,3 +710,117 @@ def test_login_continua_funcionando_com_rls(world):
         assert function in sql_text, f"the API never called {function}"
     direct = [s for s in statements if "buscar_" not in s and _DIRECT_LOOKUP.search(s)]
     assert not direct, f"direct lookup without a firm: {direct[0]}"
+
+
+# ---------------------------------------------------------------------------
+# c8: the client link is found by its code through a restricted function
+# ---------------------------------------------------------------------------
+
+
+def _add_links(conn, firm, client):
+    """Links of one client in the seeded period (10/2026); returns {label: (id, hash)}.
+
+    `open` is within its term, `expired` passed it, `revoked` was invalidated within it.
+    """
+    period = conn.execute(
+        "SELECT id FROM competencia WHERE escritorio_id = %s AND cliente_id = %s"
+        " AND mes = '2026-10-01'",
+        (firm.id, client),
+    ).fetchone()[0]
+    links = {}
+    for label, created, expires, revoked in (
+        ("open", "now() - interval '1 day'", "now() + interval '6 days'", "NULL"),
+        ("expired", "now() - interval '8 days'", "now() - interval '1 day'", "NULL"),
+        (
+            "revoked",
+            "now() - interval '1 day'",
+            "now() + interval '6 days'",
+            "now() - interval '1 hour'",
+        ),
+    ):
+        hash_value = _sha256(f"link-{label}")
+        link_id = conn.execute(
+            "INSERT INTO link_cliente (escritorio_id, cliente_id, competencia_id,"
+            " hash_token, criado_por, criado_em, expira_em, revogado_em)"
+            f" VALUES (%s, %s, %s, %s, %s, {created}, {expires}, {revoked}) RETURNING id",
+            (firm.id, client, period, hash_value, firm.accountant_member),
+        ).fetchone()[0]
+        links[label] = (link_id, hash_value)
+    return period, links
+
+
+def test_busca_do_link_sem_escritorio_por_funcao_restrita(world):
+    esc1, esc2 = world.esc1, world.esc2
+    emp1, emp9 = esc1.clients["EMP-1"], esc2.clients["EMP-9"]
+    with connect(world.database.conninfo(SUPERUSER)) as conn:
+        period1, links1 = _add_links(conn, esc1, emp1)
+        period9, links9 = _add_links(conn, esc2, emp9)
+        found = conn.execute(
+            "SELECT count(*) FROM pg_proc WHERE proname = %s", (LINK_LOOKUP,)
+        ).fetchone()[0]
+    assert found == 1, f"missing database function: {LINK_LOOKUP}"
+    l1_id, l1_hash = links1["open"]
+    l2_id, l2_hash = links1["expired"]
+    _, l3_hash = links1["revoked"]
+    l9_id, l9_hash = links9["open"]
+
+    with _app(world.database) as conn:
+        # (1) the table is closed without a firm.
+        with _transaction(conn):
+            assert (
+                conn.execute(
+                    "SELECT count(*) FROM link_cliente WHERE hash_token = %s",
+                    (l1_hash,),
+                ).fetchone()[0]
+                == 0
+            )
+
+        # (2a) L1: firm, link, client, period and expira_em, in this order.
+        rows, columns = _lookup(conn, LINK_LOOKUP, l1_hash)
+        assert len(rows) == 1 and len(columns) == 5, rows
+        firm, link, client, period, expires_at = rows[0]
+        assert (firm, link, client, period) == (esc1.id, l1_id, emp1, period1)
+        assert isinstance(expires_at, datetime) and expires_at > datetime.now(UTC)
+        _assert_minimal(columns, LINK_LOOKUP)
+        assert "cnpj_normalizado" not in columns, f"{LINK_LOOKUP} returns the CNPJ"
+
+        # (2b) a code never made and (2c) the invalidated L3: nothing, without error.
+        assert _lookup(conn, LINK_LOOKUP, _sha256("inexistente"))[0] == []
+        assert _lookup(conn, LINK_LOOKUP, l3_hash)[0] == []
+
+        # (2d) the expired L2 is found; the app refuses it by its own clock (plan P5).
+        rows, _ = _lookup(conn, LINK_LOOKUP, l2_hash)
+        assert len(rows) == 1, rows
+        assert rows[0][:2] == (esc1.id, l2_id)
+        assert rows[0][4] < datetime.now(UTC)
+
+        # (2e) L9 belongs to ESC-2 and only to it.
+        rows, _ = _lookup(conn, LINK_LOOKUP, l9_hash)
+        assert [row[:4] for row in rows] == [(esc2.id, l9_id, emp9, period9)]
+
+    # The function: SECURITY DEFINER, fixed search_path, owner role, EXECUTE only to the app.
+    with connect(world.database.conninfo(SUPERUSER)) as conn:
+        security_definer, config, owner, arguments, executors = conn.execute(
+            "SELECT prosecdef, proconfig, pg_get_userbyid(proowner),"
+            " pg_get_function_identity_arguments(oid),"
+            " (SELECT array_agg(DISTINCT CASE WHEN a.grantee = 0 THEN 'PUBLIC'"
+            "         ELSE pg_get_userbyid(a.grantee) END)"
+            "    FROM aclexplode(coalesce(proacl, acldefault('f', proowner))) a"
+            "   WHERE a.privilege_type = 'EXECUTE')"
+            " FROM pg_proc WHERE proname = %s",
+            (LINK_LOOKUP,),
+        ).fetchone()
+    assert security_definer, f"{LINK_LOOKUP} must be SECURITY DEFINER"
+    normalized = [re.sub(r"\s", "", setting) for setting in config or []]
+    assert "search_path=pg_catalog,public" in normalized, f"search_path {config}"
+    assert owner == OWNER_ROLE, f"{LINK_LOOKUP} belongs to {owner}"
+    assert set(executors) == {OWNER_ROLE, APP_ROLE}, f"EXECUTE for {executors}"
+
+    # (2f) the application role cannot change or drop the function.
+    with _app(world.database) as conn:
+        for statement in (
+            f"DROP FUNCTION public.{LINK_LOOKUP}({arguments})",
+            f"ALTER FUNCTION public.{LINK_LOOKUP}({arguments}) SECURITY INVOKER",
+        ):
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(statement)

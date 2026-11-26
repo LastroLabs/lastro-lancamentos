@@ -103,3 +103,36 @@
   - [ ] `hx check-clean` e `hx verify` em OK
   - [ ] `hx feature verify NUC-03` grava `passing`
 - **Pronto quando:** os três comandos do `hx` terminam com código 0
+
+---
+
+**Acréscimo de 26/11 (c8, plan D6).** Só começa com P5 e P6 respondidas. Ordem: T9 → revisão humana dos testes → commit só-de-testes (anotar o hash) → T10 e T11 (sem editar `tests/`).
+
+## [ ] T9 · Escrever o teste da função do link
+- **Critérios da ficha:** c8
+- **Regra de negócio:** o cliente final abre o link sem login; antes de saber o escritório, o app só pode perguntar "de quem é este código?" e receber o mínimo. Código inexistente ou invalidado dá 0 linhas, sem erro.
+- **Critérios de aceite:**
+  - [ ] `test_busca_do_link_sem_escritorio_por_funcao_restrita` em `tests/core/test_isolamento_banco.py`, cobrindo (1) e (2a) a (2f) do c8
+  - [ ] Seed como superusuário com L1 (no prazo), L2 (vencido), L3 (invalidado) em ESC-1 e L9 em ESC-2; consultas como `lastro_app`
+  - [ ] Confere `prosecdef`, `search_path`, dona e `EXECUTE`, como o teste de c6
+  - [ ] Falha hoje pelo motivo certo (função não existe)
+- **Arquivos:** `tests/core/test_isolamento_banco.py`
+- **Reaproveitar:** `_seed_firm`, `_lookup`, `_assert_minimal`, a consulta a `pg_proc` do teste de c6 · **Não criar:** outro seed nem outro Testcontainers
+- **Pronto quando:** o teste falha só por falta da função
+
+## [ ] T10 · Migração `0006`: `buscar_link_por_hash`
+- **Critérios da ficha:** c8
+- **Critérios de aceite:**
+  - [ ] `migrations/versions/0006_client_link_lookup.py`, `down_revision = "0005"`
+  - [ ] Função conforme D6 e a resposta da P5; filtra `revogado_em IS NULL`; busca exata por `hash_token`
+  - [ ] `REVOKE ALL … FROM PUBLIC`, `GRANT EXECUTE` só a `lastro_app`; `downgrade` apaga a função
+- **Reaproveitar:** o formato de `CREATE_FUNCTIONS` da `0005` · **Não criar:** política nova, código em `src/`
+- **Pronto quando:** `pytest tests/core/test_isolamento_banco.py -q` e `pytest tests/core/test_migracoes.py -q` passam
+
+## [ ] T11 · Documentação e nova verificação
+- **Critérios de aceite:**
+  - [ ] `docs/modulos/access.md`: a busca do link existe; como a ACE-05 a usa (chamar a função, depois `use_firm`)
+  - [ ] Issue `contrato:` com as cinco funções, avisando camposs04 (ACE-05) e caio-nascime (ACE-02)
+  - [ ] Ficha da ACE-05 (por humano, em PR): NUC-03 em `depende_de`; critério que exige a função ao abrir o link
+  - [ ] `hx check-clean`, `hx verify` e `hx feature verify NUC-03` (regrava `estado` e `evidencia` com o c8)
+- **Pronto quando:** os três comandos do `hx` terminam com código 0

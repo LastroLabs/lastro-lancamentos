@@ -15,7 +15,8 @@
     "NUC-01",
     "CAD-03",
     "DB-01",
-    "ACE-01"
+    "ACE-01",
+    "DB-03"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -65,7 +66,7 @@
       "descricao": "As três buscas feitas antes de se saber o escritório (sessão pelo token, vínculos de um usuário no login e convite pelo código) passam por funções do banco que devolvem só o mínimo",
       "exemplo": {
         "entrada": "mesmo banco de c5; transação sem escritório; o usuário da aplicação (1) consulta sessao e convite direto pelo hash; (2) chama as funções do banco com: (a) o hash da sessão de contador_a; (b) o id do usuário contador_a; (c) o hash do convite pendente de ESC-1; (d) hashes inexistentes; (e) o hash de um convite vencido, de um usado e de um cancelado; (f) tenta alterar ou apagar uma função",
-        "saida": "(1) 0 linhas; (2a) 1 linha: escritório, membro, expira_em e encerrada_em; (2b) 1 linha por vínculo ativo: escritório, membro e papel; (2c) 1 linha: escritório, convite e membro; (2d) e (2e) 0 linhas, sem erro; nenhuma função devolve nome, credencial_hash ou hash_token; as funções são SECURITY DEFINER, com search_path fixo, pertencem ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão. O link do cliente (DB-03, ACE-05) usa o mesmo padrão em ficha própria"
+        "saida": "(1) 0 linhas; (2a) 1 linha: escritório, membro, expira_em e encerrada_em; (2b) 1 linha por vínculo ativo: escritório, membro e papel; (2c) 1 linha: escritório, convite e membro; (2d) e (2e) 0 linhas, sem erro; nenhuma função devolve nome, credencial_hash ou hash_token; as funções são SECURITY DEFINER, com search_path fixo, pertencem ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão. O link do cliente (DB-03, ACE-05) usa o mesmo padrão, em c8"
       }
     },
     {
@@ -74,6 +75,14 @@
       "exemplo": {
         "entrada": "banco de c5 com o RLS ligado; contador_a entra pela rota de login com a própria senha, pede a identificação, sai e pede de novo",
         "saida": "entrada aceita; a identificação devolve contador_a, papel contador, ESC-1; depois de sair, status 401 com 'Sua sessão terminou. Entre de novo.'; a resolução da sessão e o login usam as funções de c6, não consultas diretas às tabelas"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "A busca do link do cliente pelo código, feita antes de se saber o escritório, passa por uma função do banco que devolve só o mínimo",
+      "exemplo": {
+        "entrada": "banco de c5 com, em ESC-1, três links de EMP-1 na competência 10/2026: L1 dentro do prazo, L2 vencido e L3 invalidado; e, em ESC-2, um link L9 de EMP-9; transação sem escritório; o usuário da aplicação (1) consulta link_cliente direto pelo hash de L1; (2) chama a função do banco com: (a) o hash de L1; (b) um hash inexistente; (c) o hash de L3; (d) o hash de L2; (e) o hash de L9; (f) tenta alterar ou apagar a função",
+        "saida": "(1) 0 linhas; (2a) 1 linha: escritório ESC-1, link L1, cliente EMP-1, competência e expira_em; (2b) e (2c) 0 linhas, sem erro; (2d) 1 linha com expira_em no passado, e quem decide a recusa é o app (ACE-05, c2 e c3); (2e) 1 linha de ESC-2 e nenhuma de ESC-1; a função não devolve hash_token, nome nem CNPJ; é SECURITY DEFINER, com search_path fixo, pertence ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão"
       }
     }
   ],
@@ -109,6 +118,10 @@
     {
       "criterio": "c7",
       "comando": "pytest tests/core/test_isolamento_banco.py::test_login_continua_funcionando_com_rls -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/core/test_isolamento_banco.py::test_busca_do_link_sem_escritorio_por_funcao_restrita -q"
     }
   ],
   "evidencia": {
