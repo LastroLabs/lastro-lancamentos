@@ -63,7 +63,7 @@ Nos testes, a fixture de sessão `synthetic_fixtures_dir` grava numa pasta tempo
 |---|---|---|
 | 0 | Deu certo. | `tools/harness.py:11` |
 | 1 | Falha esperada: teste vermelho, achado do `check-clean`, `fixtures/` fora de dia no `--check`. | `tools/harness.py:11`, `:812`, `:1459-1466` |
-| 2 | Erro de uso (o argparse aborta com 2) ou de ambiente (`HarnessErro`). | `tools/harness.py:11`, `:1555`, `:1558-1560` |
+| 2 | Erro de uso (o argparse aborta com 2) ou de ambiente (`HarnessErro`), como `fixtures` existir como arquivo (em `fixtures build` e `--check`). | `tools/harness.py:11`, `:1555`, `:1558-1560`, `:1390-1397`, `:1455` |
 
 Todo erro de negócio sai em stderr, em três linhas (`tools/harness.py:33-47`):
 
