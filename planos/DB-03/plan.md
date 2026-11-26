@@ -1,6 +1,6 @@
 # Plan — DB-03 · Criar as tabelas de competência e de link do cliente
 
-**Status:** rascunho (respostas registradas; aguardando confirmação de D1–D6)
+**Status:** aprovado
 **Branch:** feat/DB-03-criar-as-tabelas-de-competencia-e-de-lin · **Data:** 25/11/2026 · **Responsável:** camposs04
 **Tasks:** planos/DB-03/tasks.md
 
