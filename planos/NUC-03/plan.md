@@ -1,6 +1,6 @@
 # Plan — NUC-03 · Isolar no banco os dados de cada escritório
 
-**Status:** pronto para revisão (sem BLOQUEANTE; aprovar é do humano)
+**Status:** implementado e verificado (`passing`); aguarda a aprovação humana da §8
 **Branch:** feat/NUC-03-isolar-no-banco-os-dados-de-cada-escrito · **Data:** 26/11/2026 · **Responsável:** jvsauma
 **Tasks:** planos/NUC-03/tasks.md
 
@@ -17,7 +17,7 @@ As perguntas 1 a 4 foram respondidas em 26/11 (ver §5). A P4 foi revista em 26/
 - **Por que importa:** a P4 foi resposta dele; a ficha já estava `passing`; o c8 muda o escopo (regra 9).
 - **Gravidade:** BLOQUEANTE para T9.
 
-Mudanças sugeridas na ficha (o humano aplica em PR): (a) c5 e `depende_de` incluir DB-02, DB-03 e ADM-01 conforme as respostas 2 e 3; (b) c6 passar a "quatro buscas", conforme a resposta 1; (c) c5 trocar "usuario não tem RLS" por "usuario não tem RLS e o app só lê as colunas necessárias", se a resposta 1 for a sugerida; (d) c6 (2a) acrescentar `id` e `criada_em` da sessão ao retorno, se quiser evitar a segunda leitura (ver D4).
+Mudanças sugeridas na ficha (aplicadas em 26/11/2026, na conclusão da NUC-03, exceto (d), não adotada; ver D4): (a) c5 e `depende_de` incluir DB-02, DB-03 e ADM-01 conforme as respostas 2 e 3; (b) c6 passar a "quatro buscas", conforme a resposta 1; (c) c5 trocar "usuario não tem RLS" por "usuario não tem RLS e o app só lê as colunas necessárias", se a resposta 1 for a sugerida; (d) c6 (2a) acrescentar `id` e `criada_em` da sessão ao retorno, se quiser evitar a segunda leitura (ver D4).
 
 ## 2. Decisões tomadas pelo agente
 ### D1 · O escritório vai para o banco por `set_config('app.firm_id', …, true)` (equivale a `SET LOCAL`), reaplicado a cada transação da sessão
@@ -50,7 +50,7 @@ Mudanças sugeridas na ficha (o humano aplica em PR): (a) c5 e `depende_de` incl
 - **Retorno:** `escritorio_id`, `link_id`, `cliente_id`, `competencia_id`, `expira_em` (com P5 = A). Devolve o `id` do link de propósito: sem ele, o app teria de achar a linha de novo por outras colunas, como `find_session` precisou fazer (ver `progress/NUC-03.md`, Decisões). Não devolve `hash_token`, nome nem CNPJ.
 - **Padrão:** o mesmo de D4 (`SECURITY DEFINER`, `search_path = pg_catalog, public`, dona `lastro_owner`, `REVOKE … FROM PUBLIC`, `EXECUTE` só a `lastro_app`), apoiado na política do dono de D2. Sem código em `src/`: a ACE-05 chama a função e depois `use_firm(db, escritorio_id)`.
 - **Contrato:** nome e retorno entram na mesma issue `contrato:` das outras quatro funções (regra 11), avisando o dono da ACE-05 (camposs04).
-- **Impacto:** T9, T10, T11; c8. [ ] confirmar
+- **Impacto:** T9, T10, T11; c8. [x] confirmar
 
 ## 3. Resumo e abordagem
 Ligar RLS forçada em todas as tabelas com escritório, dar ao app um caminho mínimo para as buscas feitas antes de se saber o escritório e fazer a API usar ambos. Ordem: testes (T1, revisão humana) → migração `0005` com políticas e funções (T2, T3) → contexto de escritório em `core/` (T4) → login e `identify` pelas funções, `criar-escritorio` com o novo insert (T5) → conferir as rotas de cliente (T6) → docs (T7) → `hx verify` (T8). Sem rota nova e sem tela. Acréscimo de 26/11 (c8): teste da função do link (T9, revisão humana, commit só de testes) → migração `0006` (T10) → docs e nova verificação (T11).

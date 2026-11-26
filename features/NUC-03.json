@@ -16,7 +16,9 @@
     "CAD-03",
     "DB-01",
     "ACE-01",
-    "DB-03"
+    "DB-02",
+    "DB-03",
+    "ADM-01"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -55,18 +57,18 @@
     },
     {
       "id": "c5",
-      "descricao": "O isolamento vale em todas as tabelas da DB-01 que têm escritório, e não só em cliente",
+      "descricao": "O isolamento vale em todas as tabelas que têm escritório (DB-01, DB-02 e DB-03), e não só em cliente",
       "exemplo": {
         "entrada": "banco com ESC-1 (chefe_1, contador_a, 1 sessão, 1 convite pendente, EMP-1 atribuída a contador_a) e ESC-2 (chefe_2, contador_x, 1 sessão, 1 convite, EMP-9 atribuída a contador_x); como usuário da aplicação: (1) transação em nome de ESC-1 consulta escritorio, membro, sessao, convite, cliente e atribuicao sem filtro; (2) transação sem escritório faz as mesmas consultas",
-        "saida": "(1) cada tabela devolve só as linhas de ESC-1 (escritorio: 1; membro: 2; sessao: 1; convite: 1; cliente: 1; atribuicao: 1); (2) 0 linhas em todas, sem erro; as 6 tabelas têm ROW LEVEL SECURITY ligado e forçado (FORCE), e o usuário da aplicação não é dono delas; usuario não tem RLS porque não pertence a um escritório, e o usuário da aplicação não lê credencial_hash de usuario de outro escritório por consulta da API"
+        "saida": "(1) cada tabela devolve só as linhas de ESC-1 (escritorio: 1; membro: 2; sessao: 1; convite: 1; cliente: 1; atribuicao: 1); (2) 0 linhas em todas, sem erro; as 6 tabelas da DB-01 e as 6 da DB-02 e DB-03 (plano_contas, conta_contabil, conta_bancaria, socio, competencia, link_cliente) têm ROW LEVEL SECURITY ligado e forçado (FORCE), e o usuário da aplicação não é dono delas; usuario não tem RLS porque não pertence a um escritório, e o usuário da aplicação só lê as colunas necessárias de usuario, nunca credencial_hash"
       }
     },
     {
       "id": "c6",
-      "descricao": "As três buscas feitas antes de se saber o escritório (sessão pelo token, vínculos de um usuário no login e convite pelo código) passam por funções do banco que devolvem só o mínimo",
+      "descricao": "As quatro buscas feitas antes de se saber o escritório (sessão pelo token, vínculos de um usuário, convite pelo código e usuário pelo login) passam por funções do banco que devolvem só o mínimo",
       "exemplo": {
         "entrada": "mesmo banco de c5; transação sem escritório; o usuário da aplicação (1) consulta sessao e convite direto pelo hash; (2) chama as funções do banco com: (a) o hash da sessão de contador_a; (b) o id do usuário contador_a; (c) o hash do convite pendente de ESC-1; (d) hashes inexistentes; (e) o hash de um convite vencido, de um usado e de um cancelado; (f) tenta alterar ou apagar uma função",
-        "saida": "(1) 0 linhas; (2a) 1 linha: escritório, membro, expira_em e encerrada_em; (2b) 1 linha por vínculo ativo: escritório, membro e papel; (2c) 1 linha: escritório, convite e membro; (2d) e (2e) 0 linhas, sem erro; nenhuma função devolve nome, credencial_hash ou hash_token; as funções são SECURITY DEFINER, com search_path fixo, pertencem ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão. O link do cliente (DB-03, ACE-05) usa o mesmo padrão, em c8"
+        "saida": "(1) 0 linhas; (2a) 1 linha: escritório, membro, expira_em e encerrada_em; (2b) 1 linha por vínculo ativo: escritório, membro e papel; (2c) 1 linha: escritório, convite e membro; (2d) e (2e) 0 linhas, sem erro; nenhuma função devolve nome ou hash_token, e só a do login devolve credencial_hash, para conferir a senha; as funções são SECURITY DEFINER, com search_path fixo, pertencem ao papel dono e o usuário da aplicação só tem EXECUTE; (2f) recusado por falta de permissão. O link do cliente (DB-03, ACE-05) usa o mesmo padrão, em c8"
       }
     },
     {

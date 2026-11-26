@@ -10,7 +10,7 @@ application never connects as that role.
 The four functions answer what the API must ask before it knows the firm: whose session,
 whose memberships, which invite and which user for a login (plan D4). The application role
 loses the right to read `usuario.credencial_hash` and gets it only through the login lookup.
-The lookup of the client link stays out; `link_cliente` is closed until ACE-05.
+The lookup of the client link is in migration 0006 (c8).
 
 Revision ID: 0005
 Revises: 0004
