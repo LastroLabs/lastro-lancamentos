@@ -10,12 +10,12 @@ O `hx` roda no host e só usa a biblioteca padrão do Python. Este documento reg
 
 | Comando | O que faz | Origem |
 |---|---|---|
-| `hx state [--estado E]... [--atencao]` | Painel das fichas. `--estado` filtra e pode repetir; `--atencao` mostra só `blocked` e `regressed`. | `tools/harness.py:1474`, `:1477`, `:1483`, `:539`, `:563` |
-| `hx check-clean` | Procura dado real e segredo; relata arquivo, linha e tipo, nunca o valor. | `tools/harness.py:1489`, `:800` |
-| `hx verify` | Roda `ruff check .` e `pytest -q` no container Docker; os dois rodam mesmo que o primeiro falhe. Pytest sem teste coletado (código 5) conta como falha. | `tools/harness.py:1492`, `:820-821`, `:869` |
-| `hx feature verify <ID>` | Roda os comandos de `verificacao` da ficha e grava estado e evidência. Só verifica fichas `in_progress`, `regressed` ou `passing`. | `tools/harness.py:1497`, `:909`, `:991` |
-| `hx feature start <ID> [--sem-branch]` | Abre a feature: valida, pergunta se cria a branch a partir de `origin/developer`, cria o progress e passa a ficha a `in_progress`. Só inicia fichas `not_started` ou `regressed`, com todas as dependências `passing`. A identidade vem de `HX_USUARIO` ou de `git config user.name`. | `tools/harness.py:1502`, `:1507`, `:1062-1063`, `:1087-1088`, `:1118`, `:1142`, `:1265`, `:1329` |
-| `hx fixtures build [--semente N] [--check]` | Gera `fixtures/` a partir da semente. Sem `--check`, apaga de `fixtures/` o que o gerador não produz, menos `.gitkeep`. Com `--check`, só compara com o disco e não grava nada. | `tools/harness.py:1517`, `:1529`, `:1533`, `:1369`, `:1439`, `:1448` |
+| `hx state [--estado E]... [--atencao]` | Painel das fichas. `--estado` filtra e pode repetir; `--atencao` mostra só `blocked` e `regressed`. | `tools/harness.py:1485`, `:1488`, `:1494`, `:539`, `:563` |
+| `hx check-clean` | Procura dado real e segredo; relata arquivo, linha e tipo, nunca o valor. | `tools/harness.py:1500`, `:800` |
+| `hx verify` | Roda `ruff check .` e `pytest -q` no container Docker; os dois rodam mesmo que o primeiro falhe. Pytest sem teste coletado (código 5) conta como falha. | `tools/harness.py:1503`, `:820-821`, `:869` |
+| `hx feature verify <ID>` | Roda os comandos de `verificacao` da ficha e grava estado e evidência. Só verifica fichas `in_progress`, `regressed` ou `passing`. | `tools/harness.py:1508`, `:909`, `:991` |
+| `hx feature start <ID> [--sem-branch]` | Abre a feature: valida, pergunta se cria a branch a partir de `origin/developer`, cria o progress e passa a ficha a `in_progress`. Só inicia fichas `not_started` ou `regressed`, com todas as dependências `passing`. A identidade vem de `HX_USUARIO` ou de `git config user.name`. | `tools/harness.py:1513`, `:1518`, `:1062-1063`, `:1087-1088`, `:1118`, `:1142`, `:1265`, `:1329` |
+| `hx fixtures build [--semente N] [--check]` | Gera `fixtures/` a partir da semente. Sem `--check`, apaga de `fixtures/` o que o gerador não produz, menos `.gitkeep`. Com `--check`, só compara com o disco e não grava nada. | `tools/harness.py:1528`, `:1540`, `:1544`, `:1369`, `:1449`, `:1459` |
 
 ## Ficha (`features/<ID>.json`)
 
@@ -40,7 +40,7 @@ O `hx check-clean` lê os nomes proibidos da variável de ambiente `LASTRO_NOMES
 
 ## Fixtures sintéticas
 
-O gerador é `tools/fixtures_sinteticas.py`. `gerar_arquivos(semente)` é uma função pura, que devolve um mapa de caminho relativo a `fixtures/` para bytes; a mesma semente gera os mesmos bytes (`tools/fixtures_sinteticas.py:3`, `:437`). A **semente padrão é 1** (`tools/fixtures_sinteticas.py:28`). `--semente` aceita inteiro ≥ 0 (`tools/harness.py:1372-1380`). Antes de gravar, o `hx fixtures build` aborta se alguma linha gerada tiver achado do `check-clean` (`tools/harness.py:1390-1391`, `:1461`).
+O gerador é `tools/fixtures_sinteticas.py`. `gerar_arquivos(semente)` é uma função pura, que devolve um mapa de caminho relativo a `fixtures/` para bytes; a mesma semente gera os mesmos bytes (`tools/fixtures_sinteticas.py:3`, `:437`). A **semente padrão é 1** (`tools/fixtures_sinteticas.py:28`). `--semente` aceita inteiro ≥ 0 (`tools/harness.py:1372-1380`). Antes de gravar, o `hx fixtures build` aborta se alguma linha gerada tiver achado do `check-clean` (`tools/harness.py:1400-1401`, `:1472`).
 
 Caminhos, todos relativos a `fixtures/` (`tools/harness.py:732`):
 
@@ -62,8 +62,8 @@ Nos testes, a fixture de sessão `synthetic_fixtures_dir` grava numa pasta tempo
 | Código | Quando | Origem |
 |---|---|---|
 | 0 | Deu certo. | `tools/harness.py:11` |
-| 1 | Falha esperada: teste vermelho, achado do `check-clean`, `fixtures/` fora de dia no `--check`. | `tools/harness.py:11`, `:812`, `:1448-1455` |
-| 2 | Erro de uso (o argparse aborta com 2) ou de ambiente (`HarnessErro`). | `tools/harness.py:11`, `:1544`, `:1547-1549` |
+| 1 | Falha esperada: teste vermelho, achado do `check-clean`, `fixtures/` fora de dia no `--check`. | `tools/harness.py:11`, `:812`, `:1459-1466` |
+| 2 | Erro de uso (o argparse aborta com 2) ou de ambiente (`HarnessErro`), como `fixtures` existir como arquivo (em `fixtures build` e `--check`). | `tools/harness.py:11`, `:1555`, `:1558-1560`, `:1390-1397`, `:1455` |
 
 Todo erro de negócio sai em stderr, em três linhas (`tools/harness.py:33-47`):
 
@@ -73,4 +73,4 @@ MOTIVO: por que aconteceu
 CORREÇÃO: o que fazer
 ```
 
-Só o bloco `if __name__ == "__main__"` chama `sys.exit`; `main()` devolve o código, o que permite testar (`tools/harness.py:12`, `:1541-1555`).
+Só o bloco `if __name__ == "__main__"` chama `sys.exit`; `main()` devolve o código, o que permite testar (`tools/harness.py:12`, `:1552-1566`).

@@ -791,3 +791,48 @@ def test_build_aborta_se_linha_tiver_documento_valido(tmp_path, capsys, monkeypa
         assert rotulo in err, f"faltou '{rotulo}' em stderr:\n{err}"
     restantes = sorted(p.name for p in (tmp_path / PASTA).rglob("*"))
     assert restantes == [".gitkeep"], f"o build gravou arquivos antes de abortar: {restantes}"
+
+
+# ---------------------------------------------------------------------------
+# Issue #59: fixtures/ existe como arquivo, e não como diretório
+# ---------------------------------------------------------------------------
+
+
+def _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, conteudo):
+    assert codigo == 2, f"esperava código 2 (erro de ambiente), veio {codigo}\n{out}\n{err}"
+    assert "Traceback" not in err, f"saiu traceback em vez do bloco de erro:\n{err}"
+    linhas = err.splitlines()
+    assert linhas[0] == "ERRO: fixtures/ existe, mas é um arquivo, não um diretório", err
+    assert linhas[1].startswith("MOTIVO:") and "fixtures/" in linhas[1], err
+    assert linhas[2].startswith("CORREÇÃO:") and "renomeie ou remova" in linhas[2], err
+    assert arquivo.is_file() and arquivo.read_text() == conteudo, "o arquivo fixtures foi alterado"
+
+
+def test_build_com_fixtures_arquivo_mostra_bloco_de_erro(tmp_path, capsys):
+    arquivo = tmp_path / PASTA
+    arquivo.write_text("nao sou pasta\n")
+
+    codigo, out, err = rodar(["fixtures", "build"], tmp_path, capsys)
+    _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, "nao sou pasta\n")
+
+
+def test_check_com_fixtures_arquivo_mostra_bloco_de_erro(tmp_path, capsys):
+    arquivo = tmp_path / PASTA
+    arquivo.write_text("nao sou pasta\n")
+
+    codigo, out, err = rodar(["fixtures", "build", "--check"], tmp_path, capsys)
+    _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, "nao sou pasta\n")
+
+
+def test_fixtures_arquivo_aborta_antes_de_gerar(tmp_path, capsys, monkeypatch):
+    # A checagem roda antes do gerador: com fixtures sendo arquivo, nada é gerado.
+    gen = gerador()
+    chamadas = []
+    monkeypatch.setattr(gen, "gerar_arquivos", lambda semente: chamadas.append(semente) or {})
+    arquivo = tmp_path / PASTA
+    arquivo.write_text("nao sou pasta\n")
+
+    for args in (["fixtures", "build"], ["fixtures", "build", "--check"]):
+        codigo, out, err = rodar(args, tmp_path, capsys)
+        _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, "nao sou pasta\n")
+    assert chamadas == [], f"o gerador rodou antes da checagem de fixtures/: {chamadas}"
