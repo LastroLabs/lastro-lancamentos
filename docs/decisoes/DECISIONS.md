@@ -131,3 +131,23 @@ Respostas de camposs04 (responsável da DB-03) às perguntas 1 e 2 de `planos/DB
 |---|---|
 | DB-03/B1 | Os testes de esquema da DB-03 podem criar escritório, usuário, membro e cliente transitórios no próprio teste, no banco descartável, nos moldes da DB-02/B1: nomes fictícios `*_TESTE_DB03`, CNPJ com dígito verificador inválido, hashes inventados (`"a"*64`), UUIDs gerados pelo banco e nenhum arquivo em `fixtures/`. Motivo: o `cadastro.json` de `synthetic_fixtures_dir` (HAR-03) não traz CNPJ, que é obrigatório em `cliente`. Nenhum dado real. A exceção vale só para os testes da DB-03. Aval dado por camposs04 em 25/11/2026, como responsável pelo `SECURITY.md`. Ver [Dados de teste](../SECURITY.md#3-dados-de-teste). |
 | DB-03/B2 | Estende a exceção de nomes da DB-01 às tabelas da DB-03 no módulo `access`. Os nomes físicos de tabelas e colunas ficam em português, exatamente como na ficha (`competencia`, `link_cliente`, `hash_token`...), assim como os quatro nomes de teste. As classes Python seguem em inglês (`Period` e `ClientLink`, D1 do plano). |
+
+## 9. Decisões da NUC-03 — 26/11/2026
+
+Plano em `planos/NUC-03/plan.md`. D1 a D5 confirmadas por jvsauma; P4 revista, P5 e P6 respondidas por caio-nascime na revisão do PR #76, com a concordância de jvsauma. Valem para toda ficha que lê ou grava tabela com escritório.
+
+| Referência | Decisão e alcance |
+|---|---|
+| NUC-03/R1 | **RLS forçada** em todas as tabelas com escritório (12 hoje). O escritório vai ao banco por `set_config('app.firm_id', …, true)`, reaplicado a cada transação por `use_firm` (`core/db.py`). Sem escritório, a aplicação não vê nem grava nada, sem erro. Tabela nova com `escritorio_id` precisa de `ENABLE` e `FORCE`, da política da aplicação e da política do dono na própria migração. Sem `BYPASSRLS` e sem política aberta para `lastro_app`. Plano D1 a D3. |
+| NUC-03/R2 | **Buscas antes de se saber o escritório** só por funções `SECURITY DEFINER` (dona `lastro_owner`, `search_path` fixo, `EXECUTE` só para `lastro_app`, retorno mínimo): `buscar_sessao_por_hash`, `buscar_vinculos_do_usuario`, `buscar_convite_por_hash`, `buscar_usuario_por_login` (`0005`) e `buscar_link_por_hash` (`0006`). Nome e retorno são contrato v0 (regra 11). A aplicação não lê `usuario.credencial_hash` direto. Plano D2, D4 e D6. |
+| NUC-03/R3 | **Link do cliente:** `buscar_link_por_hash` filtra o link invalidado e devolve escritório, link, cliente, competência e `expira_em`. O vencido é recusado pelo **app**, com o próprio relógio e a mesma recusa do inexistente (P5 = A), para a ACE-05 poder testar o segundo exato. A RLS isola por escritório, não por cliente: quem abre o link só vê o cliente e a competência que a função devolveu (ACE-05, c8). |
+
+### Pendências para a ACE-05 [definir]
+
+Sem resposta, os testes da ACE-05 teriam de inventar regra (regra 12). Decidir antes do `/planejar` da ACE-05.
+
+| Referência | Pergunta | Sugestão (não é decisão) |
+|---|---|---|
+| ACE-05/Q1 | **Quem cria a competência?** O link exige `competencia_id`, a DB-03 só cria a tabela e nenhuma ficha grava a linha. Opções: (a) gerar o link cria a competência se ela não existir; (b) outra ficha cria; (c) só semente de teste, o que deixa o fluxo real sem caminho. [definir] | (a): é o único caminho que não pede ficha nova. |
+| ACE-05/Q2 | **Onde se configura a validade do link?** A D-06 diz "configurável" e o RF-SEG-01 diz "[definir]"; o c2(2) da ACE-05 pede "validade configurada para 1 dia". Opções: variável de ambiente, configuração por escritório ou parâmetro da rota. [definir] | Variável de ambiente com padrão de 7 dias: é a mais simples, e a D-06 é provisória. |
+| ACE-05/N1 | **Nota para o plano (não é pergunta):** `link_cliente.criado_em` tem `now()` do banco como padrão e a `0004` exige `expira_em > criado_em`. Se o app calcular `expira_em` com o próprio relógio, um teste que atrase esse relógio na geração quebra a restrição, e "exatamente 7 dias após a geração" deixa de ser exato. O app deve gravar também `criado_em` e fazer `expira_em = criado_em + validade`, os dois do mesmo relógio. | — |
