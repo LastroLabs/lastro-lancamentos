@@ -113,7 +113,7 @@ O contador entra com usuário e senha, recebe um cookie de sessão guardada no s
 | 4 | Exemplos claros, com usuários inventados e senhas geradas na hora. | — | c1–c6 |
 
 ## 7. Riscos
-- RLS da NUC-03: a entrada procura o usuário antes de saber o escritório. As políticas precisam deixar essa consulta passar sem abrir o resto → avisar o dono da NUC-03 (guin409) no PR.
+- RLS da NUC-03: a entrada procura o usuário antes de saber o escritório. As políticas precisam deixar essa consulta passar sem abrir o resto → avisar o dono da NUC-03 (jvsauma) no PR.
 - Sessão parada cai em 2 h (D9); um computador esquecido em uso contínuo fica logado até o teto de 12 h.
 - Quem trabalha em dois escritórios precisa de um usuário em cada (D10); revisar se um piloto precisar.
 - Sem token CSRF (pergunta 3): depende do `SameSite=Lax` até a ficha de segurança.

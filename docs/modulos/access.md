@@ -89,7 +89,7 @@ aprovado em 25/11/2026:**
 | `create_firm_with_manager(db, firm_name, username, name, password)` | `service.py` | Grava escritório, usuário e vínculo `chefe` numa transação, com um só `commit` |
 
 A ACE-02 deve reaproveitar `hash_password` e gravar o login em minúsculas. Mudou o contrato?
-Comente na #68 e avise caio-nascime (ACE-02) e guin409 (NUC-03).
+Comente na #68 e avise caio-nascime (ACE-02) e jvsauma (NUC-03).
 
 ## Armadilhas
 

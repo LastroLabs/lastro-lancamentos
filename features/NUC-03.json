@@ -10,7 +10,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "guin409",
+  "responsavel": "jvsauma",
   "depende_de": [
     "NUC-01",
     "CAD-03",
