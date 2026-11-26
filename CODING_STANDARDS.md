@@ -150,6 +150,8 @@ Um conceito, um nome. Use sempre o da coluna inglesa em código, banco, rotas e 
 | cliente | `client` | empresa atendida |
 | sócio | `partner` | |
 | carteira | `portfolio` | clientes atribuídos a um contador |
+| competência | `period` | mês de trabalho de um cliente, sempre no dia 1; classe `Period`, tabela `competencia` (nome físico em português pela DB-03/B2) |
+| link do cliente | `client_link` | acesso do cliente sem login a uma competência; o banco guarda só o hash do código; classe `ClientLink`, tabela `link_cliente` (DB-03/B2) |
 | conta bancária | `bank_account` | |
 | extrato | `statement` | |
 | movimentação | `transaction` | linha do extrato; evite `movement` |

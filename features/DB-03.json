@@ -20,7 +20,7 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "Uma única migração Alembic cria competencia, com uma competência por cliente e mês e o mês sempre no primeiro dia; o modelo fica em src/lastro/access/models.py",
+      "descricao": "Uma única migração Alembic (migrations/versions/0004_create_period_link_tables.py, down_revision = \"0003\") cria competencia, com uma competência por cliente e mês e o mês sempre no primeiro dia; o modelo fica em src/lastro/access/models.py",
       "exemplo": {
         "entrada": "banco com as migrações da NUC-01 e da DB-01; ESC-1 com EMP-1 e EMP-2; gravação direta: (a) competência de EMP-1 com mes 2026-10-01; (b) outra de EMP-1 com mes 2026-10-01; (c) de EMP-2 com mes 2026-10-01; (d) de EMP-1 com mes 2026-10-15",
         "saida": "a tabela é competencia(escritorio_id, cliente_id, id, mes date not null CHECK mes = date_trunc('month', mes), versao_conjunto integer not null default 0 CHECK >= 0, criada_em timestamptz not null default now(); PK (escritorio_id, cliente_id, id); UNIQUE (escritorio_id, cliente_id, mes); FK (escritorio_id, cliente_id) → cliente(escritorio_id, id)); (a) e (c) aceitas; (b) recusada pela unicidade; (d) recusada pelo CHECK do primeiro dia"
@@ -28,7 +28,7 @@
     },
     {
       "id": "c2",
-      "descricao": "A mesma migração cria link_cliente, que guarda só o hash do código, nunca o código, com validade e revogação",
+      "descricao": "A mesma migração (migrations/versions/0004_create_period_link_tables.py) cria link_cliente, que guarda só o hash do código, nunca o código, com validade e revogação",
       "exemplo": {
         "entrada": "o teste lê o catálogo do banco e grava um link de EMP-1, competência 10/2026, com hash_token de 64 caracteres hexadecimais, expira_em = criado_em + 7 dias, revogado_em nulo",
         "saida": "a tabela é link_cliente(escritorio_id, cliente_id, id, competencia_id uuid not null, hash_token text not null UNIQUE CHECK hash_token ~ '^[0-9a-f]{64}$', criado_por uuid not null, criado_em timestamptz not null default now(), expira_em timestamptz not null, revogado_em timestamptz null; PK (escritorio_id, cliente_id, id); CHECK expira_em > criado_em; CHECK revogado_em is null or revogado_em >= criado_em); não existe coluna chamada codigo, token ou parecida; a gravação é aceita; um índice permite buscar o link pelo hash_token sem saber o escritório"
@@ -47,7 +47,7 @@
       "descricao": "A migração da DB-03 reverte sem quebrar as anteriores",
       "exemplo": {
         "entrada": "banco na última migração, com dados em escritorio, cliente e competencia; reverte a migração da DB-03 e aplica de novo",
-        "saida": "ao reverter, competencia e link_cliente somem e as tabelas da DB-01 (e da DB-02, se já existir) continuam com os mesmos dados; ao aplicar de novo, as duas tabelas voltam como em c1 e c2. Políticas de RLS ficam fora desta ficha"
+        "saida": "ao reverter, competencia e link_cliente somem e as tabelas da DB-01 e da DB-02 (plano_contas, conta_contabil, conta_bancaria, socio e as colunas novas de cliente) continuam com os mesmos dados; ao aplicar de novo, as duas tabelas voltam como em c1 e c2. Políticas de RLS ficam fora desta ficha"
       }
     }
   ],
