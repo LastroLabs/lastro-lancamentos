@@ -9,7 +9,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "jvsauma",
   "depende_de": [
     "NUC-01",
@@ -111,5 +111,50 @@
       "comando": "pytest tests/core/test_isolamento_banco.py::test_login_continua_funcionando_com_rls -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-26T05:29:39Z",
+    "commit": "74195593aa8f",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_filtro_ve_so_o_proprio_escritorio -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_consulta_sem_escritorio_nao_ve_nada -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_gravar_em_outro_escritorio_e_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_alterar_cliente_de_outro_escritorio_nao_altera -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_escritorio_nao_vaza_entre_transacoes -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_rls_em_todas_as_tabelas_da_db01 -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_buscas_sem_escritorio_por_funcoes_restritas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_login_continua_funcionando_com_rls -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
