@@ -108,7 +108,7 @@
 
 **Acréscimo de 26/11 (c8, plan D6).** Só começa com P5 e P6 respondidas. Ordem: T9 → revisão humana dos testes → commit só-de-testes (anotar o hash) → T10 e T11 (sem editar `tests/`).
 
-## [ ] T9 · Escrever o teste da função do link
+## [x] T9 · Escrever o teste da função do link
 - **Critérios da ficha:** c8
 - **Regra de negócio:** o cliente final abre o link sem login; antes de saber o escritório, o app só pode perguntar "de quem é este código?" e receber o mínimo. Código inexistente ou invalidado dá 0 linhas, sem erro.
 - **Critérios de aceite:**
@@ -120,7 +120,7 @@
 - **Reaproveitar:** `_seed_firm`, `_lookup`, `_assert_minimal`, a consulta a `pg_proc` do teste de c6 · **Não criar:** outro seed nem outro Testcontainers
 - **Pronto quando:** o teste falha só por falta da função
 
-## [ ] T10 · Migração `0006`: `buscar_link_por_hash`
+## [x] T10 · Migração `0006`: `buscar_link_por_hash`
 - **Critérios da ficha:** c8
 - **Critérios de aceite:**
   - [ ] `migrations/versions/0006_client_link_lookup.py`, `down_revision = "0005"`
@@ -133,6 +133,6 @@
 - **Critérios de aceite:**
   - [ ] `docs/modulos/access.md`: a busca do link existe; como a ACE-05 a usa (chamar a função, depois `use_firm`)
   - [ ] Issue `contrato:` com as cinco funções, avisando camposs04 (ACE-05) e caio-nascime (ACE-02)
-  - [ ] Ficha da ACE-05 (por humano, em PR): NUC-03 em `depende_de`; critério que exige a função ao abrir o link
+  - [x] Ficha da ACE-05 (autorizado por caio-nascime em 26/11): NUC-03 em `depende_de`; c7 (abrir o link pela função, vencido decidido pelo relógio do app) e c8 (o link mostra só o próprio cliente e competência)
   - [ ] `hx check-clean`, `hx verify` e `hx feature verify NUC-03` (regrava `estado` e `evidencia` com o c8)
 - **Pronto quando:** os três comandos do `hx` terminam com código 0
