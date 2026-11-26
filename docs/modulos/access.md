@@ -111,3 +111,20 @@ Comente na #68 e avise caio-nascime (ACE-02) e jvsauma (NUC-03).
 - **RLS (NUC-03).** A entrada procura o usuário antes de saber o escritório; a política de
   `usuario` precisa deixar essa consulta passar.
 - **Sem log de credencial.** Nada deste módulo registra senha, hash ou token.
+
+## Tabelas da DB-03: competência e link do cliente
+
+Migração `0004` (filha de `0003`); modelos `Period` (`competencia`) e `ClientLink` (`link_cliente`).
+Decisões em `planos/DB-03/plan.md`.
+
+**O banco já garante:**
+- Uma competência por cliente e mês, e o mês sempre no dia 1, em qualquer fuso da sessão.
+- O link guarda só `hash_token` (64 hexadecimais minúsculos, único em todo o banco), nunca o código.
+- O link aponta para uma competência do mesmo cliente e é criado por um membro do mesmo escritório.
+- `expira_em` depois de `criado_em`; `revogado_em` vazio ou não anterior a `criado_em`.
+
+**Fica para a ACE-05:** conferir que quem cria o link é o responsável ativo (P-09) e calcular
+`expira_em` (prazo da D-06; sem valor padrão no banco).
+
+**Fica para a NUC-03:** a RLS destas tabelas e a busca do link pelo `hash_token` sem escritório
+no contexto (recomendação em `progress/DB-03.md`, a decisão é do dono da NUC-03).

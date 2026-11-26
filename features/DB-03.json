@@ -10,7 +10,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "in_progress",
   "responsavel": "camposs04",
   "depende_de": [
     "DB-01"
