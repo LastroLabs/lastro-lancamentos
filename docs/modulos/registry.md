@@ -53,7 +53,7 @@ result = validate_cnpj(raw_cnpj)
 
 ## Cadastro de cliente (CAD-03, versão 0)
 
-Decisões em `planos/CAD-03/plan.md`. O isolamento é só aplicativo até a NUC-03 (RLS): toda consulta de `repository.py` filtra pelo `escritorio_id` da sessão, nunca do corpo.
+Decisões em `planos/CAD-03/plan.md`. O isolamento tem duas camadas: toda consulta de `repository.py` filtra pelo `escritorio_id` da sessão, nunca do corpo, e o banco também esconde os clientes de outro escritório (RLS da NUC-03; ver `docs/modulos/access.md`, "Isolamento no banco"). Mantenha o filtro: a RLS é a segunda barreira, não a única.
 
 ### Serviço (`lastro.registry.service`)
 

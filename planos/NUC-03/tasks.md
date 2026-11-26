@@ -86,22 +86,22 @@
 - **Fora do escopo:** regra de carteira (NUC-02/ACE-03)
 - **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_cliente.py -q` passa
 
-## [ ] T7 · Documentação
+## [x] T7 · Documentação
 - **Critérios da ficha:** todos
 - **Regra de negócio:** quem vem depois precisa saber o que mudou e o que ficou fora.
 - **Critérios de aceite:**
-  - [ ] `docs/modulos/access.md` e `docs/modulos/registry.md`: trocar os avisos "fica para a NUC-03" pelo que existe; registrar que a busca do link do cliente segue pendente (pergunta 4, issue para a ACE-05)
-  - [ ] `docs/SECURITY.md` §8 e `ARCHITECTURE.md`: divisão DB-01/NUC-03 atualizada
-  - [ ] Decisões D1–D5 em `DECISIONS.md` só se afetarem mais de uma feature (D2 e D4 afetam ACE-02 e ACE-05)
+  - [x] `docs/modulos/access.md` e `docs/modulos/registry.md`: trocar os avisos "fica para a NUC-03" pelo que existe (a busca do link foi feita no c8; P4 revista)
+  - [x] `docs/SECURITY.md` §8 e `ARCHITECTURE.md`: divisão DB-01/NUC-03 atualizada
+  - [x] Decisões D1–D5 em `DECISIONS.md` só se afetarem mais de uma feature (D2 e D4 afetam ACE-02 e ACE-05)
 - **Arquivos:** os de cima · **Fora do escopo:** código
 - **Pronto quando:** `hx check-clean` sem achados
 
-## [ ] T8 · Verificação final
+## [x] T8 · Verificação final
 - **Critérios de aceite:**
   - [ ] `git diff <hash-dos-testes> -- tests/` vazio
   - [ ] `ruff check .` limpo
-  - [ ] `hx check-clean` e `hx verify` em OK
-  - [ ] `hx feature verify NUC-03` grava `passing`
+  - [x] `hx check-clean` e `hx verify` em OK
+  - [x] `hx feature verify NUC-03` grava `passing`
 - **Pronto quando:** os três comandos do `hx` terminam com código 0
 
 ---
@@ -131,8 +131,8 @@
 
 ## [ ] T11 · Documentação e nova verificação
 - **Critérios de aceite:**
-  - [ ] `docs/modulos/access.md`: a busca do link existe; como a ACE-05 a usa (chamar a função, depois `use_firm`)
+  - [x] `docs/modulos/access.md`: a busca do link existe; como a ACE-05 a usa (chamar a função, depois `use_firm`)
   - [ ] Issue `contrato:` com as cinco funções, avisando camposs04 (ACE-05) e caio-nascime (ACE-02)
   - [x] Ficha da ACE-05 (autorizado por caio-nascime em 26/11): NUC-03 em `depende_de`; c7 (abrir o link pela função, vencido decidido pelo relógio do app) e c8 (o link mostra só o próprio cliente e competência)
-  - [ ] `hx check-clean`, `hx verify` e `hx feature verify NUC-03` (regrava `estado` e `evidencia` com o c8)
+  - [x] `hx check-clean`, `hx verify` e `hx feature verify NUC-03` (regrava `estado` e `evidencia` com o c8)
 - **Pronto quando:** os três comandos do `hx` terminam com código 0

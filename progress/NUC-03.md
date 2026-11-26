@@ -16,7 +16,7 @@ Como preencher (agente, ao encerrar a sessão):
 O banco esconde e protege as linhas de cada escritório (RLS forçada em 12 tabelas); sem escritório definido não se vê nada; as buscas anteriores ao escritório (sessão, vínculos, convite, login) passam por quatro funções `SECURITY DEFINER`; a busca do link do cliente pelo código, por uma quinta (c8, `0006`).
 
 ## Próxima ação
-T11 e T7: atualizar docs (`docs/modulos/access.md` com as cinco funções e como a ACE-05 usa `buscar_link_por_hash`, `registry.md`, `docs/SECURITY.md` §8, `ARCHITECTURE.md`); abrir a issue `contrato:` das cinco funções; ajustar a ficha da ACE-05 (humano); rodar `hx feature verify NUC-03` para regravar o `estado` com o c8.
+Revisão humana do PR #76 e merge na `developer`. Antes: atualizar o texto do PR (hash só-testes `62021fd`, função do link, ficha da ACE-05) e abrir a issue `contrato:` das cinco funções.
 
 ## Bloqueios e perguntas
 - Item "Acréscimo do c8 revisado por" do plan §8: a marcar por humano.
@@ -26,6 +26,7 @@ T11 e T7: atualizar docs (`docs/modulos/access.md` com as cinco funções e como
 - 26/11 · S1 · Migração `0005` (RLS forçada, política do dono, `credencial_hash` fechada ao app, 4 funções), `core/db.py` (`use_firm`, `after_begin`), `access/repository.py` (login e sessão pelas funções, `insert_firm_with_manager` com UUID do app). Commit `7419559`. T1 já estava feita; T7 e T8 pendentes.
 - 26/11 · S2 · Revisão do PR #76 levou a P4 revista: c8 na ficha, plan (P5 = A, P6, D6) e tasks T9–T11. Commit só de testes do c8: `62021fd`. Migração `0006_client_link_lookup.py` com `buscar_link_por_hash` (T10), sem editar `tests/`.
 - 26/11 · S2 · Ficha da ACE-05 ajustada com autorização de caio-nascime: NUC-03 em `depende_de`; c7 (abrir o link por `buscar_link_por_hash`, vencido pelo relógio do app) e c8 (o link mostra só o próprio cliente e competência; identificadores vindos da requisição são ignorados), com `verificacao`. `estado` não mexido.
+- 26/11 · S2 · Commits `2088bbe` (migração `0006`), `6611c72` (ficha da ACE-05 e `DECISIONS.md` §9) e `89633e5` (ficha verificada com o c8). Docs T7 e T11: `docs/modulos/access.md` (seção "Isolamento no banco"), `registry.md`, `SECURITY.md` §8, `ARCHITECTURE.md` §8 e aviso em `progress/DB-03.md`.
 
 ## Rodei
 - 26/11 · S1 · `pytest -q` completo no contêiner → 502 passaram; `ruff check .` → OK
@@ -33,6 +34,7 @@ T11 e T7: atualizar docs (`docs/modulos/access.md` com as cinco funções e como
 - 26/11 · S1 · `hx verify` não rodado por mim nesta sessão (o `hx` não estava no meu PATH)
 - 26/11 · S2 · antes da `0006`: `test_isolamento_banco` 13 passaram e 1 falhou (c8, função ausente), como esperado
 - 26/11 · S2 · depois da `0006`: `ruff check .` OK; `test_isolamento_banco`, `test_migracoes`, `test_period_link_schema`, `test_identity_schema` → 91 passaram
+- 26/11 · S2 · `hx verify` local → OK (ruff e pytest); `hx feature verify NUC-03` → c1 a c8 OK, grava `passing`; `hx check-clean` → 0 achados (nomes proibidos pulados: variável não definida)
 
 ## Falhou
 - 26/11 · S1 · `hx verify` do dev falhou em `test_web01...` (build do vite): `web/dist` e caches ficaram como root pelas minhas rodadas no contêiner. Apaguei os arquivos gerados do root; o teste isolado passou (5). Não reconfirmado pelo `hx verify`.
