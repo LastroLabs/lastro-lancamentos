@@ -10,7 +10,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "camposs04",
   "depende_de": [
     "DB-01"
@@ -69,5 +69,30 @@
       "comando": "pytest tests/access/test_period_link_schema.py::test_db03_migracao_reversivel -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-26T03:05:43Z",
+    "commit": "79b7bd6e8869",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_period_link_schema.py::test_migracao_db03_cria_competencia_unica_por_cliente_e_mes -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/access/test_period_link_schema.py::test_migracao_db03_cria_link_que_guarda_so_o_hash -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_period_link_schema.py::test_db03_link_nao_cruza_cliente_nem_escritorio -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/access/test_period_link_schema.py::test_db03_migracao_reversivel -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
