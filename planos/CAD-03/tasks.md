@@ -46,7 +46,7 @@
 - **Critérios da ficha:** c1, c2, c3
 - **Regra de negócio (em linguagem simples):** (1) só chefe cadastra; (2) o nome sem espaços nas pontas não pode ficar vazio; (3) o CNPJ passa por `validate_cnpj` e grava a forma normalizada; (4) a lista mostra só o que a regra de acesso deixa o usuário ver; (5) abrir um cliente de outro escritório ou inexistente dá exatamente a mesma resposta.
 - **Critérios de aceite:**
-  - [ ] `register_client`, `list_clients` e `get_client` em `registry/service.py`, recebendo a sessão do banco, o `SignedInMember` e, na lista e no abrir, a função que acha o responsável (sem importar o `access`)
+  - [ ] `register_client`, `list_clients` e `get_client` em `registry/service.py`, recebendo a sessão do banco, o `Membership` do `core` (montado pela `api/` a partir do `SignedInMember`, D3) e, na lista e no abrir, a função que acha o responsável (sem importar o `access`, nem o `access.contracts`; corrigido em 25/11 após a revisão do PR #71)
   - [ ] Nome vazio → `InvalidClientDataError` com 'Informe o nome do cliente.'; CNPJ inválido → o mesmo erro com `result.error_message` (texto não duplicado)
   - [ ] Nome com mais de 255 caracteres (depois do `strip()`) → `InvalidClientDataError` com 'O nome do cliente deve ter no máximo 255 caracteres.'
   - [ ] Ordem fixa: papel, nome (vazio, depois tamanho), CNPJ; a recusa traz só a primeira falha (c2 testa um defeito por vez)

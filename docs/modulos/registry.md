@@ -59,11 +59,11 @@ Decisões em `planos/CAD-03/plan.md`. O isolamento é só aplicativo até a NUC-
 
 | Função | O que faz | Erros |
 |---|---|---|
-| `register_client(db, member, name, cnpj) -> ClientSummary` | Só o chefe cadastra. Ordem fixa: papel, nome (`strip()`, vazio, depois mais de 255 caracteres), CNPJ (`validate_cnpj`). Commit só no sucesso | `ManagerOnlyError`, `InvalidClientDataError(message)`, `DuplicateCnpjError` (pelo `UNIQUE (escritorio_id, cnpj_normalizado)`, também em corrida) |
-| `list_clients(db, member, find_responsibles) -> list[ClientSummary]` | Clientes do escritório filtrados por `core.service.filter_visible_clients`, por nome | — |
-| `get_client(db, member, client_id, find_responsibles) -> ClientSummary` | Abre um cliente por `core.service.decide_access(..., Action.ACCESS, ...)` | `ClientNotFoundError` (inexistente, id malformado ou de outro escritório: o mesmo erro), `ClientNotAssignedError` (chefe sem atribuição) |
+| `register_client(db, membership, name, cnpj) -> ClientSummary` | Só o chefe cadastra. Ordem fixa: papel, nome (`strip()`, vazio, depois mais de 255 caracteres), CNPJ (`validate_cnpj`). Commit só no sucesso | `ManagerOnlyError`, `InvalidClientDataError(message)`, `DuplicateCnpjError` (pelo `UNIQUE (escritorio_id, cnpj_normalizado)`, também em corrida) |
+| `list_clients(db, membership, find_responsibles) -> list[ClientSummary]` | Clientes do escritório filtrados por `core.service.filter_visible_clients`, por nome | — |
+| `get_client(db, membership, client_id, find_responsibles) -> ClientSummary` | Abre um cliente por `core.service.decide_access(..., Action.ACCESS, ...)` | `ClientNotFoundError` (inexistente, id malformado ou de outro escritório: o mesmo erro), `ClientNotAssignedError` (chefe sem atribuição) |
 
-`find_responsibles(db, firm_id, client_ids) -> dict[str, str | None]` é passada pela `api/` (`lastro.access.service.responsible_member_ids`); o `registry` não lê `atribuicao`.
+`membership` é o `Membership` de `lastro.core.contracts`, montado pela `api/` a partir do `SignedInMember` (`is_active=True`: o `identify` já recusou vínculo inativo). `find_responsibles(db, firm_id, client_ids) -> dict[str, str | None]` é passada pela `api/` (`lastro.access.service.responsible_member_ids`). O `registry` não importa nada do `access` (nem `access.contracts`) e não lê `atribuicao` (plano D3), para não formar ciclo com a ACE-02.
 
 `ClientSummary` (`lastro.registry.contracts`): `client_id`, `name`, `cnpj` (14 caracteres, sem máscara). Sem id do escritório.
 

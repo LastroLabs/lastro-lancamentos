@@ -25,6 +25,7 @@ from lastro.access.contracts import (
     SessionEndedError,
     SignedInMember,
 )
+from lastro.core.contracts import Membership
 from lastro.core.db import Database, get_database, get_session, is_database_reachable
 from lastro.registry import service as registry
 from lastro.registry.contracts import (
@@ -297,6 +298,19 @@ async def sign_out(
     return response
 
 
+def _membership(member: SignedInMember) -> Membership:
+    """Membership for the access rule (plan CAD-03, D3).
+
+    Active by construction: `identify` already refused an inactive user, membership or firm.
+    """
+    return Membership(
+        member_id=member.member_id,
+        firm_id=member.firm_id,
+        role=member.role,
+        is_active=True,
+    )
+
+
 def _client_response(client: ClientSummary) -> ClientResponse:
     return ClientResponse(id=client.client_id, name=client.name, cnpj=client.cnpj)
 
@@ -318,7 +332,9 @@ async def register_client(
     db: Annotated[AsyncSession, Depends(get_session)],
 ) -> ClientResponse:
     """Register a client with name and CNPJ in the manager's firm (CAD-03, c1, c2, c4)."""
-    client = await registry.register_client(db, member, body.name, body.cnpj)
+    client = await registry.register_client(
+        db, _membership(member), body.name, body.cnpj
+    )
     return _client_response(client)
 
 
@@ -330,7 +346,9 @@ async def list_clients(
     db: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[ClientResponse]:
     """Clients of the firm that the member may see (CAD-03, c1, c3; P-09)."""
-    clients = await registry.list_clients(db, member, access.responsible_member_ids)
+    clients = await registry.list_clients(
+        db, _membership(member), access.responsible_member_ids
+    )
     return [_client_response(client) for client in clients]
 
 
@@ -350,6 +368,6 @@ async def get_client(
 ) -> ClientResponse:
     """Open one client; missing or of another firm: the same 404 (CAD-03, c3; P-01)."""
     client = await registry.get_client(
-        db, member, client_id, access.responsible_member_ids
+        db, _membership(member), client_id, access.responsible_member_ids
     )
     return _client_response(client)
