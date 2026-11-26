@@ -822,3 +822,17 @@ def test_check_com_fixtures_arquivo_mostra_bloco_de_erro(tmp_path, capsys):
 
     codigo, out, err = rodar(["fixtures", "build", "--check"], tmp_path, capsys)
     _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, "nao sou pasta\n")
+
+
+def test_fixtures_arquivo_aborta_antes_de_gerar(tmp_path, capsys, monkeypatch):
+    # A checagem roda antes do gerador: com fixtures sendo arquivo, nada é gerado.
+    gen = gerador()
+    chamadas = []
+    monkeypatch.setattr(gen, "gerar_arquivos", lambda semente: chamadas.append(semente) or {})
+    arquivo = tmp_path / PASTA
+    arquivo.write_text("nao sou pasta\n")
+
+    for args in (["fixtures", "build"], ["fixtures", "build", "--check"]):
+        codigo, out, err = rodar(args, tmp_path, capsys)
+        _assert_erro_fixtures_e_arquivo(codigo, out, err, arquivo, "nao sou pasta\n")
+    assert chamadas == [], f"o gerador rodou antes da checagem de fixtures/: {chamadas}"

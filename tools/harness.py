@@ -1451,10 +1451,10 @@ def cmd_fixtures_build(args: argparse.Namespace, raiz: Path) -> int:
     import fixtures_sinteticas as gerador  # D1: só aqui, para o hx não depender dele ao abrir
 
     semente = gerador.SEMENTE_PADRAO if args.semente is None else args.semente
-    arquivos = gerador.gerar_arquivos(semente)
     pasta = raiz / PASTA_FIXTURES
-    comando = "hx fixtures build" + ("" if args.semente is None else f" --semente {semente}")
     _exigir_pasta_fixtures(pasta)
+    arquivos = gerador.gerar_arquivos(semente)
+    comando = "hx fixtures build" + ("" if args.semente is None else f" --semente {semente}")
 
     if args.check:
         divergencias = _divergencias(pasta, arquivos)
