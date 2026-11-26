@@ -43,6 +43,15 @@ async def list_clients(member: Annotated[SignedInMember, Depends(require_signed_
 `SignedInMember` traz `member_id`, `firm_id` e `role` (o `Role` da NUC-02): é o que a regra de
 acesso (`lastro.core.service.decide_access`) precisa para montar o `Membership`.
 
+## Responsável ativo do cliente (CAD-03)
+
+`lastro.access.service.responsible_member_ids(db, firm_id, client_ids) -> dict[str, str | None]`
+devolve, para cada id pedido, o `member_id` da atribuição aberta (`atribuicao.fim IS NULL`) no
+escritório, ou `None`. Não grava nada. A `api/` passa essa função a
+`lastro.registry.service.list_clients` e `get_client` (plano CAD-03, D3), para o `registry` não
+importar o `access`. Versão 0, sem issue `contrato:` (decisão de caio-nascime); mudança avisa os
+donos da ACE-02 e da ACE-03 no PR.
+
 ## Senha
 
 `lastro.access.service.hash_password(senha)` devolve o hash Argon2 (`argon2-cffi`, parâmetros

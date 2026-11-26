@@ -22,7 +22,7 @@
       "id": "c1",
       "descricao": "A lista de clientes do contador traz só os clientes atribuídos a ele",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 atribuída a contador_a, EMP-2 a contador_b, EMP-3 sem responsável; ESC-2 com chefe_2, contador_x e EMP-9 atribuída a contador_x; contador_a pede a lista de clientes",
+        "entrada": "ESC-1 com chefe_1, contador_a e contador_b, todos com sessão aberta; EMP-1 atribuída a contador_a, EMP-2 a contador_b, EMP-3 sem responsável; ESC-2 com chefe_2, contador_x e EMP-9 atribuída a contador_x; as atribuições são gravadas pelo teste direto no banco; a rota da lista e a de abrir cliente pelo endereço direto já existem desde a CAD-03 (regra completa da P-09) e esta ficha prova por teste o comportamento de cada papel sobre elas; contador_a pede a lista de clientes",
         "saida": "sucesso; 1 cliente: EMP-1"
       }
     },
@@ -60,7 +60,7 @@
     },
     {
       "id": "c6",
-      "descricao": "A lista do chefe traz de cada cliente só id, nome, CNPJ e responsável ativo (P-09)",
+      "descricao": "A lista do chefe traz de cada cliente só id, nome, CNPJ e responsável ativo (P-09); esta ficha acrescenta o responsável à lista que a CAD-03 entrega só com id, nome e CNPJ",
       "exemplo": {
         "entrada": "mesmo estado de c1; chefe_1 pede a lista de clientes",
         "saida": "sucesso; cada item tem exatamente os campos id, nome, CNPJ e responsável (o teste confere o conjunto de chaves); responsável de EMP-1: id, nome e usuário de contador_a; de EMP-2: id, nome e usuário de contador_b; de EMP-3: nulo; nenhum item traz contas, plano, transitória, sócios, links, extratos ou movimentações"
@@ -70,7 +70,7 @@
       "id": "c7",
       "descricao": "O chefe do mesmo escritório não abre cliente que não está atribuído a ele, e a recusa é 403 (P-09)",
       "exemplo": {
-        "entrada": "mesmo estado de c1; chefe_1 abre pelo endereço direto (GET /api/v1/clientes/{id}) (a) EMP-1, de contador_a, e (b) EMP-3, sem responsável",
+        "entrada": "mesmo estado de c1; chefe_1 abre pelo endereço direto (GET /api/v1/clients/{id}) (a) EMP-1, de contador_a, e (b) EMP-3, sem responsável",
         "saida": "nos 2 casos: status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2; nenhum dado de EMP-1 nem de EMP-3 na resposta, nem o nome"
       }
     },

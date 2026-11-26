@@ -5,6 +5,10 @@ signed in and `DELETE /session` signs out. The token travels only in the `lastro
 cookie (`HttpOnly`, `Secure`, `SameSite=Lax`), kept by the browser up to the 12-hour cap;
 the 2-hour idle expiry is decided on the server (plan D9). Protected routes of later
 features depend on `require_signed_in_member`.
+
+Client routes (plan CAD-03, D4 and D5): `POST /clients` registers a client (manager only),
+`GET /clients` lists the visible ones and `GET /clients/{client_id}` opens one. A missing
+client and a client of another firm get the same 404 body (P-01).
 """
 
 from typing import Annotated, Literal
@@ -21,7 +25,17 @@ from lastro.access.contracts import (
     SessionEndedError,
     SignedInMember,
 )
+from lastro.core.contracts import Membership
 from lastro.core.db import Database, get_database, get_session, is_database_reachable
+from lastro.registry import service as registry
+from lastro.registry.contracts import (
+    ClientNotAssignedError,
+    ClientNotFoundError,
+    ClientSummary,
+    DuplicateCnpjError,
+    InvalidClientDataError,
+    ManagerOnlyError,
+)
 
 PROBLEM_JSON = "application/problem+json"
 DATABASE_UNAVAILABLE_TITLE = "Serviço indisponível"
@@ -40,6 +54,16 @@ MULTIPLE_FIRMS_DETAIL = (
     "Este usuário está em mais de um escritório. "
     "Peça ao chefe um usuário para cada escritório."
 )
+
+# Plan CAD-03, questions 1 and 3 to 5 (25/11).
+INVALID_DATA_TITLE = "Dados inválidos"
+FORBIDDEN_TITLE = "Ação não permitida"
+MANAGER_ONLY_DETAIL = "Só o chefe do escritório pode fazer isso."
+NOT_ASSIGNED_DETAIL = "Atribua este cliente a você para fazer isso."
+NOT_FOUND_TITLE = "Cliente não encontrado"
+NO_CLIENT_ACCESS_DETAIL = "Você não tem acesso a este cliente."
+DUPLICATE_CNPJ_TITLE = "CNPJ já cadastrado"
+DUPLICATE_CNPJ_DETAIL = "Este CNPJ já está cadastrado no seu escritório."
 
 router = APIRouter()
 
@@ -75,6 +99,22 @@ class SessionIdentity(BaseModel):
     role: Literal["manager", "accountant"]
     firm_id: str
     firm_name: str
+
+
+class ClientRequest(BaseModel):
+    """Name and CNPJ typed by the manager. Emptiness and format are checked by the registry,
+    so the user gets the message of the ficha, not a validation text in English."""
+
+    name: str
+    cnpj: str
+
+
+class ClientResponse(BaseModel):
+    """Client as shown to the member: never the firm id (plan CAD-03, D5)."""
+
+    id: str
+    name: str
+    cnpj: str
 
 
 class SignInRequiredError(Exception):
@@ -116,12 +156,44 @@ async def _multiple_firms(_request: Request, _error: Exception) -> JSONResponse:
     )
 
 
-# Registered by `create_app()`: 401 and 409 answers in RFC 9457 (plan ACE-01, D6, D10; I-14).
+async def _invalid_client_data(_request: Request, error: Exception) -> JSONResponse:
+    assert isinstance(error, InvalidClientDataError)
+    return _problem(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, INVALID_DATA_TITLE, error.message
+    )
+
+
+async def _manager_only(_request: Request, _error: Exception) -> JSONResponse:
+    return _problem(status.HTTP_403_FORBIDDEN, FORBIDDEN_TITLE, MANAGER_ONLY_DETAIL)
+
+
+async def _client_not_assigned(_request: Request, _error: Exception) -> JSONResponse:
+    return _problem(status.HTTP_403_FORBIDDEN, FORBIDDEN_TITLE, NOT_ASSIGNED_DETAIL)
+
+
+async def _client_not_found(_request: Request, _error: Exception) -> JSONResponse:
+    # One body for a missing client and a client of another firm (P-01, c3).
+    return _problem(status.HTTP_404_NOT_FOUND, NOT_FOUND_TITLE, NO_CLIENT_ACCESS_DETAIL)
+
+
+async def _duplicate_cnpj(_request: Request, _error: Exception) -> JSONResponse:
+    return _problem(
+        status.HTTP_409_CONFLICT, DUPLICATE_CNPJ_TITLE, DUPLICATE_CNPJ_DETAIL
+    )
+
+
+# Registered by `create_app()`: error answers in RFC 9457 (plans ACE-01 D6, D10 and
+# CAD-03 D4; I-14).
 EXCEPTION_HANDLERS = {
     InvalidCredentialsError: _invalid_credentials,
     MultipleFirmsError: _multiple_firms,
     SessionEndedError: _session_ended,
     SignInRequiredError: _sign_in_required,
+    InvalidClientDataError: _invalid_client_data,
+    ManagerOnlyError: _manager_only,
+    ClientNotAssignedError: _client_not_assigned,
+    ClientNotFoundError: _client_not_found,
+    DuplicateCnpjError: _duplicate_cnpj,
 }
 
 UNAUTHORIZED_RESPONSES = {status.HTTP_401_UNAUTHORIZED: {"model": Problem}}
@@ -224,3 +296,78 @@ async def sign_out(
         SESSION_COOKIE, path=SESSION_COOKIE_PATH, secure=True, httponly=True
     )
     return response
+
+
+def _membership(member: SignedInMember) -> Membership:
+    """Membership for the access rule (plan CAD-03, D3).
+
+    Active by construction: `identify` already refused an inactive user, membership or firm.
+    """
+    return Membership(
+        member_id=member.member_id,
+        firm_id=member.firm_id,
+        role=member.role,
+        is_active=True,
+    )
+
+
+def _client_response(client: ClientSummary) -> ClientResponse:
+    return ClientResponse(id=client.client_id, name=client.name, cnpj=client.cnpj)
+
+
+@router.post(
+    "/clients",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ClientResponse,
+    responses={
+        **UNAUTHORIZED_RESPONSES,
+        status.HTTP_403_FORBIDDEN: {"model": Problem},
+        status.HTTP_409_CONFLICT: {"model": Problem},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"model": Problem},
+    },
+)
+async def register_client(
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    body: ClientRequest,
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> ClientResponse:
+    """Register a client with name and CNPJ in the manager's firm (CAD-03, c1, c2, c4)."""
+    client = await registry.register_client(
+        db, _membership(member), body.name, body.cnpj
+    )
+    return _client_response(client)
+
+
+@router.get(
+    "/clients", response_model=list[ClientResponse], responses=UNAUTHORIZED_RESPONSES
+)
+async def list_clients(
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> list[ClientResponse]:
+    """Clients of the firm that the member may see (CAD-03, c1, c3; P-09)."""
+    clients = await registry.list_clients(
+        db, _membership(member), access.responsible_member_ids
+    )
+    return [_client_response(client) for client in clients]
+
+
+@router.get(
+    "/clients/{client_id}",
+    response_model=ClientResponse,
+    responses={
+        **UNAUTHORIZED_RESPONSES,
+        status.HTTP_403_FORBIDDEN: {"model": Problem},
+        status.HTTP_404_NOT_FOUND: {"model": Problem},
+    },
+)
+async def get_client(
+    client_id: str,
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> ClientResponse:
+    """Open one client; missing or of another firm: the same 404 (CAD-03, c3; P-01)."""
+    client = await registry.get_client(
+        db, _membership(member), client_id, access.responsible_member_ids
+    )
+    return _client_response(client)

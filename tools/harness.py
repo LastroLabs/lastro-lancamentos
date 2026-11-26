@@ -629,6 +629,9 @@ _SEGREDO = re.compile(
     re.IGNORECASE,
 )
 _MARCAS_DE_PLACEHOLDER = ("changeme", "xxx", "exemplo")
+# Valor sem aspas que é código (chamada ou índice), não segredo literal: `password =
+# secrets.token_urlsafe(12)` ou `"password": pessoas[login]` (CAD-03).
+_EXPRESSAO_DE_CODIGO = re.compile(r"[A-Za-z_][\w.]*[(\[]")
 
 _PESOS_CNPJ_1 = (5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
 _PESOS_CNPJ_2 = (6, *_PESOS_CNPJ_1)
@@ -688,6 +691,15 @@ def _eh_placeholder(valor: str) -> bool:
     return baixo.startswith(("<", "${")) or any(m in baixo for m in _MARCAS_DE_PLACEHOLDER)
 
 
+def _eh_segredo(achado: re.Match[str]) -> bool:
+    """True se o valor atribuído parece segredo: nem placeholder, nem expressão de código."""
+    valor = achado.group(1)
+    if _eh_placeholder(valor):
+        return False
+    entre_aspas = achado.string[achado.start(1) - 1] in "\"'"
+    return entre_aspas or not _EXPRESSAO_DE_CODIGO.match(valor)
+
+
 def tipos_da_linha(linha: str, nomes: list[str]) -> list[str]:
     """Tipos de achado em uma linha. Nunca devolve (nem guarda) o valor encontrado."""
     tipos: list[str] = []
@@ -703,7 +715,7 @@ def tipos_da_linha(linha: str, nomes: list[str]) -> list[str]:
         tipos.append(TIPO_TOKEN_GITHUB)
     if _CHAVE_PRIVADA.search(linha):
         tipos.append(TIPO_CHAVE_PRIVADA)
-    if any(not _eh_placeholder(m.group(1)) for m in _SEGREDO.finditer(linha)):
+    if any(_eh_segredo(m) for m in _SEGREDO.finditer(linha)):
         tipos.append(TIPO_SEGREDO)
     if nomes:
         normal = _normalizar(linha)
