@@ -1387,6 +1387,16 @@ def _arquivos_em_disco(pasta: Path) -> set[str]:
     return {r for r in _percorrer_arvore(pasta) if r.rsplit("/", 1)[-1] not in ARQUIVOS_PRESERVADOS}
 
 
+def _exigir_pasta_fixtures(pasta: Path) -> None:
+    """Issue #59: aborta com erro padronizado se fixtures/ existe e não é diretório."""
+    if pasta.exists() and not pasta.is_dir():
+        raise HarnessErro(
+            f"{PASTA_FIXTURES}/ existe, mas é um arquivo, não um diretório",
+            f"o harness precisa criar e usar o diretório {PASTA_FIXTURES}/",
+            f"renomeie ou remova o arquivo {PASTA_FIXTURES} e rode o comando de novo",
+        )
+
+
 def _exigir_sem_documentos(arquivos: dict[str, bytes], membros_xlsx) -> None:
     """D7: aborta se alguma linha gerada tiver achado do check-clean (antes de gravar)."""
     nomes = _nomes_proibidos()
@@ -1444,6 +1454,7 @@ def cmd_fixtures_build(args: argparse.Namespace, raiz: Path) -> int:
     arquivos = gerador.gerar_arquivos(semente)
     pasta = raiz / PASTA_FIXTURES
     comando = "hx fixtures build" + ("" if args.semente is None else f" --semente {semente}")
+    _exigir_pasta_fixtures(pasta)
 
     if args.check:
         divergencias = _divergencias(pasta, arquivos)
