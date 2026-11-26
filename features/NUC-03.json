@@ -125,8 +125,8 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-26T05:29:39Z",
-    "commit": "74195593aa8f",
+    "verificado_em": "2026-11-26T13:37:28Z",
+    "commit": "6611c729941c",
     "resultados": [
       {
         "criterio": "c1",
@@ -166,6 +166,11 @@
       {
         "criterio": "c7",
         "comando": "pytest tests/core/test_isolamento_banco.py::test_login_continua_funcionando_com_rls -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/core/test_isolamento_banco.py::test_busca_do_link_sem_escritorio_por_funcao_restrita -q",
         "resultado": "ok"
       }
     ]
