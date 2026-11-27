@@ -46,6 +46,23 @@ class _OwnError:
 
 
 @dataclass(frozen=True, slots=True)
+class _Hierarchy:
+    """Hierarchy of the lines with a legible classification (first occurrence only).
+
+    Attributes:
+        parents: parent classification of each classification, or `None` at the top.
+        causes: hierarchy cause message by line number.
+        consequences: lines whose parent is not accepted (the cause is above them).
+        with_children: classifications that have at least one line below them.
+    """
+
+    parents: dict[str, str | None]
+    causes: dict[int, str]
+    consequences: frozenset[int]
+    with_children: frozenset[str]
+
+
+@dataclass(frozen=True, slots=True)
 class _Line:
     """A non-blank line of the file, with its real position (blank lines count)."""
 
@@ -180,20 +197,166 @@ def _is_digits(text: str) -> bool:
     return text.isascii() and text.isdigit()
 
 
+def _is_valid_reduced_code(reduced_code: str) -> bool:
+    """7 ASCII digits and not 0000000 (plan D3: 0000000 is never a repetition)."""
+    return (
+        len(reduced_code) == _REDUCED_CODE_LENGTH
+        and _is_digits(reduced_code)
+        and reduced_code != _ZERO_REDUCED_CODE
+    )
+
+
+def _repetitions(lines: list[_Line]) -> dict[int, str]:
+    """E6, then E7, in every line, even one with its own error; the first one stays.
+
+    Checking every line is what makes the result independent of the line order.
+    """
+    first_reduced: dict[str, int] = {}
+    first_classification: dict[str, int] = {}
+    messages: dict[int, str] = {}
+    for line in lines:
+        reduced, classification = line.reduced_code, line.classification
+        reduced_at = line.number
+        if _is_valid_reduced_code(reduced):
+            reduced_at = first_reduced.setdefault(reduced, line.number)
+        classification_at = line.number
+        if _is_digits(classification):
+            classification_at = first_classification.setdefault(
+                classification, line.number
+            )
+        if reduced_at != line.number:
+            messages[line.number] = (
+                f"o código reduzido {reduced} já aparece na linha {reduced_at}."
+            )
+        elif classification_at != line.number:
+            messages[line.number] = (
+                f"a classificação {classification} já aparece na linha {classification_at}."
+            )
+    return messages
+
+
+def _hierarchy(lines: list[_Line], blocked: set[int]) -> _Hierarchy:
+    """Parent of every legible classification, from the shorter to the longer ones.
+
+    It runs on every line with a legible classification, not only the accepted ones:
+    otherwise an analytic account with a child would pass when the child has a
+    tolerable error. `blocked` holds the lines refused on their own (repetition or
+    own error); a line below one that is not accepted is a consequence.
+    """
+    nodes = _first_by_classification(lines)
+    shortest = min((len(classification) for classification in nodes), default=0)
+    parents: dict[str, str | None] = {}
+    causes: dict[int, str] = {}
+    consequences: set[int] = set()
+    accepted: set[str] = set()
+    for classification in sorted(nodes, key=len):
+        line = nodes[classification]
+        parent = _parent_of(classification, nodes)
+        parents[classification] = parent
+        cause = _hierarchy_cause(classification, parent, nodes, shortest)
+        if cause is not None:
+            causes[line.number] = cause
+        elif parent is not None and parent not in accepted:
+            consequences.add(line.number)
+        elif line.number not in blocked:
+            accepted.add(classification)
+    with_children = frozenset(
+        parent for parent in parents.values() if parent is not None
+    )
+    return _Hierarchy(parents, causes, frozenset(consequences), with_children)
+
+
+def _first_by_classification(lines: list[_Line]) -> dict[str, _Line]:
+    nodes: dict[str, _Line] = {}
+    for line in lines:
+        if _is_digits(line.classification):
+            nodes.setdefault(line.classification, line)
+    return nodes
+
+
+def _parent_of(classification: str, nodes: dict[str, _Line]) -> str | None:
+    """Longest proper prefix present in the file, whatever the mask or the line order."""
+    for length in range(len(classification) - 1, 0, -1):
+        if classification[:length] in nodes:
+            return classification[:length]
+    return None
+
+
+def _hierarchy_cause(
+    classification: str, parent: str | None, nodes: dict[str, _Line], shortest: int
+) -> str | None:
+    """No parent while longer than the shortest classification, or an analytic parent."""
+    if parent is None:
+        if len(classification) > shortest:
+            return f"a conta {classification} não tem conta superior no arquivo."
+        return None
+    parent_line = nodes[parent]
+    if parent_line.kind == "A":
+        return (
+            f"a conta {classification} está abaixo da conta analítica {parent} "
+            f"(linha {parent_line.number})."
+        )
+    return None
+
+
 def _check_lines(lines: list[_Line]) -> ChartOfAccountsResult:
     """Apply the line rules and build the result."""
-    causes = []
-    for line in lines:
-        error = _own_error(line)
-        if error is not None:
-            causes.append(_at(line, error.message))
+    own_errors = {line.number: _own_error(line) for line in lines}
+    repetitions = _repetitions(lines)
+    blocked = set(repetitions) | {n for n, error in own_errors.items() if error}
+    hierarchy = _hierarchy(lines, blocked)
+    causes, tolerated = _sort_out(lines, own_errors, repetitions, hierarchy)
     if causes:
         return _refuse(_refusal_message(causes))
-    accepted = lines
+    accepted = [line for line in lines if line.number not in blocked]
     if not any(line.kind == "A" for line in accepted):
         return _refuse(NO_ANALYTIC_MESSAGE)
-    accounts = tuple(_entry(line, None) for line in accepted)
-    return ChartOfAccountsResult(accounts=accounts, errors=(), warnings=(), refusal=None)
+    accounts = tuple(
+        _entry(line, hierarchy.parents[line.classification]) for line in accepted
+    )
+    return ChartOfAccountsResult(
+        accounts=accounts, errors=tuple(tolerated), warnings=(), refusal=None
+    )
+
+
+def _sort_out(
+    lines: list[_Line],
+    own_errors: dict[int, _OwnError | None],
+    repetitions: dict[int, str],
+    hierarchy: _Hierarchy,
+) -> tuple[list[str], list[str]]:
+    """Causes and tolerated errors, one message per line, in line order.
+
+    Priority: repetition, then hierarchy cause, then own error. A consequence alone
+    is neither shown nor counted: the cause is in the line above.
+    """
+    causes: list[str] = []
+    tolerated: list[str] = []
+    for line in lines:
+        error = own_errors[line.number]
+        message = repetitions.get(line.number) or hierarchy.causes.get(line.number)
+        if message is not None:
+            causes.append(_at(line, message))
+        elif error is None:
+            continue
+        elif error.is_tolerable and _can_tolerate(line, hierarchy):
+            tolerated.append(_at(line, error.message))
+        else:
+            causes.append(_at(line, error.message))
+    return causes, tolerated
+
+
+def _can_tolerate(line: _Line, hierarchy: _Hierarchy) -> bool:
+    """Analytic leaf without a hierarchy problem.
+
+    Being the first line with its classification is already granted: a repeated one
+    has E7, which comes first.
+    """
+    return (
+        line.kind == "A"
+        and line.classification not in hierarchy.with_children
+        and line.number not in hierarchy.consequences
+    )
 
 
 def _at(line: _Line, message: str) -> str:
