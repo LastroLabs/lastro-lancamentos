@@ -89,7 +89,7 @@ A revisão Alembic `0003` acrescenta `plano_contas`, `conta_contabil`, `conta_ba
 
 O downgrade da `0003` remove as quatro colunas de configuração e as quatro tabelas, preservando as tabelas e os registros da DB-01. Ele elimina os dados próprios da DB-02; deve ser executado apenas conforme o procedimento de migração do ambiente. As políticas de RLS vêm da NUC-03 (`0005`).
 
-**DB-04 (revisão `0007`, depois da `0005` e da `0006` da NUC-03):** `conta_contabil` ganha:
+**DB-04 (revisão `0008`, com `down_revision = "0007"`: depois da `0005` e da `0006` da NUC-03 e da `0007` da ACE-02):** `conta_contabil` ganha:
 
 | Coluna | Tipo | Regra |
 |---|---|---|

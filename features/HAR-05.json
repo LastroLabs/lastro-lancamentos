@@ -1,0 +1,59 @@
+{
+  "id": "HAR-05",
+  "titulo": "Gerar o plano de contas sintético em TXT, com grupos e analíticas, no lugar da planilha",
+  "modulo": "harness",
+  "requisitos": [
+    "BD-07"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "RaissaOliveira19",
+  "depende_de": [
+    "HAR-03"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "hx fixtures build gera, para cada cliente, o plano de contas em TXT de 78 colunas, igual ao plano do cadastro campo a campo",
+      "exemplo": {
+        "entrada": "hx fixtures build com a semente padrão; para cada cliente de fixtures/cadastro.json, o arquivo indicado em plano_txt, lido pelo teste fatiando cada linha em [0:7], [7:27], [27:67] e [67]",
+        "saida": "1 arquivo .txt por cliente, em UTF-8 com fim de linha CRLF; toda linha tem 78 caracteres; reduzido, classificação, nome e tipo de cada linha iguais aos itens de plano do cliente, na mesma ordem; o cadastro não tem mais plano_planilha"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O plano de cada cliente tem grupos e analíticas: toda conta tem a conta superior no plano, só analíticas recebem lançamento no gabarito e o reduzido é único no cliente",
+      "exemplo": {
+        "entrada": "fixtures/cadastro.json e os gabaritos da semente padrão",
+        "saida": "cada item de plano tem codigo (com pontos), classificacao (codigo sem pontos), reduzido (7 dígitos), nome, tipo (S ou A) e transitoria; há ao menos 1 S e 1 A; toda classificação mais longa que a menor tem a conta superior (maior prefixo) no plano, e ela é S; a transitória 9.9.99 é A; reduzidos sem repetição no cliente; toda conta_correta dos gabaritos é uma analítica do plano do cliente"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "Nenhuma linha do plano TXT forma CPF ou CNPJ válido, em 50 sementes",
+      "exemplo": {
+        "entrada": "gerar_arquivos com as sementes 1 a 50; cada linha de cada plano .txt passa pela mesma regra do check-clean",
+        "saida": "0 achados nas 50 sementes; o gerador nunca aborta por documento no plano"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_build_gera_plano_txt_por_cliente -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_plano_sintetico_tem_grupos_e_analiticas -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_plano_txt_sem_documento_em_50_sementes -q"
+    }
+  ],
+  "evidencia": null
+}

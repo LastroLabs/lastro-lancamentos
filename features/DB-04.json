@@ -1,0 +1,74 @@
+{
+  "id": "DB-04",
+  "titulo": "Acrescentar à conta contábil o código reduzido e o tipo (sintética ou analítica)",
+  "modulo": "registry",
+  "requisitos": [
+    "BD-02",
+    "RF-CAD-03"
+  ],
+  "prioridade": "must",
+  "onda": 2,
+  "essencial": false,
+  "estado": "not_started",
+  "responsavel": "caio-nascime",
+  "depende_de": [
+    "DB-02",
+    "NUC-03",
+    "ACE-02"
+  ],
+  "bloqueada_por": null,
+  "tipo_verificacao": "comando",
+  "criterios": [
+    {
+      "id": "c1",
+      "descricao": "Uma migração nova acrescenta codigo_reduzido (texto, opcional) e tipo (S ou A, obrigatório com padrão A) à conta contábil, sem mudar as outras colunas; o modelo acompanha",
+      "exemplo": {
+        "entrada": "banco novo com todas as migrações (head); colunas de conta_contabil e o modelo LedgerAccount",
+        "saida": "conta_contabil tem as colunas da DB-02 mais codigo_reduzido (text, nulo permitido) e tipo (text, não nulo, padrão 'A'); o check só aceita 'S' e 'A'; LedgerAccount tem os dois campos"
+      }
+    },
+    {
+      "id": "c2",
+      "descricao": "O reduzido não se repete no mesmo plano do cliente; pode repetir em outro plano ou em outro cliente; contas sem reduzido não conflitam",
+      "exemplo": {
+        "entrada": "head; EMP-1 com os planos P1 e P2 e EMP-2 com o plano P3; contas com reduzido 0000123 em P1 duas vezes, em P2 e em P3; duas contas de P1 sem reduzido",
+        "saida": "a segunda 0000123 em P1 é recusada pelo banco (violação de unicidade); as de P2 e P3 e as duas sem reduzido são aceitas"
+      }
+    },
+    {
+      "id": "c3",
+      "descricao": "O tipo só aceita S ou A, e INSERT sem tipo grava A",
+      "exemplo": {
+        "entrada": "head; INSERT em conta_contabil com tipo 'S', 'A', 'X', nulo e sem a coluna",
+        "saida": "'S' e 'A' aceitos; 'X' e nulo recusados pelo banco; sem a coluna, a conta fica com tipo 'A'"
+      }
+    },
+    {
+      "id": "c4",
+      "descricao": "A migração da DB-04 reverte até a da DB-02 sem perder contas e é reaplicada",
+      "exemplo": {
+        "entrada": "head com 2 contas gravadas; downgrade de 1 revisão; upgrade head",
+        "saida": "no downgrade as 2 contas continuam e as colunas codigo_reduzido e tipo somem; no upgrade elas voltam, com tipo 'A' nas 2 contas"
+      }
+    }
+  ],
+  "verificacao": [
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_migracao_db04_acrescenta_reduzido_e_tipo -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_reduzido_unico_por_plano -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_tipo_so_aceita_s_ou_a -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_migracao_reversivel -q"
+    }
+  ],
+  "evidencia": null
+}
