@@ -1,6 +1,6 @@
 {
   "id": "CAD-05",
-  "titulo": "Carregar o plano de contas do cliente por planilha",
+  "titulo": "Carregar o plano de contas do cliente por arquivo TXT",
   "modulo": "registry",
   "requisitos": [
     "RF-CAD-03"
@@ -12,7 +12,8 @@
   "responsavel": "marrathomaz",
   "depende_de": [
     "CAD-02",
-    "HAR-03",
+    "HAR-05",
+    "DB-04",
     "ACE-02",
     "NUC-02"
   ],
@@ -21,64 +22,88 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "O plano sintético do piloto é carregado no cliente com código e nome de cada conta",
+      "descricao": "O plano sintético do piloto é carregado no cliente com reduzido, classificação, nome, tipo e conta superior de cada conta",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1 e contador_a (sessão aberta); EMP-1 atribuída a contador_a, sem plano; contador_a envia a planilha do plano de EMP-1 gerada por hx fixtures build com a semente padrão (o arquivo indicado em plano_planilha de EMP-1 em fixtures/cadastro.json, formato da HAR-03 c6); depois pede o plano de EMP-1",
-        "saida": "carga aceita; a resposta informa quantas contas entraram, igual ao número de itens de plano de EMP-1 em fixtures/cadastro.json; o plano de EMP-1 lista os mesmos codigo e nome, na mesma ordem; 0 erros"
+        "entrada": "ESC-1 com chefe_1 e contador_a (sessão aberta); EMP-1 atribuída a contador_a, sem plano; contador_a envia o arquivo indicado em plano_txt de EMP-1 em fixtures/cadastro.json (gerado por hx fixtures build com a semente padrão, formato da HAR-05); depois pede o plano de EMP-1",
+        "saida": "carga aceita; a resposta informa contas antes 0 e agora igual ao número de itens de plano de EMP-1 em fixtures/cadastro.json, 0 erros e 0 avisos; o plano de EMP-1 lista os mesmos classificacao, reduzido, nome e tipo, na mesma ordem, e cada conta traz a classificação da conta superior (nula nas de topo)"
       }
     },
     {
       "id": "c2",
-      "descricao": "Na carga, a linha inválida é informada com o número dela e as demais contas entram",
+      "descricao": "Linha com erro tolerável fica de fora com o número dela, e as demais contas entram",
       "exemplo": {
-        "entrada": "mesmo estado inicial de c1; contador_a envia uma planilha com cabeçalho 'código' e 'nome' na linha 1, as contas '1.1.01' 'Caixa', '2.1.05' 'Fornecedores' e '9.9.99' 'Transitória' nas linhas 2 a 4 e, na linha 5, nome 'Bancos' sem código",
-        "saida": "carga aceita com 3 contas; a resposta traz o erro 'Linha 5: falta o código da conta.'; o plano de EMP-1 tem 3 contas"
+        "entrada": "mesmo estado inicial de c1; contador_a envia o plano de c1 com mais uma linha no fim: analítica 1104 abaixo do grupo 11, com o nome em branco",
+        "saida": "carga aceita; a resposta traz o erro 'Linha {n}: falta o nome da conta.' com o número da última linha; o plano de EMP-1 tem as contas de c1 e não tem 1104"
       }
     },
     {
       "id": "c3",
-      "descricao": "O plano de um cliente não é lido nem carregado por outra carteira ou outro escritório, e não aparece em outro cliente",
+      "descricao": "Arquivo recusado não muda o plano atual: status 422 com a mensagem única do leitor",
       "exemplo": {
-        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, sem plano; ESC-2 com chefe_2 (sessão aberta); contador_b pede o plano de EMP-2; contador_b e chefe_2 tentam, cada um, ler o plano de EMP-1 e enviar uma planilha para EMP-1",
-        "saida": "plano de EMP-2 com 0 contas; nas 4 tentativas sobre EMP-1: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, e nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1"
+        "entrada": "estado final de c1; contador_a envia para EMP-1 (a) o plano de c1 com o grupo 11 sem nome; (b) um .xlsx; depois pede o plano de EMP-1",
+        "saida": "(a) status 422 (P-13), mensagem 'Linha {n}: falta o nome da conta. Corrija essa linha e envie o arquivo de novo.'; (b) status 422, mensagem 'Este arquivo não é um plano de contas em texto. Envie o plano de contas em arquivo .txt.'; nos dois, o plano de EMP-1 continua igual ao de c1"
       }
     },
     {
       "id": "c4",
-      "descricao": "Uma nova carga substitui o plano anterior do cliente (P-11)",
+      "descricao": "O plano de um cliente não é lido nem carregado por outra carteira ou outro escritório, e não aparece em outro cliente",
       "exemplo": {
-        "entrada": "estado final de c1 (EMP-1 com o plano do gabarito); contador_a envia para EMP-1 uma planilha com cabeçalho 'código' e 'nome' na linha 1 e 2 contas: '1.1.01' 'Caixa' e '9.9.99' 'Transitória'; depois pede o plano de EMP-1",
-        "saida": "carga aceita com 2 contas; o plano de EMP-1 tem exatamente 2 contas: 1.1.01 Caixa e 9.9.99 Transitória; nenhuma conta do plano anterior continua"
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, sem plano; ESC-2 com chefe_2 (sessão aberta); contador_b pede o plano de EMP-2; contador_b e chefe_2 tentam, cada um, ler o plano de EMP-1 e enviar um arquivo TXT para EMP-1",
+        "saida": "plano de EMP-2 com 0 contas; nas 4 tentativas sobre EMP-1: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, e nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1"
       }
     },
     {
       "id": "c5",
+      "descricao": "Uma nova carga substitui o plano anterior do cliente (P-11)",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a envia para EMP-1 um TXT com 3 linhas: grupo 1 ATIVO, grupo 11 CIRCULANTE e analítica 1101 CAIXA; depois pede o plano de EMP-1",
+        "saida": "carga aceita; a resposta informa contas antes igual a c1 e agora 3; o plano de EMP-1 tem exatamente 1, 11 e 1101; nenhuma conta do plano anterior continua no plano atual"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "Na nova carga, a conta transitória e as contas de sócio continuam se a mesma classificação estiver no plano novo, e ficam vazias se não estiverem (P-11)",
+      "exemplo": {
+        "entrada": "estado final de c1 com a transitória de EMP-1 em 9999 e a conta de entrada de sócio em 1101, gravadas pelo teste direto no banco; contador_a envia (a) o mesmo plano de c1; (b) um plano com 1, 11 e 1101",
+        "saida": "(a) a transitória continua 9999 e a entrada de sócio 1101, agora contas do plano novo; (b) EMP-1 sem transitória e com a entrada de sócio em 1101 do plano novo"
+      }
+    },
+    {
+      "id": "c7",
       "descricao": "O chefe do mesmo escritório que não é o responsável não lê nem carrega o plano do cliente (403); atribuído a si, carrega como o contador (P-09)",
       "exemplo": {
-        "entrada": "estado final de c1 (EMP-1 com o plano do gabarito, atribuída a contador_a); ESC-1 também com EMP-4 atribuída a chefe_1, sem plano; chefe_1 (sessão aberta) tenta (a) ler o plano de EMP-1 e (b) enviar para EMP-1 uma planilha com cabeçalho 'código' e 'nome' na linha 1 e a conta '1.1.01' 'Caixa'; depois envia a mesma planilha para EMP-4 e pede o plano de EMP-4",
-        "saida": "(a) e (b): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2, sem nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1; EMP-4: carga aceita com 1 conta e o plano de EMP-4 tem 1.1.01 Caixa"
+        "entrada": "estado final de c1 (EMP-1 atribuída a contador_a); ESC-1 também com EMP-4 atribuída a chefe_1, sem plano; chefe_1 (sessão aberta) tenta (a) ler o plano de EMP-1 e (b) enviar para EMP-1 o TXT de c5; depois envia o mesmo TXT para EMP-4 e pede o plano de EMP-4",
+        "saida": "(a) e (b): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2, sem nenhuma conta de EMP-1 na resposta; o plano de EMP-1 continua igual ao de c1; EMP-4: carga aceita com 3 contas"
       }
     }
   ],
   "verificacao": [
     {
       "criterio": "c1",
-      "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_do_gabarito_carregado_com_codigo_e_nome -q"
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_do_gabarito_carregado_com_reduzido_tipo_e_hierarquia -q"
     },
     {
       "criterio": "c2",
-      "comando": "pytest tests/registry/test_plano_de_contas.py::test_carga_informa_linha_invalida_e_aceita_demais -q"
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_carga_informa_linha_tolerada_e_aceita_demais -q"
     },
     {
       "criterio": "c3",
-      "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_isolado_por_cliente_carteira_e_escritorio -q"
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_arquivo_recusado_nao_muda_plano_atual -q"
     },
     {
       "criterio": "c4",
-      "comando": "pytest tests/registry/test_plano_de_contas.py::test_nova_carga_substitui_plano_anterior -q"
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_isolado_por_cliente_carteira_e_escritorio -q"
     },
     {
       "criterio": "c5",
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_nova_carga_substitui_plano_anterior -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/registry/test_plano_de_contas.py::test_nova_carga_mantem_ou_limpa_contas_de_configuracao -q"
+    },
+    {
+      "criterio": "c7",
       "comando": "pytest tests/registry/test_plano_de_contas.py::test_plano_chefe_nao_atribuido_403_e_atribuido_carrega -q"
     }
   ],

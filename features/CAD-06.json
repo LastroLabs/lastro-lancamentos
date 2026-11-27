@@ -20,48 +20,56 @@
       "id": "c1",
       "descricao": "O contador indica uma conta do plano como transitória e o cliente passa a mostrá-la",
       "exemplo": {
-        "entrada": "ESC-1 com contador_a (sessão aberta); EMP-1 atribuída a contador_a, com plano carregado com as contas 1.1.01 Caixa, 2.1.05 Fornecedores e 9.9.99 Transitória, e sem conta transitória; contador_a consulta EMP-1, indica 9.9.99 como transitória e consulta EMP-1 de novo",
-        "saida": "primeira consulta: EMP-1 sem conta transitória; indicação aceita; segunda consulta: conta transitória 9.9.99 Transitória"
+        "entrada": "ESC-1 com contador_a (sessão aberta); EMP-1 atribuída a contador_a, com plano carregado com os grupos 1, 11, 2, 21, 9 e 99 e as analíticas 1101 CAIXA, 2105 FORNECEDORES e 9999 TRANSITORIA, e sem conta transitória; contador_a consulta EMP-1, indica 9999 como transitória e consulta EMP-1 de novo",
+        "saida": "primeira consulta: EMP-1 sem conta transitória; indicação aceita; segunda consulta: conta transitória 9999 TRANSITORIA"
       }
     },
     {
       "id": "c2",
       "descricao": "Conta que não existe no plano do cliente é recusada e a transitória anterior não muda",
       "exemplo": {
-        "entrada": "estado final de c1 (transitória 9.9.99); contador_a indica 8.8.88, que não está no plano de EMP-1",
-        "saida": "status de dado inválido [definir P-13], mensagem 'A conta 8.8.88 não existe no plano de contas deste cliente.'; EMP-1 continua com a transitória 9.9.99"
+        "entrada": "estado final de c1 (transitória 9999); contador_a indica 8888, que não está no plano de EMP-1",
+        "saida": "status 422 (P-13), mensagem 'A conta 8888 não existe no plano de contas deste cliente.'; EMP-1 continua com a transitória 9999"
       }
     },
     {
       "id": "c3",
       "descricao": "Cliente sem plano carregado não aceita conta transitória",
       "exemplo": {
-        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem plano carregado; contador_a indica 9.9.99 como transitória de EMP-3",
-        "saida": "status de dado inválido [definir P-13], mensagem 'A conta 9.9.99 não existe no plano de contas deste cliente.'; EMP-3 continua sem conta transitória"
+        "entrada": "ESC-1 com contador_a (sessão aberta) e EMP-3 atribuída a contador_a, sem plano carregado; contador_a indica 9999 como transitória de EMP-3",
+        "saida": "status 422 (P-13), mensagem 'A conta 9999 não existe no plano de contas deste cliente.'; EMP-3 continua sem conta transitória"
       }
     },
     {
       "id": "c4",
       "descricao": "Conta de outro cliente não serve, e outra carteira ou outro escritório não altera a transitória",
       "exemplo": {
-        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, com plano que contém 7.7.77 Transitória B; ESC-2 com chefe_2 (sessão aberta); (a) contador_a indica 7.7.77 para EMP-1; (b) contador_b e chefe_2 tentam, cada um, indicar 1.1.01 como transitória de EMP-1; (c) contador_b tenta indicar 1.1.01 em um identificador de cliente que não existe",
-        "saida": "(a) status de dado inválido [definir P-13], mensagem 'A conta 7.7.77 não existe no plano de contas deste cliente.'; (b) e (c), nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 3, e nenhum dado de EMP-1 na resposta; EMP-1 continua com a transitória 9.9.99"
+        "entrada": "estado final de c1; ESC-1 também com contador_b (sessão aberta) e EMP-2 atribuída a contador_b, com plano que contém 7777 TRANSITORIA B; ESC-2 com chefe_2 (sessão aberta); (a) contador_a indica 7777 para EMP-1; (b) contador_b e chefe_2 tentam, cada um, indicar 1101 como transitória de EMP-1; (c) contador_b tenta indicar 1101 em um identificador de cliente que não existe",
+        "saida": "(a) status 422 (P-13), mensagem 'A conta 7777 não existe no plano de contas deste cliente.'; (b) e (c), nos 3 casos: status 404, mensagem 'Você não tem acesso a este cliente.' e corpo idêntico ao de um cliente inexistente, o mesmo nos 3, e nenhum dado de EMP-1 na resposta; EMP-1 continua com a transitória 9999"
       }
     },
     {
       "id": "c5",
-      "descricao": "Se uma nova carga do plano não traz a conta transitória, o cliente fica sem transitória (P-11)",
+      "descricao": "Nova carga do plano: a transitória continua se a mesma classificação estiver no plano novo e fica vazia se não estiver (P-11)",
       "exemplo": {
-        "entrada": "estado final de c1 (EMP-1 com a transitória 9.9.99); contador_a carrega para EMP-1 um plano novo só com 1.1.01 Caixa e 2.1.05 Fornecedores; depois consulta EMP-1",
-        "saida": "carga aceita com 2 contas; EMP-1 sem conta transitória"
+        "entrada": "estado final de c1 (EMP-1 com a transitória 9999); contador_a carrega para EMP-1 (a) o mesmo plano de c1; consulta EMP-1; (b) um plano novo só com 1, 11, 1101 CAIXA, 2, 21 e 2105 FORNECEDORES; consulta EMP-1",
+        "saida": "(a) carga aceita; EMP-1 com a transitória 9999 TRANSITORIA; (b) carga aceita; EMP-1 sem conta transitória"
       }
     },
     {
       "id": "c6",
       "descricao": "O chefe do mesmo escritório que não é o responsável não consulta nem altera a transitória do cliente (403); atribuído a si, indica como o contador (P-09)",
       "exemplo": {
-        "entrada": "estado final de c1 (EMP-1 com a transitória 9.9.99, atribuída a contador_a); ESC-1 também com chefe_1 (sessão aberta) e EMP-4 atribuída a chefe_1, com plano 1.1.01 Caixa e 9.9.99 Transitória e sem transitória; chefe_1 tenta, em EMP-1, (a) consultar o cliente, (b) indicar 1.1.01 como transitória e (c) indicar 8.8.88, que não está no plano; depois indica 9.9.99 em EMP-4 e consulta EMP-4",
-        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum dado de EMP-1; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; EMP-1 continua com a transitória 9.9.99; EMP-4: indicação aceita e conta transitória 9.9.99 Transitória"
+        "entrada": "estado final de c1 (EMP-1 com a transitória 9999, atribuída a contador_a); ESC-1 também com chefe_1 (sessão aberta) e EMP-4 atribuída a chefe_1, com plano 1101 CAIXA e 9999 TRANSITORIA e sem transitória; chefe_1 tenta, em EMP-1, (a) consultar o cliente, (b) indicar 1101 como transitória e (c) indicar 8888, que não está no plano; depois indica 9999 em EMP-4 e consulta EMP-4",
+        "saida": "(a), (b) e (c): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 3, sem nenhum dado de EMP-1; (c) não recebe erro de dado inválido, porque a recusa vem antes da validação; EMP-1 continua com a transitória 9999; EMP-4: indicação aceita e conta transitória 9999 TRANSITORIA"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "Conta sintética (grupo) não pode ser a transitória",
+      "exemplo": {
+        "entrada": "estado final de c1; contador_a indica o grupo 99 como transitória de EMP-1",
+        "saida": "status 422 (P-13), mensagem 'A conta 99 é um grupo. Escolha uma conta analítica.'; EMP-1 continua com a transitória 9999"
       }
     }
   ],
@@ -88,11 +96,15 @@
     },
     {
       "criterio": "c5",
-      "comando": "pytest tests/registry/test_conta_transitoria.py::test_nova_carga_sem_a_conta_limpa_transitoria -q"
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_nova_carga_mantem_ou_limpa_transitoria -q"
     },
     {
       "criterio": "c6",
       "comando": "pytest tests/registry/test_conta_transitoria.py::test_transitoria_chefe_nao_atribuido_403_e_atribuido_indica -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/registry/test_conta_transitoria.py::test_grupo_nao_pode_ser_transitoria -q"
     }
   ],
   "evidencia": null
