@@ -132,7 +132,18 @@ Respostas de camposs04 (responsável da DB-03) às perguntas 1 e 2 de `planos/DB
 | DB-03/B1 | Os testes de esquema da DB-03 podem criar escritório, usuário, membro e cliente transitórios no próprio teste, no banco descartável, nos moldes da DB-02/B1: nomes fictícios `*_TESTE_DB03`, CNPJ com dígito verificador inválido, hashes inventados (`"a"*64`), UUIDs gerados pelo banco e nenhum arquivo em `fixtures/`. Motivo: o `cadastro.json` de `synthetic_fixtures_dir` (HAR-03) não traz CNPJ, que é obrigatório em `cliente`. Nenhum dado real. A exceção vale só para os testes da DB-03. Aval dado por camposs04 em 25/11/2026, como responsável pelo `SECURITY.md`. Ver [Dados de teste](../SECURITY.md#3-dados-de-teste). |
 | DB-03/B2 | Estende a exceção de nomes da DB-01 às tabelas da DB-03 no módulo `access`. Os nomes físicos de tabelas e colunas ficam em português, exatamente como na ficha (`competencia`, `link_cliente`, `hash_token`...), assim como os quatro nomes de teste. As classes Python seguem em inglês (`Period` e `ClientLink`, D1 do plano). |
 
-## 9. Decisões da NUC-03 — 26/11/2026
+## 9. Anonimização de telefone, e-mail e chave Pix — 26/11/2026
+
+Decisão de camposs04 (líder) sobre a issue #69, aberta na revisão do PR #67 (IA-02, item 3 de "Para o humano decidir"). Amplia o escopo do RF-SEG-03, que hoje cobre só CPF, CNPJ, agência e conta.
+
+| Referência | Decisão e alcance |
+|---|---|
+| RF-SEG-03/A1 | **Aprovada.** A anonimização passa a cobrir também telefone, e-mail e chave Pix, com os marcadores `[TELEFONE]`, `[EMAIL]` e `[CHAVE_PIX]`, além dos atuais `[CPF]`, `[CNPJ]`, `[AGENCIA]` e `[CONTA]`. Motivo: dado pessoal não pode ir para o LLM nem para logs (regra 1 do AGENTS.md e promessa de LGPD aos pilotos). Exemplos fictícios: `TED TEL (00) 00000-0000` → `TED TEL [TELEFONE]`; `PIX exemplo@exemplo.com` → `PIX [EMAIL]`. |
+| RF-SEG-03/A2 | **Pendente.** Uma chave Pix pode ser CPF, CNPJ, e-mail, telefone ou chave aleatória (EVP). A implementação precisa definir a precedência entre `[CHAVE_PIX]` e os marcadores de CPF, CNPJ, e-mail e telefone (por exemplo, se um CNPJ usado como chave Pix vira `[CNPJ]` ou `[CHAVE_PIX]`). Fica em aberto; decidir no plano da implementação. |
+
+Consequência: `src/lastro/ai/anonymization.py` passa a precisar dessas regras, a implementar em PR separado (a #69 segue aberta para isso). Pela regra 9 do AGENTS.md, antes do código o RF-SEG-03 (`gitpages/src/data/fonte/requisitos-v0.2.md` e o JSON gerado), o `docs/SECURITY.md` §5 e a ficha da feature precisam ser atualizados.
+
+## 10. Decisões da NUC-03 — 26/11/2026
 
 Plano em `planos/NUC-03/plan.md`. D1 a D5 confirmadas por jvsauma; P4 revista, P5 e P6 respondidas por caio-nascime na revisão do PR #76, com a concordância de jvsauma. Valem para toda ficha que lê ou grava tabela com escritório.
 
