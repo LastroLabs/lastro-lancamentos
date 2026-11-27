@@ -93,6 +93,14 @@
         "entrada": "(a) só os grupos 1, 11 e 2; (b) grupos 1 e 11 e as analíticas 1101 e 1102, as duas sem nome",
         "saida": "(a) 'O arquivo não tem nenhuma conta analítica. Confira se é o plano de contas do cliente.'; (b) 'Linha 3: falta o nome da conta. Há mais 1 linha com problema. Corrija e envie o arquivo de novo.'; nenhuma conta"
       }
+    },
+    {
+      "id": "c11",
+      "descricao": "Espaço em branco depois da posição 78 (espaço ou tab) é ignorado; texto depois da posição 78 recusa o arquivo",
+      "exemplo": {
+        "entrada": "plano de c1 com a linha 6 seguida de: (a) um tab; (b) espaços e um tab; (c) um tab e a letra X",
+        "saida": "(a) e (b) as 6 contas de c1 aceitas, 0 erros, 0 avisos, sem recusa; (c) 'Linha 6: a linha tem texto depois da posição 78. Corrija essa linha e envie o arquivo de novo.', nenhuma conta aceita"
+      }
     }
   ],
   "verificacao": [
@@ -135,6 +143,10 @@
     {
       "criterio": "c10",
       "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_sem_conta_analitica_recusado -q"
+    },
+    {
+      "criterio": "c11",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_espaco_em_branco_depois_da_posicao_78_ignorado -q"
     }
   ],
   "evidencia": {
