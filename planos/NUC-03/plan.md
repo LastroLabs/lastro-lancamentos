@@ -93,5 +93,5 @@ Ligar RLS forçada em todas as tabelas com escritório, dar ao app um caminho m�
 ## 8. Aprovação
 - [x] Perguntas BLOQUEANTES respondidas
 - [x] Decisões do agente confirmadas
-- [ ] Plan e tasks revisados por <nome> em DD/MM
-- [ ] Acréscimo do c8 (P5, P6, D6, T9 a T11) revisado por <nome> em DD/MM
+- [x] Plan e tasks revisados por <João> em 26/11
+- [x] Acréscimo do c8 (P5, P6, D6, T9 a T11) revisado por <João> em 26/11
