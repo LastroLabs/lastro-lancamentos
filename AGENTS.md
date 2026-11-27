@@ -51,6 +51,6 @@ Cada regra traz `[origem]`. Sem `vale` ou `expira`, ela vale sempre e não expir
 - `gitpages/src/content/docs/arquitetura/ia.md` e `decisoes/avaliacao-llm.md`: como a IA entra no fluxo. Leia antes de mexer em `ai/` ou chamar LLM.
 - `docs/decisoes/DECISIONS.md`: decisões D-xx e arquitetura. Leia se algo parecer indefinido.
 - `docs/SECURITY.md`: dados, anonimização, LGPD. Leia antes de mexer em fixtures ou chamar LLM.
-- `docs/modules/<module>.md` (a criar): regras do módulo. Leia antes de mexer nele. Regra específica de módulo vai lá, não aqui.
+- `docs/modulos/<module>.md` (a criar): regras do módulo. Leia antes de mexer nele. Regra específica de módulo vai lá, não aqui.
 - `docs/design/` (a criar: DESIGN.md, microcopy.md): identidade, tokens e textos. Leia antes de mexer no front. Mensagens ao usuário: o que aconteceu + o que fazer, em português simples (RF-AVI-02).
 - `docs/rubrica-revisao.md`: leia ao revisar um PR.
