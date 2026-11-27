@@ -1,96 +1,97 @@
-# Tasks — CAD-02 · Ler a planilha do plano de contas e apontar linha inválida
+# Tasks — CAD-02 · Ler o plano de contas em TXT e apontar linha inválida
 
-**Plan:** `planos/CAD-02/plan.md` · **Ficha:** `features/CAD-02.json`
-**Ordem:** T1 → revisão humana dos testes → commit só-de-testes (e lockfile `openpyxl`, anotar o hash) → T2 em diante (sessão nova, sem editar `tests/`)
+**Plan:** planos/CAD-02/plan.md · **Ficha:** features/CAD-02.json · **Regra:** docs/modulos/registry.md ("Leitura do plano de contas em TXT")
+**Ordem:** T1 → revisão humana dos testes → commit só de testes (anotar o hash) → `hx feature verify CAD-02` (grava `regressed`; commit da ficha) → T2 em diante numa sessão nova, sem editar `tests/`
 
 ---
 
-## [ ] T1 · Escrever os testes dos critérios (e adicionar `openpyxl` ao ambiente)
-- **Critérios da ficha:** c1, c2, c3, c4
-- **Regra de negócio (em linguagem simples):** provar em testes automatizados que uma planilha `.xlsx` de plano de contas vira lista ordenada de contas válidas, que linhas sem código ou sem nome e códigos repetidos são apontados com o número exato da linha sem descartar as demais contas, e que planilha vazia ou arquivo inválido é recusado por inteiro com mensagem clara em português.
+## [ ] T1 · Escrever os testes dos critérios e apagar os do `.xlsx`
+- **Critérios da ficha:** c1 a c10
+- **Regra de negócio:** o contador envia o plano exportado do Domínio (TXT, 78 colunas). O sistema aceita as contas, deixa de fora com aviso só a analítica folha com erro simples, e recusa o arquivo inteiro com uma mensagem única quando o erro compromete o plano.
 - **Critérios de aceite:**
-  - [ ] `openpyxl>=3.1.5` adicionada em `pyproject.toml`, `uv.lock` atualizado e imagem `dev` reconstruída (`FER-01`)
-  - [ ] Existe um teste para cada um dos 5 nomes em `verificacao` de `features/CAD-02.json`: `test_planilha_valida_vira_lista_de_contas`, `test_linha_incompleta_rejeitada_com_numero`, `test_codigo_repetido_rejeitado_com_as_duas_linhas`, `test_planilha_sem_contas_recusada` e `test_arquivo_que_nao_e_planilha_recusado`
-  - [ ] Os 5 testes falham hoje pelo motivo certo (função `read_chart_of_accounts_spreadsheet` ausente em `lastro.registry.service`), sem quebrar a coleta do pytest
-  - [ ] Todos os dados são sintéticos e gerados em `tmp_path` em tempo de execução (nenhum arquivo real nem fixture persistida)
-- **Exemplos:**
-  - c1: cabeçalho `código`/`nome` + 3 linhas (`1.1.01` `Caixa`, `2.1.05` `Fornecedores`, `9.9.99` `Transitória`) → 3 contas nessa ordem e 0 erros
-  - c2: linha 2 válida, linha 3 sem nome, linha 4 sem código, linha 5 válida → 2 contas aceitas (`1.1.01`, `9.9.99`) e 2 erros (`'Linha 3: falta o nome da conta.'`, `'Linha 4: falta o código da conta.'`)
-  - c3: linha 2 `1.1.01` `Caixa`, linha 3 `2.1.05` `Fornecedores`, linha 4 `1.1.01` `Caixa geral` → 2 contas aceitas e 1 erro (`'Linha 4: o código 1.1.01 já apareceu na linha 2.'`)
-  - c4: (a) só cabeçalho → 0 contas e `'A planilha não tem nenhuma conta.'`; (b) texto salvo como `.xlsx` → 0 contas e `'Este arquivo não é uma planilha. Envie um arquivo .xlsx.'`
-- **Arquivos:** `tests/registry/test_planilha_plano.py`, `pyproject.toml`, `uv.lock`
-- **Reaproveitar:** padrão de import sob demanda de `tests/registry/test_cnpj.py` · **Não criar:** código de produção em `src/` nem arquivo `.xlsx` commitado em `fixtures/`
-- **Fora do escopo:** implementação em `src/lastro/registry/`, rotas HTTP e banco de dados
-- **Decisões relacionadas:** D1, D3, D4, D6 (`plan.md`)
-- **Pronto quando:** `docker compose build dev && docker compose run --rm dev pytest tests/registry/test_planilha_plano.py -q` executa os 5 testes e mostra apenas as 5 falhas esperadas
+  - [ ] `tests/registry/test_plano_txt.py` tem as 10 funções citadas na `verificacao`, com os mesmos nomes
+  - [ ] `tests/registry/test_planilha_plano.py` foi apagado (T12)
+  - [ ] o serviço é importado dentro de um auxiliar (D1), e cada teste falha sozinho por `AttributeError`
+  - [ ] as linhas são montadas no teste por um auxiliar que confere 78 caracteres; os nomes são inventados (regra 1)
+  - [ ] cada caso de c4(c) e de c6 tem mensagem no `assert` dizendo qual caso falhou
+- **Exemplos:** os da ficha, com o plano `VALIDO` de 6 linhas (1, 11, 1101, 1102, 2, 201)
+- **Arquivos:** `tests/registry/test_plano_txt.py` (novo) e `tests/registry/test_planilha_plano.py` (apagar)
+- **Fora do escopo:** código de produção
+- **Pronto quando:** `docker compose run --rm dev pytest tests/registry -q` mostra só as 10 falhas esperadas, e o resto da pasta passa
 
-## [ ] T2 · Definir contratos v0 e interface pública no módulo `registry`
-- **Critérios da ficha:** c1, c4
-- **Regra de negócio (em linguagem simples):** criar a estrutura imutável que representa cada conta lida (código e nome) e o resultado da leitura da planilha (contas aceitas e erros encontrados), e expor a função pública que a `CAD-05` e os testes vão chamar.
+## [ ] T2 · Contrato, fachada e leitura do arquivo
+- **Critérios da ficha:** c9 e a parte de arquivo de c1 e c8
+- **Regra de negócio:** antes de olhar as linhas, recusar o que não é o plano em texto (ZIP ou `.xlsx`, PDF, byte nulo, mais de 20 MiB). Arquivo vazio ou só com linhas em branco "não tem nenhuma conta". O texto vem em UTF-8 (com ou sem BOM) ou em Windows-1252.
 - **Critérios de aceite:**
-  - [ ] `ChartAccountEntry(code: str, name: str)` e `ChartSpreadsheetResult(accounts: tuple[ChartAccountEntry, ...], errors: tuple[str, ...])` definidos como `@dataclass(frozen=True, slots=True)` em `src/lastro/registry/contracts.py`
-  - [ ] `read_chart_of_accounts_spreadsheet(source: bytes | Path) -> ChartSpreadsheetResult` exposta em `src/lastro/registry/service.py`, tipada e com docstring Google em inglês
-  - [ ] `validate_cnpj` e `CnpjValidationResult` permanecem inalterados e os testes da `CAD-01` continuam verdes
-- **Exemplos:** chamar `read_chart_of_accounts_spreadsheet(path)` devolve uma instância imutável de `ChartSpreadsheetResult` com tuplas `accounts` e `errors`
-- **Arquivos:** `src/lastro/registry/contracts.py`, `src/lastro/registry/service.py`
-- **Reaproveitar:** estrutura de `CnpjValidationResult` e `validate_cnpj` · **Não criar:** `utils.py`, rota em `api/` ou exceção pública para erros de negócio
-- **Fora do escopo:** lógica interna de leitura de `.xlsx` (T3 e T4) e persistência em banco
-- **Decisões relacionadas:** D2, D3, D4 (`plan.md`)
-- **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_cnpj.py -q` passa e `ruff check src/lastro/registry/` sai limpo
+  - [ ] `ChartAccountEntry` e `ChartOfAccountsResult` exatamente como a tabela "Contrato" do `registry.md`, `frozen=True, slots=True`
+  - [ ] `read_chart_of_accounts(source: bytes | Path)` em `service.py`, chamando `_read_chart_of_accounts` de `chart_txt.py`
+  - [ ] `Path`: `stat()` antes de ler; um `OSError` sobe ao chamador (D2)
+  - [ ] recusa de arquivo nesta ordem: vazio → `EMPTY`; mais de 20 MiB, `PK\x03\x04`, `%PDF-` ou `\x00` → `NOT_TEXT`
+  - [ ] decodifica e só depois fatia; `split("\n")` + `rstrip("\r")`; ignora linhas em branco e guarda o número real de cada linha
+  - [ ] `chart_spreadsheet.py`, `read_chart_of_accounts_spreadsheet` e `ChartSpreadsheetResult` apagados; os tipos e funções da CAD-03 intactos
+- **Exemplos:** `b""` → `EMPTY`; `b"%PDF-1.7\n..."` → `NOT_TEXT`; arquivo com BOM e CRLF → mesmo resultado que em UTF-8 com LF
+- **Arquivos:** `src/lastro/registry/chart_txt.py` (novo), `contracts.py`, `service.py`; apagar `chart_spreadsheet.py`
+- **Reaproveitar:** o padrão de fachada da CAD-01 · **Não criar:** um segundo ponto de entrada
+- **Fora do escopo:** regras das linhas (T3 a T5) e `pyproject.toml` (T6)
+- **Decisões relacionadas:** D2, D5
+- **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_plano_txt.py::test_arquivo_que_nao_e_o_plano_recusado_sem_excecao -q` passa
 
-## [ ] T3 · Implementar abertura segura do `.xlsx`, cabeçalho e leitura de contas válidas
-- **Critérios da ficha:** c1, c4
-- **Regra de negócio (em linguagem simples):** abrir o arquivo de forma segura conferindo seu conteúdo real (não a extensão), validar que a primeira linha traz as colunas de código e nome, ler as contas mantendo a ordem das linhas e recusar a planilha inteira se o arquivo não for `.xlsx` ou não trouxer nenhuma conta.
+## [ ] T3 · Erro próprio de cada linha
+- **Critérios da ficha:** c2, a parte de linha de c4(c) e o E2 de c3
+- **Regra de negócio:** cada linha tem no máximo um erro próprio: o primeiro da tabela "Erros de linha". As causas (linha curta, texto depois da posição 78, classificação, tipo) vêm antes dos toleráveis (reduzido, nome), para a mensagem apontar o que de fato impede a carga.
 - **Critérios de aceite:**
-  - [ ] Arquivo não-`.xlsx`, texto renomeado para `.xlsx`, ZIP corrompido ou acima do limite (20 MiB) devolve 0 contas e `'Este arquivo não é uma planilha. Envie um arquivo .xlsx.'`
-  - [ ] Leitura usa `openpyxl.load_workbook(..., read_only=True, data_only=True)` na primeira aba e fecha o workbook em `finally`
-  - [ ] Cabeçalho da linha 1 aceita `código` e `nome` (normalizando caixa, acento e espaços, em qualquer ordem de coluna, ignorando extras); ausência de coluna obrigatória recusa a planilha com mensagem clara (conforme pergunta 1)
-  - [ ] Planilha válida devolve todas as contas com `code` e `name` em texto preservando a ordem das linhas e 0 erros; planilha só com cabeçalho (ou só linhas vazias) devolve 0 contas e `'A planilha não tem nenhuma conta.'`
-- **Exemplos:**
-  - `.xlsx` com 3 contas válidas → 3 itens na ordem, `errors == ()`
-  - `.xlsx` só com linha 1 `código`/`nome` → `accounts == ()`, `errors == ('A planilha não tem nenhuma conta.',)`
-  - arquivo texto com extensão `.xlsx` → `accounts == ()`, `errors == ('Este arquivo não é uma planilha. Envie um arquivo .xlsx.',)`
-- **Arquivos:** `src/lastro/registry/chart_spreadsheet.py`, `src/lastro/registry/service.py`
-- **Reaproveitar:** `ChartAccountEntry` e `ChartSpreadsheetResult` de `src/lastro/registry/contracts.py` · **Não criar:** leitura de banco, HTTP ou escrita em disco
-- **Fora do escopo:** validação detalhada de linhas incompletas e códigos repetidos (T4)
-- **Decisões relacionadas:** D1, D2, D5 (`plan.md`) e perguntas 1, 2, 3
-- **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas tests/registry/test_planilha_plano.py::test_planilha_sem_contas_recusada tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q` passa
+  - [ ] ordem: E1, E8, E3a, E3b, E5a, E5b, E2 vazio, E2, E2z, E4, com o texto exato da tabela
+  - [ ] o nome de 40 caracteres colado ao tipo é lido inteiro (`[27:67]`, tipo em `[67]`)
+  - [ ] aspas só no valor recusado, como foi lido
+- **Exemplos:** reduzido `12A4567` → `o código reduzido "12A4567" precisa ter 7 dígitos.`; classificação `11.03` → `a classificação "11.03" precisa ter só números.`; tipo em branco → `falta o tipo da conta (S ou A).`
+- **Arquivos:** `src/lastro/registry/chart_txt.py`
+- **Fora do escopo:** decidir se o erro é tolerado (T5)
+- **Pronto quando:** `pytest tests/registry/test_plano_txt.py::test_nome_de_40_caracteres_colado_no_tipo -q` passa
 
-## [ ] T4 · Implementar validação de linhas incompletas e códigos repetidos
-- **Critérios da ficha:** c2, c3
-- **Regra de negócio (em linguagem simples):** ao percorrer cada linha a partir da linha 2, ignorar linhas totalmente vazias, rejeitar com o número real da linha qualquer linha sem código ou sem nome, e rejeitar qualquer código repetido informando tanto a linha repetida quanto a primeira linha onde o código apareceu — sempre aceitando as demais linhas válidas.
+## [ ] T4 · Repetições e hierarquia
+- **Critérios da ficha:** c1, c5 e c6
+- **Regra de negócio:** o Domínio não repete reduzido nem classificação, então repetição indica arquivo corrompido ou misturado, e o resultado não pode depender da ordem das linhas. A conta superior é o maior prefixo da classificação que existe no arquivo. Conta sem superior, ou abaixo de uma analítica, recusa o arquivo.
 - **Critérios de aceite:**
-  - [ ] Linha com código preenchido e nome vazio (ou só espaços) gera `'Linha {n}: falta o nome da conta.'` e não entra em `accounts`
-  - [ ] Linha com nome preenchido e código vazio (ou só espaços) gera `'Linha {n}: falta o código da conta.'` e não entra em `accounts`
-  - [ ] Segunda (ou posterior) ocorrência do mesmo código normalizado gera `'Linha {n}: o código {codigo} já apareceu na linha {primeira}.'`, mantendo a primeira ocorrência em `accounts`
-  - [ ] Linhas válidas antes e depois das linhas inválidas continuam aceitas na ordem original
-- **Exemplos:**
-  - linha 3 sem nome e linha 4 sem código → 2 erros exatos e linhas 2 e 5 aceitas
-  - `1.1.01` na linha 2 e `1.1.01` na linha 4 → linha 2 aceita e erro `'Linha 4: o código 1.1.01 já apareceu na linha 2.'`
-- **Arquivos:** `src/lastro/registry/chart_spreadsheet.py`
-- **Reaproveitar:** normalização de células de T3 · **Não criar:** consulta ao banco de dados ou alteração em `tests/`
-- **Fora do escopo:** substituição de plano anterior no banco (P-11, escopo da `CAD-05`)
-- **Decisões relacionadas:** D2, D3 (`plan.md`) e perguntas 2, 3
-- **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_planilha_plano.py -q` passa com os 5 testes verdes
+  - [ ] E6 e E7 conferidos em toda linha, mesmo com erro próprio, e com prioridade sobre ele; a primeira ocorrência fica e a de baixo é a causa
+  - [ ] `0000000` não gera E6 (D3). A ficha não cita esse caso, então ele é conferido à mão no T7
+  - [ ] hierarquia sobre todas as linhas com classificação legível (primeira ocorrência), das mais curtas para as mais longas, com `mínimo` = menor comprimento
+  - [ ] `parent_classification` preenchido; `None` nas contas de topo
+  - [ ] causas: sem superior e mais longa que o mínimo; abaixo de analítica. Consequência: superior não aceita (não é mostrada nem contada)
+- **Exemplos:** `1102` repetida na linha 7 → `Linha 7: a classificação 1102 já aparece na linha 4.`; `3101` sem `3` nem `31` → `a conta 3101 não tem conta superior no arquivo.`; `110101` abaixo da analítica `1101` → `... está abaixo da conta analítica 1101 (linha 3).`
+- **Arquivos:** `src/lastro/registry/chart_txt.py`
+- **Decisões relacionadas:** D3, D5
+- **Pronto quando:** os testes de c1, c5 e c6 passam (`pytest tests/registry/test_plano_txt.py -q -k "hierarquia or repeticao or txt_valido"`)
 
-## [ ] T5 · Documentar o contrato v0 do leitor de plano de contas
-- **Critérios da ficha:** todos (manutenção de arquitetura exigida por `ARCHITECTURE.md` §9)
-- **Regra de negócio (em linguagem simples):** registrar o contrato público v0 (`read_chart_of_accounts_spreadsheet`, `ChartAccountEntry`, `ChartSpreadsheetResult`), as mensagens oficiais e a suposição P-10 para que a `CAD-05` consuma a interface sem ambiguidade.
+## [ ] T5 · Tolerância, recusa única e avisos
+- **Critérios da ficha:** c3, c4, c7, c8 e c10
+- **Regra de negócio:** só a analítica folha, sem problema de hierarquia e primeira com aquela classificação, pode ficar de fora com erro simples (E2, E2z, E4). Qualquer outra causa recusa tudo com uma mensagem: a primeira causa mais quantas outras há. Se nenhuma analítica foi aceita, as toleradas viram causa. Sintética aceita sem nada abaixo dela vira aviso.
 - **Critérios de aceite:**
-  - [ ] Tabela de contratos em `ARCHITECTURE.md` §6 inclui o contrato `registry → registry (CAD-05), api` da CAD-02
-  - [ ] `docs/modules/registry.md` (ou caminho confirmado na pergunta 5) documenta assinatura, campos, mensagens oficiais, limites e impacto para `CAD-05`
-- **Exemplos:** a tabela em `ARCHITECTURE.md` §6 lista `ChartSpreadsheetResult`, `ChartAccountEntry` e `read_chart_of_accounts_spreadsheet`
-- **Arquivos:** `ARCHITECTURE.md`, `docs/modules/registry.md`
-- **Reaproveitar:** formato do contrato da `CAD-01` em `ARCHITECTURE.md` §6 · **Não criar:** novo diretório em `docs/`
-- **Fora do escopo:** unificação de `docs/modulos/registry.md` (PR separado) e edição de `features/CAD-02.json`
-- **Decisões relacionadas:** D4 (`plan.md`) e pergunta 5
-- **Pronto quando:** `git diff ARCHITECTURE.md docs/modules/registry.md` mostra o contrato v0 completo e coerente com `src/lastro/registry/service.py` e `contracts.py`
+  - [ ] uma mensagem por linha: repetição → causa de hierarquia → erro próprio
+  - [ ] 1 causa: `{msg} Corrija essa linha e envie o arquivo de novo.`; N causas: `{msg} Há mais {N-1} {linha|linhas} com problema. Corrija e envie o arquivo de novo.`
+  - [ ] na recusa, `accounts`, `errors` e `warnings` vazios; quando aceito, `refusal is None`
+  - [ ] sem analítica aceita: toleradas viram causa; sem toleradas, a mensagem `NO_ANALYTIC`
+  - [ ] a sintética cuja única filha foi tolerada não gera aviso
+- **Exemplos:** grupo 11 sem nome → `Linha 2: falta o nome da conta. Corrija essa linha e envie o arquivo de novo.`; grupo 12 vazio → aviso `Linha 7: a conta sintética 12 não tem contas abaixo dela.`
+- **Arquivos:** `src/lastro/registry/chart_txt.py`
+- **Pronto quando:** `docker compose run --rm dev pytest tests/registry/test_plano_txt.py -q` passa nos 10
 
-## [ ] T6 · Verificação final
+## [ ] T6 · Tirar o `openpyxl`
+- **Critérios da ficha:** nenhum direto (T1 do §11; "Pronto quando" do roteiro)
+- **Regra de negócio:** o `.xlsx` não é mais aceito, então a biblioteca e o comentário dela saem das dependências.
 - **Critérios de aceite:**
-  - [ ] `git diff <hash-dos-testes> -- tests/` vazio (nenhuma edição em testes durante a implementação)
-  - [ ] `docker compose run --rm dev ruff check .` limpo
-  - [ ] `hx check-clean` e `hx verify` em OK
-  - [ ] `hx feature verify CAD-02` grava `passing` na ficha
-  - [ ] `progress/CAD-02.md` atualizado ao encerrar a sessão
-- **Pronto quando:** `hx check-clean`, `hx verify` e `hx feature verify CAD-02` terminam com código 0
+  - [ ] `openpyxl` fora do `pyproject.toml` (com o comentário `# CAD-02, plan D1/D6`)
+  - [ ] `uv.lock` regenerado no contêiner (D4), sem `openpyxl` nem `et-xmlfile`, com `revision = 5`
+  - [ ] `docker compose build dev` reconstruído antes do T7
+- **Arquivos:** `pyproject.toml`, `uv.lock`
+- **Pronto quando:** `git grep -n openpyxl -- src tests pyproject.toml uv.lock` sem resultado
+
+## [ ] T7 · Verificação final
+- **Critérios de aceite:**
+  - [ ] `git diff <hash-dos-testes> -- tests/` vazio
+  - [ ] `hx check-clean` em OK (com `LASTRO_NOMES_PROIBIDOS` definida, se possível)
+  - [ ] `hx verify` em OK com a imagem reconstruída
+  - [ ] `hx feature verify CAD-02` grava `passing`; commit da ficha
+  - [ ] conferência manual da D3: duas analíticas folha com `0000000` → 2 erros tolerados, sem recusa
+  - [ ] `progress/CAD-02.md` reescrito para o TXT (Objetivo, Próxima ação), com o que rodou
+  - [ ] PR cita `DECISIONS.md` §11 T12 (testes) e T13 (contrato v1, sem issue)
+- **Pronto quando:** os três comandos do `hx` terminam com código 0
