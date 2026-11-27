@@ -22,8 +22,6 @@ import re
 import shutil
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
-import zipfile
 from datetime import date
 from pathlib import Path
 
@@ -158,51 +156,11 @@ def ler_ofx(caminho):
     }
 
 
-def ler_planilha(caminho):
-    """Linhas (lista de textos) da 1ª aba de um .xlsx, só com zipfile + xml.etree."""
-    ns = {
-        "m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-        "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-        "rel": "http://schemas.openxmlformats.org/package/2006/relationships",
-    }
-    with zipfile.ZipFile(caminho) as z:
-        nomes = z.namelist()
-        assert "xl/sharedStrings.xml" in nomes, f"{caminho} sem xl/sharedStrings.xml (D2)"
-        compartilhadas = [
-            "".join(t.text or "" for t in si.iter(f"{{{ns['m']}}}t"))
-            for si in ET.fromstring(z.read("xl/sharedStrings.xml")).findall("m:si", ns)
-        ]
-        livro = ET.fromstring(z.read("xl/workbook.xml"))
-        id_da_aba = livro.find("m:sheets/m:sheet", ns).get(f"{{{ns['r']}}}id")
-        relacoes = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
-        alvo = next(r.get("Target") for r in relacoes.findall("rel:Relationship", ns)
-                    if r.get("Id") == id_da_aba)
-        caminho_da_aba = alvo.lstrip("/") if alvo.startswith("/") else f"xl/{alvo}"
-        aba = ET.fromstring(z.read(caminho_da_aba))
-    linhas = []
-    for linha in aba.iter(f"{{{ns['m']}}}row"):
-        valores = []
-        for celula in linha.findall("m:c", ns):
-            tipo = celula.get("t")
-            if tipo == "inlineStr":
-                valores.append("".join(t.text or "" for t in celula.iter(f"{{{ns['m']}}}t")))
-                continue
-            v = celula.find("m:v", ns)
-            texto = v.text if v is not None else ""
-            valores.append(compartilhadas[int(texto)] if tipo == "s" else texto)
-        linhas.append(valores)
-    return linhas
-
-
 def textos_gerados(pasta):
-    """Texto de cada arquivo gerado; o .xlsx entra também membro a membro (já descompactado)."""
+    """Texto de cada arquivo gerado."""
     textos = {}
     for relativo, dados in instantaneo(pasta).items():
         textos[relativo] = dados.decode("utf-8", errors="replace")
-        if relativo.endswith(".xlsx"):
-            with zipfile.ZipFile(Path(pasta) / relativo) as z:
-                for membro in z.namelist():
-                    textos[f"{relativo}!{membro}"] = z.read(membro).decode("utf-8", "replace")
     return textos
 
 
@@ -275,20 +233,6 @@ def test_build_gera_cadastro_dos_dois_escritorios(tmp_path, capsys):
             assert all(c["codigo"] and c["nome"] for c in cli["plano"]), cli["id"]
             transitorias = [c for c in cli["plano"] if c["transitoria"] is True]
             assert len(transitorias) == 1, f"{cli['id']}: {len(transitorias)} transitórias"
-
-
-def test_build_gera_planilha_do_plano_por_cliente(tmp_path, capsys):
-    pasta = gerar(tmp_path, capsys)
-    cadastro = ler_cadastro(pasta)
-
-    for _, cli in clientes(cadastro):
-        planilha = pasta / cli["plano_planilha"]
-        assert planilha.suffix == ".xlsx" and planilha.is_file(), f"{cli['id']}: {planilha}"
-        linhas = ler_planilha(planilha)
-        assert linhas[0][:2] == ["código", "nome"], f"{cli['id']}: cabeçalho {linhas[0]}"
-        corpo = [tuple(linha[:2]) for linha in linhas[1:] if any(linha)]
-        esperado = [(str(c["codigo"]), c["nome"]) for c in cli["plano"]]
-        assert corpo == esperado, f"{cli['id']}: planilha difere do plano do cadastro"
 
 
 # ---------------------------------------------------------------------------
@@ -400,11 +344,8 @@ def test_mesma_semente_gera_saida_identica(tmp_path, capsys):
     # Rodar de novo na mesma pasta também não muda nada
     assert instantaneo(gerar(tmp_path / "a", capsys)) == primeira
 
-    # As planilhas abrem só com zipfile + xml.etree e têm sharedStrings (D2)
-    planilhas = [r for r in primeira if r.endswith(".xlsx")]
-    assert planilhas, "nenhuma planilha .xlsx gerada"
-    for relativo in planilhas:
-        assert ler_planilha(tmp_path / "a" / PASTA / relativo)
+    planos = [r for r in primeira if r.startswith("planos/") and r.endswith(".txt")]
+    assert planos, "nenhum plano .txt gerado"
 
 
 def test_outra_semente_gera_saida_diferente(tmp_path, capsys):
@@ -526,8 +467,7 @@ def _chaves_recursivas(valor):
 
 def _caminho_relativo_existente(pasta, caminho, onde):
     assert isinstance(caminho, str) and caminho, f"{onde}: caminho vazio"
-    # CONTRATO A CONFIRMAR: plano_planilha é relativo a fixtures/, como ofx e gabarito
-    # (o c6 diz "caminho relativo do .xlsx" sem dizer a quê).
+    # plano_txt é relativo a fixtures/, como ofx e gabarito.
     assert not Path(caminho).is_absolute() and ".." not in Path(caminho).parts, (
         f"{onde}: {caminho!r} não é relativo a fixtures/"
     )
@@ -559,15 +499,19 @@ def test_formato_do_cadastro_e_do_gabarito(tmp_path, capsys):
             # IA-02 lê socios[].nome
             assert isinstance(cli["socios"], list) and cli["socios"], onde
             assert all(isinstance(s["nome"], str) and s["nome"] for s in cli["socios"]), onde
-            # plano: {codigo, nome, transitoria}, exatamente 1 transitória
+            # plano: contrato v1 da HAR-03, com exatamente 1 transitória
             for c in cli["plano"]:
                 assert isinstance(c["codigo"], str) and c["codigo"], onde
+                assert isinstance(c["classificacao"], str) and c["classificacao"], onde
+                assert c["classificacao"] == c["codigo"].replace(".", ""), onde
+                assert isinstance(c["reduzido"], str) and re.fullmatch(r"[0-9]{7}", c["reduzido"]), onde
                 assert isinstance(c["nome"], str) and c["nome"], onde
+                assert c["tipo"] in ("S", "A"), onde
                 assert type(c["transitoria"]) is bool, onde
             assert sum(c["transitoria"] for c in cli["plano"]) == 1, onde
             codigos = {c["codigo"] for c in cli["plano"]}
-            # CAD-05 lê plano_planilha
-            _caminho_relativo_existente(pasta, cli["plano_planilha"], f"{onde} plano_planilha")
+            # CAD-05 lê plano_txt
+            _caminho_relativo_existente(pasta, cli["plano_txt"], f"{onde} plano_txt")
 
             assert isinstance(cli["contas_bancarias"], list) and cli["contas_bancarias"], onde
             for conta in cli["contas_bancarias"]:
@@ -672,20 +616,6 @@ def test_harness_importa_gerador_so_no_comando(tmp_path):
     assert m.groups() == ("False", "0", "True"), (
         f"esperava gerador fora do import do harness e carregado pelo comando: {m.groups()}"
     )
-
-
-# ---------------------------------------------------------------------------
-# D2: planilha sem compressão e com data fixa
-# ---------------------------------------------------------------------------
-
-
-def test_planilha_sem_compressao_e_data_fixa(tmp_path, capsys):
-    pasta = gerar(tmp_path, capsys)
-    for _, cli in clientes(ler_cadastro(pasta)):
-        with zipfile.ZipFile(pasta / cli["plano_planilha"]) as z:
-            for info in z.infolist():
-                assert info.compress_type == zipfile.ZIP_STORED, f"{info.filename} comprimido"
-                assert info.date_time == (1980, 1, 1, 0, 0, 0), f"{info.filename}: data {info.date_time}"
 
 
 # ---------------------------------------------------------------------------
