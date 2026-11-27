@@ -62,6 +62,16 @@ Evite `l`, `O`, `I` e nomes de uma letra (exceto índice curto em laço). Nome d
 - Use **nomes de arquivo únicos** em todo o projeto (o `test_service.py` repetido em duas pastas pode dar "import file mismatch" sem `__init__.py`). `[definir]` ou configure `--import-mode=importlib`.
 - Dado de teste é sintético (`fixtures/`), nunca extrato real (AGENTS.md, regra 1).
 
+**Testes em paralelo** (`pytest-xdist`, issue #93)
+
+A suíte completa roda em vários processos ao mesmo tempo. Um teste executado sozinho, como no `hx feature verify`, roda em série. Cada processo tem as próprias fixtures de sessão. O teste não sabe que está em paralelo e não precisa de ajuste, desde que siga estas regras:
+- **Arquivo só em pasta temporária.** Use `tmp_path` (ou `tmp_path_factory`). Não escreva em pasta fixa do repositório (`fixtures/`, `progress/`, `web/dist`): dois processos escrevendo juntos se atropelam.
+- **Nada com nome ou porta fixos.** Banco, container, arquivo e porta recebem nome aleatório ou vêm de uma fixture (`fresh_database` e as fixtures de banco migrado já fazem isso).
+- **Nenhum teste depende de outro.** A ordem muda a cada execução; cada teste prepara o que usa.
+- **Estado global só com `monkeypatch`.** Variável de ambiente, `chdir` ou variável de módulo: use `monkeypatch`, que desfaz sozinho no fim do teste.
+- **Recurso que não pode ser dividido vira grupo.** Testes que precisam usar a mesma coisa em sequência (ex.: os do front, que dividem `web/node_modules` e `web/dist`) ganham `xdist_group` e rodam no mesmo processo. O grupo é registrado no `tests/conftest.py`, não em cada teste.
+- **Falha que aparece "às vezes"** costuma ser uma dessas regras quebrada. Para investigar, rode em série com `pytest -n 0`.
+
 ## 3. TypeScript e React
 
 Base: guia de código do TypeScript (Microsoft), convenções do React, `eslint` + `typescript-eslint` + `prettier`.
