@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "passing",
+  "estado": "regressed",
   "responsavel": "camposs04",
   "depende_de": [
     "HAR-04"
