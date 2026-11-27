@@ -9,6 +9,9 @@ import secrets
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 
+# Shortest password accepted when someone creates one (admin command and invitation accept).
+MIN_PASSWORD_LENGTH = 8
+
 _HASHER = PasswordHasher()
 # Hash of a random secret that nobody knows, checked when there is no stored hash (plan D5).
 # Built at import, so even the first refusal of the process costs one hash, like the others.

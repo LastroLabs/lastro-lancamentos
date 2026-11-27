@@ -1,17 +1,18 @@
 """Reads and writes of the identity tables used by sign-in and sessions (ACE-01, I-7).
 
-Only this file touches `usuario`, `membro`, `escritorio`, `sessao` and `atribuicao` for the
-access module. The caller owns the transaction: nothing here commits.
+Only this file touches `usuario`, `membro`, `escritorio`, `sessao`, `convite` and
+`atribuicao` for the access module. Nothing here reads `usuario.credencial_hash`, except the
+login lookup of sign-in (ACE-02, c2 and c10). The caller owns the transaction: nothing here commits.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, text, update
+from sqlalchemy import func, insert, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lastro.access.models import Assignment, Firm, Member, Session, User
+from lastro.access.models import Assignment, Firm, Invitation, Member, Session, User
 from lastro.core.db import use_firm
 
 
@@ -242,3 +243,231 @@ async def find_open_assignments(
         )
     )
     return [(client_id, member_id) for client_id, member_id in rows]
+
+
+@dataclass(frozen=True, slots=True)
+class PersonRow:
+    """Active member of a firm with its user, columns only (never the credential)."""
+
+    member_id: UUID
+    user_id: UUID
+    name: str
+    username: str
+    role: str
+
+
+@dataclass(frozen=True, slots=True)
+class InvitationLookup:
+    """What `buscar_convite_por_hash` says about a valid invitation."""
+
+    firm_id: UUID
+    invitation_id: UUID
+    member_id: UUID
+
+
+def _person_columns():
+    return (Member.id, User.id, User.nome, User.identificador_login, Member.papel)
+
+
+def _active_people(firm_id: UUID):
+    return (
+        select(*_person_columns())
+        .select_from(Member)
+        .join(User, User.id == Member.usuario_id)
+        .where(Member.escritorio_id == firm_id, Member.ativo, User.ativo)
+    )
+
+
+async def login_exists(db: AsyncSession, normalized_login: str) -> bool:
+    """Whether any user, of any firm, has this login in lower case. Reads the login only."""
+    found = await db.execute(
+        select(User.id)
+        .where(func.lower(User.identificador_login) == normalized_login)
+        .limit(1)
+    )
+    return found.first() is not None
+
+
+async def insert_accountant(
+    db: AsyncSession, firm_id: UUID, login: str, name: str
+) -> UUID:
+    """Add a user without password and an active `contador` membership; return the member id.
+
+    Raises:
+        IntegrityError: the login already exists.
+    """
+    user_id = (
+        await db.execute(
+            insert(User)
+            .values(identificador_login=login, nome=name)
+            .returning(User.id)
+        )
+    ).scalar_one()
+    return (
+        await db.execute(
+            insert(Member)
+            .values(escritorio_id=firm_id, usuario_id=user_id, papel="contador")
+            .returning(Member.id)
+        )
+    ).scalar_one()
+
+
+async def list_people(db: AsyncSession, firm_id: UUID) -> list[PersonRow]:
+    """Active people of the firm, managers first, then by name."""
+    rows = await db.execute(
+        _active_people(firm_id).order_by(Member.papel, User.nome, Member.id)
+    )
+    return [PersonRow(*row) for row in rows]
+
+
+async def find_person(
+    db: AsyncSession, firm_id: UUID, member_id: UUID
+) -> PersonRow | None:
+    """The active member with this id in the firm, or None (also for another firm's)."""
+    row = (
+        await db.execute(_active_people(firm_id).where(Member.id == member_id))
+    ).one_or_none()
+    return None if row is None else PersonRow(*row)
+
+
+async def find_who_has_password(
+    db: AsyncSession, user_ids: list[UUID]
+) -> dict[UUID, bool]:
+    """Yes or no per user of the firm of the transaction, by the database function (c10).
+
+    People of other firms and unknown ids are absent from the answer.
+    """
+    if not user_ids:
+        return {}
+    rows = await db.execute(
+        text(
+            "SELECT usuario_id, tem_senha"
+            " FROM public.usuarios_com_senha(CAST(:ids AS uuid[]))"
+        ),
+        {"ids": user_ids},
+    )
+    return {user_id: has_password for user_id, has_password in rows}
+
+
+async def find_pending_invitations(
+    db: AsyncSession, firm_id: UUID
+) -> dict[UUID, bool]:
+    """Member id -> whether its pending invitation is expired, by the database clock."""
+    rows = await db.execute(
+        select(Invitation.membro_id, Invitation.expira_em <= func.now()).where(
+            Invitation.escritorio_id == firm_id,
+            Invitation.usado_em.is_(None),
+            Invitation.revogado_em.is_(None),
+        )
+    )
+    return {member_id: is_expired for member_id, is_expired in rows}
+
+
+async def revoke_pending_invitation(
+    db: AsyncSession, firm_id: UUID, member_id: UUID
+) -> None:
+    """Revoke the pending invitation of the member, even an expired one."""
+    await db.execute(
+        update(Invitation)
+        .where(
+            Invitation.escritorio_id == firm_id,
+            Invitation.membro_id == member_id,
+            Invitation.usado_em.is_(None),
+            Invitation.revogado_em.is_(None),
+        )
+        .values(revogado_em=func.now())
+    )
+
+
+async def insert_invitation(
+    db: AsyncSession,
+    firm_id: UUID,
+    member_id: UUID,
+    created_by: UUID,
+    token_hash: str,
+    valid_for: timedelta,
+) -> datetime:
+    """Store a pending invitation expiring `valid_for` from the database `now()`; return it.
+
+    Raises:
+        IntegrityError: the member still has a pending invitation.
+    """
+    return (
+        await db.execute(
+            insert(Invitation)
+            .values(
+                escritorio_id=firm_id,
+                membro_id=member_id,
+                hash_token=token_hash,
+                criado_por=created_by,
+                expira_em=func.now() + valid_for,
+            )
+            .returning(Invitation.expira_em)
+        )
+    ).scalar_one()
+
+
+async def find_invitation(db: AsyncSession, token_hash: str) -> InvitationLookup | None:
+    """The valid invitation with this code hash, found only by the database function."""
+    found = (
+        await db.execute(
+            text("SELECT * FROM public.buscar_convite_por_hash(:token_hash)"),
+            {"token_hash": token_hash},
+        )
+    ).one_or_none()
+    return None if found is None else InvitationLookup(*found)
+
+
+async def mark_invitation_used(
+    db: AsyncSession, firm_id: UUID, invitation_id: UUID
+) -> bool:
+    """Spend the invitation if it is still pending and valid; False if someone beat us.
+
+    Concurrent calls wait on the row lock, then see `usado_em` filled and update nothing.
+    """
+    spent = await db.execute(
+        update(Invitation)
+        .where(
+            Invitation.escritorio_id == firm_id,
+            Invitation.id == invitation_id,
+            Invitation.usado_em.is_(None),
+            Invitation.revogado_em.is_(None),
+            Invitation.expira_em > func.now(),
+        )
+        .values(usado_em=func.now())
+        .returning(Invitation.id)
+    )
+    return spent.first() is not None
+
+
+async def set_credential(db: AsyncSession, user_id: UUID, credential_hash: str) -> None:
+    """Write the password hash straight to the column, without loading the user."""
+    await db.execute(
+        update(User)
+        .where(User.id == user_id)
+        .values(credencial_hash=credential_hash)
+        .execution_options(synchronize_session=False)
+    )
+
+
+async def insert_assignment(
+    db: AsyncSession,
+    firm_id: UUID,
+    client_id: UUID,
+    member_id: UUID,
+    assigned_by: UUID,
+) -> None:
+    """Open an assignment starting at the database `now()`.
+
+    Raises:
+        IntegrityError: the client already has an open assignment.
+    """
+    await db.execute(
+        insert(Assignment).values(
+            escritorio_id=firm_id,
+            cliente_id=client_id,
+            membro_id=member_id,
+            atribuido_por=assigned_by,
+            inicio=func.now(),
+        )
+    )

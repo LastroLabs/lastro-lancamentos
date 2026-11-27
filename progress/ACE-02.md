@@ -13,25 +13,34 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+O chefe cadastra contador por convite (link com código aleatório, validade de 48 h), o contador cria a própria senha pelo link, e o chefe atribui cliente sem responsável a um membro ativo, inclusive a si mesmo.
+
 
 ## Próxima ação
-(a primeira coisa a fazer ao retomar; de preferência um comando ou um arquivo)
+Rodar `hx verify` completo e `hx feature verify ACE-02` (grava `passing`), commitar e abrir o PR com o template de `.github/`.
+
 
 ## Bloqueios e perguntas
 - (nenhum)
 
+
 ## Feito
-- DD/MM · S1 ·
+- 26/11 · S2 · Migração `0007` (`usuarios_com_senha`), `LASTRO_CONVITE_HORAS`, `credencial_hash` deferred, contratos, repositório, serviço e 7 rotas (cadastro, lista, convite novo/cancelado, aceite, atribuição e consulta); `registry.client_exists`.
+- 26/11 · S2 · Docs: `docs/modulos/access.md`, `ARCHITECTURE.md` (seção 6), `DECISIONS.md` (ACE-02/F5), ficha com rotas em inglês e 422; OpenAPI e `web/src/api/schema.d.ts` regenerados.
+- 26/11 · S2 · `AccountantAlreadyActiveError` (antes com "Password" no nome) para o `check-clean` não acusar segredo.
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
+- 26/11 · S2 · `pytest tests/access/test_cadastro_contador.py` → 19 passaram.
+- 26/11 · S2 · `hx verify` (container) → 521 passaram, 1 falhou (OpenAPI/`schema.d.ts` desatualizados); corrigido e `pytest tests/web` → 5 passaram. `hx verify` completo não foi repetido depois.
+- 26/11 · S2 · `ruff check .` (container) → limpo; `hx check-clean` → 0 achados, depois de o responsável trocar o CNPJ do teste do c8.
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
+- 26/11 · S2 · `hx check-clean` acusou CNPJ válido em `tests/access/test_cadastro_contador.py:687`; o responsável trocou o literal (única edição em `tests/`, feita por ele).
+- 26/11 · S2 · Fora do container, `tests/web` falha por Node 22 (pede 24) e por `PYTHONPATH`; é ambiente local, passa no container.
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+- 26/11 · S2 · Tudo resolvido na própria feature, sem issue `contrato:` nem pendência para outras fichas (responsável). Ver `DECISIONS.md`, ACE-02/F5.
+- 26/11 · S2 · `access` importa `ManagerOnlyError` e `ClientNotFoundError` de `registry.contracts`; `MIN_PASSWORD_LENGTH` foi para `access/passwords.py`; o aceite recusa quem já tem senha.
 
 ## Fim de sessão
 - [ ] `hx verify` verde, ou a falha está descrita em "Falhou"

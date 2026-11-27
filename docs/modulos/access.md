@@ -180,3 +180,44 @@ NUC-03 e quem usa a função.
   superusuário ignoram a RLS.
 - **Contêiner de teste como root** cria arquivos do root no repositório (`web/dist`, caches) e
   quebra o build do front: rode com o seu usuário.
+
+## Contador por convite e atribuição de cliente (ACE-02)
+
+Só o chefe usa estas rotas, menos o aceite, que não pede sessão. `{id}` de pessoa é o id do
+**membro**. O código do convite (`secrets.token_urlsafe(32)`, 43 caracteres) só aparece na
+resposta que o cria; o banco guarda o SHA-256. Validade: `LASTRO_CONVITE_HORAS` (padrão 48),
+contada pelo relógio do banco, o mesmo do aceite e da lista.
+
+| Rota | O que faz | Resposta |
+|---|---|---|
+| `POST /api/v1/accountants` | Cadastra `{"name", "username"}` sem senha e gera o convite | 201 com a pessoa, `invitation_code`, `invitation_path` (`/convite/<código>`) e `expires_at` |
+| `GET /api/v1/accountants` | Lista as pessoas ativas do escritório, o chefe incluído | 200 com `id`, `name`, `username`, `role`, `status`; nunca código nem hash |
+| `POST /api/v1/accountants/{id}/invitation` | Novo convite; revoga o pendente, mesmo vencido | 201 como o cadastro |
+| `DELETE /api/v1/accountants/{id}/invitation` | Cancela o convite pendente | 204, também quando não há convite |
+| `POST /api/v1/invitations/accept` | Sem sessão: `{"invitation_code", "username", "password"}` cria a senha | 200 "Senha criada. Agora é só entrar." |
+| `POST /api/v1/clients/{id}/assignment` | Atribui `{"member_id"}` a um cliente sem responsável (pode ser o próprio chefe) | 201 com `responsible` |
+| `GET /api/v1/clients/{id}/assignment` | Diz o responsável ativo | 200 com `responsible` (`null` se não há) |
+
+`status` da pessoa: `ativo` (já criou a senha), `convite_pendente`, `convite_vencido`,
+`sem_convite`. "Já criou a senha" vem da função `usuarios_com_senha(uuid[])` (migração `0007`),
+que só responde `usuario_id` e `tem_senha`, só para o escritório da transação; nenhuma rota
+lê `usuario.credencial_hash`.
+
+| Situação | Status e `detail` |
+|---|---|
+| Contador tenta cadastrar, convidar, cancelar ou atribuir | 403 "Só o chefe do escritório pode fazer isso." |
+| Nome ou usuário vazio | 422 "Informe o nome do contador." / "Informe o usuário de entrada do contador." |
+| Usuário já existe (neste ou em outro escritório) | 409 "Este usuário já existe. Escolha outro." |
+| Pessoa de outro escritório ou inexistente (convite) | 404 "Contador não encontrado no seu escritório." |
+| Contador que já criou a senha recebe convite | 409 "Este contador já criou a senha." |
+| Convite inexistente, vencido, usado, cancelado ou usuário que não bate | 404 "Este convite não vale mais. Peça um novo ao chefe do escritório." (corpo igual nos cinco) |
+| Senha com menos de 8 caracteres (não gasta o convite) | 422 "A senha precisa ter pelo menos 8 caracteres." |
+| Cliente inexistente ou de outro escritório | 404 "Você não tem acesso a este cliente." |
+| Responsável inexistente, inativo ou de outro escritório | 404 "Responsável não encontrado no seu escritório." |
+| Cliente já tem responsável (a troca é da ACE-04) | 409 "Este cliente já tem um responsável. Use a reatribuição." |
+
+Aceite: ordem convite e usuário → tamanho da senha → `UPDATE convite ... WHERE usado_em IS NULL`
+→ gravação da senha, numa transação. Dois aceites juntos: o segundo espera a trava da linha,
+não atualiza nada e recebe a recusa do convite. O convite é achado só por
+`buscar_convite_por_hash`. Contratos novos (versão 0): `TeamMember`, `IssuedInvitation`,
+`Responsible`, `PersonStatus` e os erros em `access/contracts.py`; `registry.service.client_exists`.

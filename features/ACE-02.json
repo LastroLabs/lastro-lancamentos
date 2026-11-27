@@ -23,7 +23,7 @@
       "id": "c1",
       "descricao": "O chefe cadastra um contador com nome e usuário; o sistema cria a conta sem senha e devolve, uma única vez, o link de convite com validade",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; chefe_1 envia POST /api/v1/contadores com nome 'CONTADOR TESTE C' e usuário contador_c; depois pede a lista GET /api/v1/contadores",
+        "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; chefe_1 envia POST /api/v1/accountants com nome 'CONTADOR TESTE C' e usuário contador_c; depois pede a lista GET /api/v1/accountants",
         "saida": "status 201; a resposta traz id, nome 'CONTADOR TESTE C', usuário contador_c, papel contador, situação 'convite_pendente', o código do convite, o endereço '/convite/<código>' e a data de validade (48 horas depois, ajuste LASTRO_CONVITE_HORAS); o código tem pelo menos 43 caracteres e vem de gerador criptográfico; no banco: 1 usuario novo com credencial_hash nulo, 1 membro contador ativo em ESC-1 e 1 convite pendente cujo hash_token é o SHA-256 do código; o código não está gravado em nenhuma coluna nem nos logs; a lista tem 3 pessoas, chefe_1 (papel chefe, situação 'ativo'), contador_a e contador_c, este com situação 'convite_pendente', e não traz código nem hash; o chefe aparece na lista para poder se escolher como responsável (P-09)"
       }
     },
@@ -31,7 +31,7 @@
       "id": "c2",
       "descricao": "O contador abre o convite, confirma o usuário, cria a própria senha e passa a entrar; o convite não serve uma segunda vez",
       "exemplo": {
-        "entrada": "estado final de c1; sem sessão, contador_c envia POST /api/v1/convites/aceite com o código, o usuário contador_c e a senha 'senha-teste-123'; depois entra pela rota de login da ACE-01; por fim, envia de novo o mesmo aceite com a senha 'outra-senha-123'",
+        "entrada": "estado final de c1; sem sessão, contador_c envia POST /api/v1/invitations/accept com o código, o usuário contador_c e a senha 'senha-teste-123'; depois entra pela rota de login da ACE-01; por fim, envia de novo o mesmo aceite com a senha 'outra-senha-123'",
         "saida": "1º aceite: status 200, mensagem 'Senha criada. Agora é só entrar.'; o convite fica com usado_em preenchido e credencial_hash deixa de ser nulo, gerado pela mesma função de senha da ACE-01; a entrada é aceita e a identificação devolve contador_c, papel contador, ESC-1; a lista do chefe mostra contador_c com situação 'ativo'; 2º aceite: recusado com a mesma resposta de c3 e a senha continua 'senha-teste-123'; o chefe nunca recebe nem vê a senha; o aceite acha o convite por buscar_convite_por_hash (NUC-03), sem consulta direta a convite pelo hash_token, e o escritório da transação vem do que a função devolveu; nenhuma rota da ACE-02 lê usuario.credencial_hash: a senha é gravada por atualização direta da coluna, sem carregar o usuário inteiro"
       }
     },
@@ -40,7 +40,7 @@
       "descricao": "Convite inexistente, vencido, já usado, cancelado ou com usuário que não bate recebem a mesma recusa; senha curta não gasta o convite",
       "exemplo": {
         "entrada": "ESC-1 com contador_c com convite pendente (código K); sem sessão, aceite com: (a) código que não existe; (b) código de um convite cuja validade terminou 1 segundo antes, pelo relógio do banco (o convite é criado no banco com expira_em no passado; o relógio do app não é ajustado); (c) código de um convite já usado; (d) código de um convite cancelado; (e) código K com o usuário contador_x; (f) código K, usuário contador_c e senha 'curta'",
-        "saida": "(a) a (e): status 404, mensagem 'Este convite não vale mais. Peça um novo ao chefe do escritório.', corpo idêntico nos cinco, sem nome, usuário ou escritório na resposta; nenhuma senha é gravada e nenhum convite muda; (f): status de dado inválido [definir P-13], mensagem 'A senha precisa ter pelo menos 8 caracteres.', e o convite K continua pendente e aceita depois uma senha válida"
+        "saida": "(a) a (e): status 404, mensagem 'Este convite não vale mais. Peça um novo ao chefe do escritório.', corpo idêntico nos cinco, sem nome, usuário ou escritório na resposta; nenhuma senha é gravada e nenhum convite muda; (f): status 422 (P-13), mensagem 'A senha precisa ter pelo menos 8 caracteres.', e o convite K continua pendente e aceita depois uma senha válida"
       }
     },
     {
@@ -48,14 +48,14 @@
       "descricao": "Cadastro com nome ou usuário vazio, ou com usuário que já existe (neste ou em outro escritório), não cria nada",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; ESC-2 com contador_x; chefe_1 tenta cadastrar (a) nome vazio e usuário contador_c; (b) nome 'CONTADOR TESTE C' e usuário vazio; (c) usuário contador_a; (d) usuário contador_x",
-        "saida": "(a) status de dado inválido [definir P-13], mensagem 'Informe o nome do contador.'; (b) o mesmo status, mensagem 'Informe o usuário de entrada do contador.'; (c) e (d) status 409, mensagem 'Este usuário já existe. Escolha outro.', idêntica nos dois, sem dizer de qual escritório; nos 4 casos nenhum usuario, membro ou convite é criado"
+        "saida": "(a) status 422 (P-13), mensagem 'Informe o nome do contador.'; (b) o mesmo status 422, mensagem 'Informe o usuário de entrada do contador.'; (c) e (d) status 409, mensagem 'Este usuário já existe. Escolha outro.', idêntica nos dois, sem dizer de qual escritório; nos 4 casos nenhum usuario, membro ou convite é criado"
       }
     },
     {
       "id": "c5",
       "descricao": "O chefe gera um novo convite ou cancela o convite pendente; o código antigo deixa de valer na hora; contador que já criou a senha não recebe convite",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_c com convite pendente (código K1) e contador_a já ativo; chefe_1 (1) gera um novo convite para contador_c (POST /api/v1/contadores/{id}/convite) e recebe K2; (2) contador_c tenta aceitar com K1; (3) chefe_1 cancela o convite de contador_c (DELETE /api/v1/contadores/{id}/convite); (4) contador_c tenta aceitar com K2; (5) chefe_1 tenta gerar convite para contador_a",
+        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_c com convite pendente (código K1) e contador_a já ativo; chefe_1 (1) gera um novo convite para contador_c (POST /api/v1/accountants/{id}/invitation) e recebe K2; (2) contador_c tenta aceitar com K1; (3) chefe_1 cancela o convite de contador_c (DELETE /api/v1/accountants/{id}/invitation); (4) contador_c tenta aceitar com K2; (5) chefe_1 tenta gerar convite para contador_a",
         "saida": "(1) status 201 com o novo código e a nova validade; K1 fica com revogado_em preenchido; (2) recusado como em c3; (3) status 204; a lista mostra contador_c com situação 'sem_convite'; (4) recusado como em c3; contador_c continua sem senha e não consegue entrar; (5) status 409, mensagem 'Este contador já criou a senha.'; a qualquer momento existe no máximo 1 convite pendente por contador; convite vencido aparece na lista com situação 'convite_vencido', decidido pelo relógio do banco, o mesmo de buscar_convite_por_hash, para a lista nunca discordar do aceite"
       }
     },
@@ -63,7 +63,7 @@
       "id": "c6",
       "descricao": "O chefe atribui um cliente sem responsável a um membro ativo do escritório, inclusive a si mesmo, e o cliente passa a ter esse membro como único responsável ativo",
       "exemplo": {
-        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_a e contador_c; EMP-1 cadastrada em ESC-1, sem responsável; chefe_1 atribui EMP-1 a contador_c (POST /api/v1/clientes/{id}/atribuicao com o id do membro) e consulta o responsável (GET /api/v1/clientes/{id}/atribuicao); depois atribui EMP-2, também cadastrada em ESC-1 e sem responsável, a si mesmo (o id do próprio membro) e consulta o responsável de EMP-2",
+        "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_a e contador_c; EMP-1 cadastrada em ESC-1, sem responsável; chefe_1 atribui EMP-1 a contador_c (POST /api/v1/clients/{id}/assignment com o id do membro) e consulta o responsável (GET /api/v1/clients/{id}/assignment); depois atribui EMP-2, também cadastrada em ESC-1 e sem responsável, a si mesmo (o id do próprio membro) e consulta o responsável de EMP-2",
         "saida": "atribuição aceita com status 201; a consulta mostra 1 responsável ativo: contador_c; o banco tem 1 linha de atribuicao de EMP-1 com fim nulo e atribuido_por igual ao membro de chefe_1; contador com convite ainda pendente também pode receber cliente; EMP-2: atribuição aceita com status 201 e 1 responsável ativo: chefe_1, com atribuido_por igual ao próprio membro de chefe_1"
       }
     },

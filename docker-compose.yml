@@ -20,6 +20,8 @@ services:
       MIGRATIONS_DATABASE_URL: ${MIGRATIONS_DATABASE_URL}
       # IA-01: name protection before any LLM call; an unknown value stops the API.
       NAME_PROTECTION_LEVEL: ${NAME_PROTECTION_LEVEL:-estrito}
+      # ACE-02: validade do convite de contador, em horas.
+      LASTRO_CONVITE_HORAS: ${LASTRO_CONVITE_HORAS:-48}
     ports:
       - "8000:8000"
     depends_on:

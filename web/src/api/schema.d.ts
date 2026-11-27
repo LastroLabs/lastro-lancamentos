@@ -4,6 +4,55 @@
  */
 
 export interface paths {
+    "/api/v1/accountants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Accountants
+         * @description People of the firm, the manager included, with their password situation (ACE-02, c1).
+         */
+        get: operations["list_accountants_api_v1_accountants_get"];
+        put?: never;
+        /**
+         * Register Accountant
+         * @description Register an accountant without a password; the invitation code comes back once
+         *     (ACE-02, c1, c4, c8).
+         */
+        post: operations["register_accountant_api_v1_accountants_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accountants/{member_id}/invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue Invitation
+         * @description Issue a new invitation; the previous code stops working (ACE-02, c5, c8, c9).
+         */
+        post: operations["issue_invitation_api_v1_accountants__member_id__invitation_post"];
+        /**
+         * Cancel Invitation
+         * @description Cancel the pending invitation; 204 even when there is none (ACE-02, c5, c8).
+         */
+        delete: operations["cancel_invitation_api_v1_accountants__member_id__invitation_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients": {
         parameters: {
             query?: never;
@@ -48,6 +97,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{client_id}/assignment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Assignment
+         * @description Say who is responsible for a client, or null (ACE-02, c6, c7).
+         */
+        get: operations["get_assignment_api_v1_clients__client_id__assignment_get"];
+        put?: never;
+        /**
+         * Assign Client
+         * @description Assign a client without a responsible to an active member (ACE-02, c6, c7, c8, c9).
+         */
+        post: operations["assign_client_api_v1_clients__client_id__assignment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -62,6 +135,26 @@ export interface paths {
         get: operations["health_api_v1_health_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Invitation
+         * @description Create the accountant's password from the invitation, without a session (ACE-02, c2, c3, c11).
+         */
+        post: operations["accept_invitation_api_v1_invitations_accept_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -100,6 +193,43 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AcceptInvitationRequest
+         * @description What the accountant sends from the invitation link.
+         */
+        AcceptInvitationRequest: {
+            /** Invitation Code */
+            invitation_code: string;
+            /** Password */
+            password: string;
+            /** Username */
+            username: string;
+        };
+        /**
+         * AccountantRequest
+         * @description Name and login typed by the manager; emptiness is checked by the access module.
+         */
+        AccountantRequest: {
+            /** Name */
+            name: string;
+            /** Username */
+            username: string;
+        };
+        /**
+         * AssignmentRequest
+         * @description Member who becomes the responsible; the id is checked against the firm of the session.
+         */
+        AssignmentRequest: {
+            /** Member Id */
+            member_id: string;
+        };
+        /**
+         * AssignmentResponse
+         * @description Who is responsible for a client; `responsible` is null when no one is.
+         */
+        AssignmentResponse: {
+            responsible: components["schemas"]["ResponsibleResponse"] | null;
+        };
         /**
          * ClientRequest
          * @description Name and CNPJ typed by the manager. Emptiness and format are checked by the registry,
@@ -145,6 +275,67 @@ export interface components {
             database: "connected";
         };
         /**
+         * InvitationResponse
+         * @description Person with the invitation just issued: the only time the code is shown.
+         */
+        InvitationResponse: {
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /** Invitation Code */
+            invitation_code: string;
+            /** Invitation Path */
+            invitation_path: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "manager" | "accountant";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ativo" | "convite_pendente" | "convite_vencido" | "sem_convite";
+            /** Username */
+            username: string;
+        };
+        /**
+         * MessageResponse
+         * @description A short confirmation in plain Portuguese.
+         */
+        MessageResponse: {
+            /** Message */
+            message: string;
+        };
+        /**
+         * PersonResponse
+         * @description Person of the firm in the manager's list. Never carries a code, hash or password.
+         */
+        PersonResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "manager" | "accountant";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ativo" | "convite_pendente" | "convite_vencido" | "sem_convite";
+            /** Username */
+            username: string;
+        };
+        /**
          * Problem
          * @description Error body in RFC 9457 (application/problem+json).
          */
@@ -157,6 +348,18 @@ export interface components {
             title: string;
             /** Type */
             type: string;
+        };
+        /**
+         * ResponsibleResponse
+         * @description Active responsible of a client: id of the member, name and login.
+         */
+        ResponsibleResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Username */
+            username: string;
         };
         /**
          * SessionIdentity
@@ -209,6 +412,227 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_accountants_api_v1_accountants_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonResponse"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    register_accountant_api_v1_accountants_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountantRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    issue_invitation_api_v1_accountants__member_id__invitation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_invitation_api_v1_accountants__member_id__invitation_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_clients_api_v1_clients_get: {
         parameters: {
             query?: never;
@@ -356,6 +780,126 @@ export interface operations {
             };
         };
     };
+    get_assignment_api_v1_clients__client_id__assignment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_client_api_v1_clients__client_id__assignment_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -376,6 +920,48 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    accept_invitation_api_v1_invitations_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInvitationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -684,7 +684,7 @@ def test_contador_sem_papel_de_chefe_recusado(world):
             _register(client, "CONTADOR TESTE D", "contador_d"),
             _new_invitation(client, contador_c),
             _cancel_invitation(client, contador_c),
-            client.post(CLIENTS_PATH, json={"name": "EMP-5", "cnpj": "00000000000191"}),
+            client.post(CLIENTS_PATH, json={"name": "EMP-5", "cnpj": "00000000000100"}),
             _assign(client, emp_1, contador_a.member_id),
         )
 

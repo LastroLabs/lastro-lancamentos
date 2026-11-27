@@ -6,7 +6,7 @@
 
 ---
 
-## [ ] T1 · Escrever os testes dos critérios
+## [x] T1 · Escrever os testes dos critérios
 - **Critérios da ficha:** c1 a c11
 - **Regra de negócio (em linguagem simples):** o chefe cadastra um contador sem senha e recebe, uma vez, um link de convite; o contador usa o link para criar a própria senha; o chefe pode trocar ou cancelar o convite e entregar clientes sem responsável a um membro ativo (ou a si mesmo). Tudo isolado por escritório.
 - **Critérios de aceite:**
@@ -20,7 +20,7 @@
 - **Fora do escopo:** código de produção; editar testes de outras fichas
 - **Pronto quando:** `docker compose run --rm dev pytest tests/access/test_cadastro_contador.py -q` mostra só falhas esperadas
 
-## [ ] T2 · Base: migração `0007`, configuração e modelo
+## [x] T2 · Base: migração `0007`, configuração e modelo
 - **Critérios da ficha:** c10 (e a validade de c1)
 - **Regra de negócio (em linguagem simples):** o app precisa saber "esta pessoa já criou a senha? sim ou não" sem nunca ler o hash. Uma função do banco responde só isso, e só para pessoas do escritório da transação. A validade do convite vem de uma variável de ambiente.
 - **Critérios de aceite:**
@@ -35,7 +35,7 @@
 - **Decisões relacionadas:** D3, D5; DECISIONS ACE-02/F1
 - **Pronto quando:** `pytest tests/access/test_cadastro_contador.py::test_senha_criada_por_funcao_restrita -q` passa
 
-## [ ] T3 · Contratos e repositório de contador e convite
+## [x] T3 · Contratos e repositório de contador e convite
 - **Critérios da ficha:** c1, c4, c5
 - **Regra de negócio (em linguagem simples):** guardar e ler contadores e convites sempre dentro do escritório da sessão. O código do convite nunca é gravado, só o hash. Um contador tem no máximo um convite pendente: gerar outro cancela o anterior, mesmo vencido.
 - **Critérios de aceite:**
@@ -50,7 +50,7 @@
 - **Decisões relacionadas:** D1, D2, D6
 - **Pronto quando:** `ruff check src/lastro/access` limpo e a T4 usa o repositório sem acesso direto a tabela
 
-## [ ] T4 · Serviço e rotas do chefe: cadastrar, listar, gerar e cancelar convite
+## [x] T4 · Serviço e rotas do chefe: cadastrar, listar, gerar e cancelar convite
 - **Critérios da ficha:** c1, c4, c5, c8 (a–c), c9 (e)
 - **Regra de negócio (em linguagem simples):** só o chefe faz isso. Nome ou usuário vazio é 422 e não cria nada. Usuário já usado é 409, sem dizer de qual escritório. O link de convite vale 48 h e aparece uma única vez. Contador que já criou a senha não recebe novo convite.
 - **Critérios de aceite:**
@@ -67,7 +67,7 @@
 - **Decisões relacionadas:** D1, D2, D6; perguntas 1, 2, 4
 - **Pronto quando:** `pytest tests/access/test_cadastro_contador.py -k "cadastra_contador or invalido_ou_duplicado or gera_novo or sem_papel or outro_escritorio" -q` passa nos testes de convite
 
-## [ ] T5 · Aceite do convite (sem login)
+## [x] T5 · Aceite do convite (sem login)
 - **Critérios da ficha:** c2, c3, c11
 - **Regra de negócio (em linguagem simples):** quem tem o código confirma o usuário e cria a senha, uma única vez. Convite que não existe, venceu, já foi usado, foi cancelado ou com usuário errado recebe sempre a mesma recusa, sem dizer nada do escritório. Senha curta é recusada **sem gastar** o convite. Dois aceites ao mesmo tempo: só um vale.
 - **Critérios de aceite:**
@@ -83,7 +83,7 @@
 - **Decisões relacionadas:** D4; DECISIONS ACE-02/F2 a F4
 - **Pronto quando:** `pytest tests/access/test_cadastro_contador.py -k "aceita_convite or convite_invalido or senha_curta or aceites_simultaneos" -q` passa
 
-## [ ] T6 · Atribuição de cliente pelo chefe
+## [x] T6 · Atribuição de cliente pelo chefe
 - **Critérios da ficha:** c6, c7, c8 (e), c9 (a–d)
 - **Regra de negócio (em linguagem simples):** o chefe entrega um cliente sem responsável a um membro ativo do escritório, inclusive a si mesmo. Cliente que já tem responsável não é atribuído de novo aqui (a troca é da ACE-04). Cliente ou responsável de outro escritório recebe a mesma recusa de "não existe".
 - **Critérios de aceite:**
@@ -99,7 +99,7 @@
 - **Decisões relacionadas:** D6; perguntas 2, 3, 5
 - **Pronto quando:** `pytest tests/access/test_cadastro_contador.py -k "atribui or atribuido or atribuir" -q` passa
 
-## [ ] T7 · Documentação e OpenAPI
+## [x] T7 · Documentação e OpenAPI
 - **Critérios da ficha:** apoio a todos
 - **Regra de negócio (em linguagem simples):** quem vem depois precisa achar as rotas, os erros e o contrato novo sem ler o código.
 - **Critérios de aceite:**
