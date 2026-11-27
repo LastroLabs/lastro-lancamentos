@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "regressed",
+  "estado": "passing",
   "responsavel": "marrathomaz",
   "depende_de": [],
   "bloqueada_por": null,
@@ -138,32 +138,57 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-26T02:25:46Z",
-    "commit": "01b028f02672",
+    "verificado_em": "2026-11-27T05:31:22Z",
+    "commit": "f84cc61bc323",
     "resultados": [
       {
         "criterio": "c1",
-        "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas -q",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_txt_valido_vira_lista_de_contas_com_hierarquia -q",
         "resultado": "ok"
       },
       {
         "criterio": "c2",
-        "comando": "pytest tests/registry/test_planilha_plano.py::test_linha_incompleta_rejeitada_com_numero -q",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_nome_de_40_caracteres_colado_no_tipo -q",
         "resultado": "ok"
       },
       {
         "criterio": "c3",
-        "comando": "pytest tests/registry/test_planilha_plano.py::test_codigo_repetido_rejeitado_com_as_duas_linhas -q",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_analitica_e_tolerado_com_numero_da_linha -q",
         "resultado": "ok"
       },
       {
         "criterio": "c4",
-        "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_sem_contas_recusada -q",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_grupo_recusa_o_arquivo_inteiro -q",
         "resultado": "ok"
       },
       {
-        "criterio": "c4",
-        "comando": "pytest tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q",
+        "criterio": "c5",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_hierarquia_invalida_recusa_o_arquivo_inteiro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_repeticao_recusa_em_qualquer_ordem -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_sintetica_sem_filha_vira_aviso -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_mesmo_plano_em_utf8_windows_1252_e_crlf -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c9",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_que_nao_e_o_plano_recusado_sem_excecao -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c10",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_sem_conta_analitica_recusado -q",
         "resultado": "ok"
       }
     ]
