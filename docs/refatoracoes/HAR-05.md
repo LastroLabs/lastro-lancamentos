@@ -1,6 +1,6 @@
 # HAR-05 · plano de contas sintético em TXT (refatora a HAR-03)
 
-**Dono:** camposs04 · **Depende de:** HAR-03 · **Decisão:** `DECISIONS.md` §11 (T8, T12) · **Revisão extra:** dono do harness (`tools/` tem CODEOWNERS).
+**Dona:** RaissaOliveira19 · **Depende de:** HAR-03 · **Decisão:** `DECISIONS.md` §11 (T8, T12) · **Revisão extra:** dono do harness (`tools/` tem CODEOWNERS).
 
 A fixture troca `planos/<cliente>.xlsx` por `planos/<cliente>.txt` e o plano ganha grupos. É a única ficha desta mudança que mexe em testes de outra ficha `passing` (a HAR-03), e só nos da lista T12.
 
