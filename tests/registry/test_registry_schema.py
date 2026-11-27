@@ -118,6 +118,13 @@ def _run_alembic(database, *arguments):
     assert result.returncode == 0, _INFRA.process_output(result)
 
 
+@pytest.fixture
+def database_at_db02(fresh_database):
+    """c1 stays at the DB-02 revision: later migrations add columns to its tables (T12, DB-04)."""
+    _run_alembic(fresh_database, "upgrade", "0003")
+    return fresh_database
+
+
 def _insert(conn, table, **values):
     query = sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING id").format(
         sql.Identifier(table),
@@ -216,9 +223,9 @@ def _normalize(value):
     return re.sub(r"[\s()\"]", "", str(value).lower())
 
 
-def test_migracao_db02_cria_tabelas_de_cadastro_com_colunas_e_chaves(migrated_database):
+def test_migracao_db02_cria_tabelas_de_cadastro_com_colunas_e_chaves(database_at_db02):
     """c1: inspect all four tables and their client and plan references."""
-    engine = sa.create_engine(migrated_database.migrations_database_url)
+    engine = sa.create_engine(database_at_db02.migrations_database_url)
     try:
         inspector = sa.inspect(engine)
         assert set(TABLES) <= set(inspector.get_table_names())
