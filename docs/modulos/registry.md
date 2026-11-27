@@ -1,4 +1,4 @@
-# Módulo `registry`: CNPJ (CAD-01), cliente (CAD-03), esquema (DB-02, DB-04), plano de contas em TXT (CAD-02) e carga do plano (CAD-05)
+# Módulo `registry`: CNPJ (CAD-01), cliente (CAD-03), contas bancárias (CAD-04), esquema (DB-02, DB-04), plano de contas em TXT (CAD-02) e carga do plano (CAD-05)
 
 `src/lastro/registry/` reúne o domínio de cadastro do cliente (cliente, contas bancárias, sócios, plano de contas e configuração). A **CAD-01** entrega a validação e normalização pura de CNPJ numérico e alfanumérico (padrão julho/2026, IN RFB nº 2.229/2024), sem acesso a banco nem HTTP. Decisões em `planos/CAD-01/plan.md`.
 
@@ -76,6 +76,49 @@ Decisões em `planos/CAD-03/plan.md`. O isolamento tem duas camadas: toda consul
 | `GET /clients/{client_id}` | 200, `{"id", "name", "cnpj"}` | 401; 403 "Atribua este cliente a você para fazer isso."; 404 "Você não tem acesso a este cliente." (corpo idêntico para inexistente e outro escritório) |
 
 O campo do responsável na lista fica para a ACE-03 (c6).
+
+## Contas bancárias do cliente (CAD-04, versão 0)
+
+Decisões em `planos/CAD-04/plan.md`. Não há migração: a tabela `conta_bancaria` vem da DB-02 (`0003`) e a RLS da NUC-03. Nada é apagado: não existe rota `DELETE` nem função de exclusão.
+
+### Serviço (`lastro.registry.service`)
+
+Todas recebem `find_responsibles` (`access.service.responsible_member_ids`, passada pela `api/`). O acesso reaproveita `get_client` (P-09): ordem 401 → 404 → 403, e a recusa de acesso vem antes de qualquer validação.
+
+| Função | O que faz | Erros |
+|---|---|---|
+| `add_bank_account(db, membership, client_id, find_responsibles, bank, nickname, first_month=None, last_month=None) -> BankAccountSummary` | Acesso, depois dados, depois apelido repetido; trava `SELECT … FOR UPDATE` na linha do cliente; commit só no sucesso | `ClientNotFoundError`, `ClientNotAssignedError`, `InvalidBankAccountDataError(message)`, `DuplicateNicknameError` |
+| `list_bank_accounts(db, membership, client_id, find_responsibles) -> list[BankAccountSummary]` | Contas do cliente na ordem de criação (ids UUIDv7) | `ClientNotFoundError`, `ClientNotAssignedError` |
+| `update_bank_account(db, membership, client_id, account_id, find_responsibles, changes) -> BankAccountSummary` | `changes` traz só os campos enviados (P4): omitido não muda; `first_month`/`last_month` `None` limpam; `nickname` `None` ou vazio é recusado; `bank` igual ao gravado é aceito, outro é recusado | os mesmos; conta de outro cliente ou id malformado vira `ClientNotFoundError` |
+
+`BankAccountSummary` (`lastro.registry.contracts`): `account_id`, `bank`, `bank_name` (do `bancos.csv`), `nickname`, `currency` (`BRL`), `first_month` e `last_month` (`AAAA-MM` ou `None`). Sem id do escritório.
+
+### Ordem das checagens de dado (P5)
+
+Banco vazio → apelido vazio → formato do banco (3 dígitos ASCII, `' 341 '` vira `'341'`) → banco na lista → apelido com mais de 255 caracteres → meses (`AAAA-MM`, gravado no dia 1; último antes do primeiro) → apelido repetido. Todo 422 vem antes do 409.
+
+### Mensagens
+
+'Informe o banco da conta.' · 'Dê um apelido para a conta.' · 'O código do banco tem 3 números. Confira e tente de novo.' · 'Não encontramos um banco com este código. Confira o número.' · 'O apelido deve ter no máximo 255 caracteres.' · 'Informe o mês no formato AAAA-MM, por exemplo 2026-10.' · 'O último mês não pode ser antes do primeiro.' · 'O banco de uma conta não pode ser trocado. Cadastre uma nova conta.' · 409 'Já existe uma conta com este apelido neste cliente. Use outro apelido.'
+
+### Rotas (`/api/v1`)
+
+| Rota | Sucesso | Recusas |
+|---|---|---|
+| `POST /clients/{client_id}/bank-accounts` (`bank`, `nickname`, `first_month?`, `last_month?`) | 201, `{"id", "bank", "bank_name", "nickname", "currency", "first_month", "last_month"}` | 401; 403 chefe sem atribuição; 404 sem acesso (corpo idêntico ao de cliente inexistente); 422; 409 |
+| `GET /clients/{client_id}/bank-accounts` | 200, lista | 401, 403, 404 |
+| `PATCH /clients/{client_id}/bank-accounts/{account_id}` | 200, conta | 401, 403, 404, 422, 409 |
+
+### Arquivos
+
+- `registry/banks.py` lê `registry/data/bancos.csv` (colunas `codigo,nome,fonte`; participantes do STR com número-código, dados abertos do BCB, ODbL, acessado em 27/11/2026) uma vez. O nome do banco vem sempre do arquivo.
+- `registry/bank_accounts.py`: validação pura (apelido normalizado por NFKD sem marcas, minúsculas e espaços reduzidos; mês por regex estrita).
+
+### Armadilhas
+
+- A unicidade do apelido não tem apoio do esquema: vale pela trava do cliente e pela comparação em Python. Quem gravar conta por outro caminho precisa repetir a regra.
+- O `id` da conta é gerado na aplicação (`uuid7`), porque a tabela não tem coluna de criação e a lista ordena por ele.
+- O `bancos.csv` deve ser atualizado à mão se o BCB mudar a lista.
 
 ## Esquema do cadastro e do plano de contas (DB-02, DB-04)
 

@@ -67,3 +67,44 @@ class ClientNotAssignedError(Exception):
 
 class DuplicateCnpjError(Exception):
     """The firm already has a client with this CNPJ; nothing was written."""
+
+
+@dataclass(frozen=True, slots=True)
+class BankAccountSummary:
+    """Bank account of a client, as shown in the list and after saving (CAD-04).
+
+    Contract in version 0 (plan CAD-04, D6). The firm id is never part of it.
+
+    Attributes:
+        account_id: id of the account.
+        bank: 3-digit bank code.
+        bank_name: name of the bank, taken from the versioned list.
+        nickname: nickname as typed, without surrounding spaces.
+        currency: currency of the account; `BRL`.
+        first_month: first month of use as `AAAA-MM`, or None.
+        last_month: last month of use as `AAAA-MM`, or None.
+    """
+
+    account_id: str
+    bank: str
+    bank_name: str
+    nickname: str
+    currency: str
+    first_month: str | None
+    last_month: str | None
+
+
+class InvalidBankAccountDataError(Exception):
+    """The bank, the nickname or the months of an account were refused; nothing was written.
+
+    Attributes:
+        message: plain-Portuguese message that says what to fix.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class DuplicateNicknameError(Exception):
+    """The client already has an account with this nickname; nothing was written."""

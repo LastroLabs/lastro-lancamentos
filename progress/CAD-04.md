@@ -13,25 +13,31 @@ Como preencher (agente, ao encerrar a sessão):
 -->
 
 ## Objetivo
-(1 a 2 linhas: o comportamento que esta feature entrega)
+O contador (ou o chefe atribuído a si) cadastra, lista e altera contas bancárias do cliente com banco, apelido e meses de uso opcionais; nada é apagado.
 
 ## Próxima ação
-(a primeira coisa a fazer ao retomar; de preferência um comando ou um arquivo)
+Humano: conferir o resultado do `hx verify`, decidir sobre o erro de ordem de imports em `tests/registry/test_contas_bancarias.py` (I001; `ruff check --fix` nesse arquivo), commitar e rodar `hx feature verify CAD-04`.
 
 ## Bloqueios e perguntas
-- (nenhum)
+- `ruff check .` acusa I001 (ordem dos imports) em `tests/registry/test_contas_bancarias.py`; a regra 3 proíbe editar `tests/`, então fica para o humano.
 
 ## Feito
-- DD/MM · S1 ·
+- 27/11 · S2 · T2 a T7: `bancos.csv` (463 bancos do STR/BCB), `banks.py`, `bank_accounts.py`, contratos v0, repositório, serviço, rotas POST/GET/PATCH, docs (`registry.md`, `ARCHITECTURE.md` §6), OpenAPI e `schema.d.ts` regenerados.
 
 ## Rodei
-- DD/MM · S1 · `comando` → resultado resumido
+- 27/11 · S2 · `docker compose run --rm dev pytest tests/registry/test_contas_bancarias.py -q` → 11 passed
+- 27/11 · S2 · `docker compose run --rm dev pytest -q` → 533 passed, 1 failed (teste do OpenAPI, ver Falhou)
+- 27/11 · S2 · `docker compose run --rm dev pytest tests/web/test_web_foundation.py -q` com os arquivos gerados no stage → 5 passed
+- 27/11 · S2 · `python tools/harness.py check-clean` → 0 achados, OK
 
 ## Falhou
-- DD/MM · S1 · o que falhou e a causa, se souber
+- 27/11 · S2 · `test_web01_cliente_da_api_gerado_do_openapi_e_estavel` falhou porque `docs/api/openapi.json` regenerado ainda não estava no git; passou depois de `git add`.
+- 27/11 · S2 · `ruff check .`: I001 em `tests/registry/test_contas_bancarias.py` (não editado, regra 3).
 
 ## Decisões
-- DD/MM · S1 · decisão e o porquê (se for D-xx, registre também em `docs/decisoes/DECISIONS.md`)
+- 27/11 · S2 · id da conta é `uuid7` gerado na aplicação: a tabela não tem coluna de criação e a lista ordena por id.
+- 27/11 · S2 · mês em branco (`""`) é tratado como ausente; o plano não definia.
+- 27/11 · S2 · `schema.d.ts` também é regenerado pelo teste da web, então entra junto com o OpenAPI.
 
 ## Fim de sessão
 - [ ] `hx verify` verde, ou a falha está descrita em "Falhou"
