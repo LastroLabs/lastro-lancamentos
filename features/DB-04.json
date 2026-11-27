@@ -9,7 +9,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "caio-nascime",
   "depende_de": [
     "DB-02",
@@ -70,5 +70,30 @@
       "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_migracao_reversivel -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-27T20:53:58Z",
+    "commit": "879e1a28b5a2",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_migracao_db04_acrescenta_reduzido_e_tipo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_reduzido_unico_por_plano -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_tipo_so_aceita_s_ou_a -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_conta_contabil_db04.py::test_db04_migracao_reversivel -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

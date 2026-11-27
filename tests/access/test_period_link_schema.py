@@ -32,6 +32,8 @@ OCTOBER = date(2026, 10, 1)
 HASH_A = "a" * 64
 HASH_B = "b" * 64
 
+# c4 stays at the DB-03 revision: later migrations add columns to DB-02 tables (T12, DB-04).
+DB03_REVISION = "0004"
 DB03_TABLES = ("competencia", "link_cliente")
 DB01_TABLES = (
     "escritorio",
@@ -600,7 +602,7 @@ def test_db03_migracao_reversivel(fresh_database):
     with connect(fresh_database.conninfo(APP_ROLE)) as conn:
         state = _seed(conn)
         _seed_registry(conn, state)
-    _run_alembic(fresh_database, "upgrade", "head")
+    _run_alembic(fresh_database, "upgrade", DB03_REVISION)
     with connect(fresh_database.conninfo(APP_ROLE)) as conn:
         _act_as(conn, state["firm"])
         _require_schema(conn)
@@ -634,7 +636,7 @@ def test_db03_migracao_reversivel(fresh_database):
             ), table
         assert _snapshot(conn) == before
 
-    _run_alembic(fresh_database, "upgrade", "head")
+    _run_alembic(fresh_database, "upgrade", DB03_REVISION)
     with connect(fresh_database.conninfo(OWNER_ROLE)) as conn:
         _require_schema(conn)
         assert _schema(conn) == schema

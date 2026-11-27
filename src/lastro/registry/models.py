@@ -186,6 +186,14 @@ class LedgerAccount(Base):
             "id",
             name="uq_conta_contabil_plano_id",
         ),
+        UniqueConstraint(
+            "escritorio_id",
+            "cliente_id",
+            "plano_id",
+            "codigo_reduzido",
+            name="uq_conta_contabil_plano_reduzido",
+        ),
+        CheckConstraint("tipo IN ('S', 'A')", name="tipo"),
     )
 
     escritorio_id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -198,6 +206,8 @@ class LedgerAccount(Base):
     nome: Mapped[str] = mapped_column(Text)
     pai_id: Mapped[UUID | None]
     ativo: Mapped[bool] = mapped_column(server_default=text("true"))
+    codigo_reduzido: Mapped[str | None] = mapped_column(Text)
+    tipo: Mapped[str] = mapped_column(Text, server_default=text("'A'"))
 
 
 class BankAccount(Base):

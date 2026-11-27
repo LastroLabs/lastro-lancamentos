@@ -98,6 +98,8 @@ O downgrade da `0003` remove as quatro colunas de configuração e as quatro tab
 
 `codigo` **não muda de nome**: guarda a classificação em dígitos, sem pontos (`1101`, `9999`). Renomear quebraria os testes da DB-02 e da DB-03.
 
+O downgrade da `0008` apaga `codigo_reduzido` e `tipo` com os valores gravados; as contas continuam, e no upgrade seguinte voltam como `A`, sem reduzido.
+
 **Testes de esquema fixados na revisão da própria ficha.** Teste que compara a lista exata de colunas, ou o conteúdo inteiro das tabelas, sobe só até a revisão da sua ficha (DB-02 c1 na `0003`, DB-03 c4 na `0004`). Assim, uma migração posterior que acrescenta colunas não quebra a ficha antiga. Ficha nova que muda tabela de outra ficha prova as colunas de `head` nos próprios testes.
 
 ## Leitura do plano de contas em TXT (CAD-02, contrato v1)
