@@ -321,3 +321,30 @@ def test_espaco_em_branco_depois_da_posicao_78_ignorado():
         f"Linha 6: a linha tem texto depois da posição 78. {FIX_ONE}",
         "(c) tab e letra",
     )
+
+
+def test_texto_nas_posicoes_69_a_78_recusa_o_arquivo():
+    """c12: text in [68:78] (positions 69 to 78) refuses the file; whitespace or a short line is accepted."""
+    expected = _summary(_read(_file(*VALID)))
+    line = VALID[5]
+
+    def _with(index: int, char: str) -> str:
+        return line[:index] + char + line[index + 1 :]
+
+    for case, changed in {"(a) X na posição 69": _with(68, "X"), "(b) X na posição 78": _with(77, "X")}.items():
+        _assert_refused(
+            _read(_file(*VALID[:5], changed)),
+            f"Linha 6: a linha tem texto depois do tipo da conta (posições 69 a 78). {FIX_ONE}",
+            case,
+        )
+
+    for case, changed in {
+        "(c) tab na posição 70": _with(69, "\t"),
+        "(d) 70 caracteres": line[:70],
+        "(e) 68 caracteres": line[:68],
+    }.items():
+        result = _read(_file(*VALID[:5], changed))
+        assert result.refusal is None, (case, result.refusal)
+        assert _summary(result) == expected, case
+        assert result.errors == (), case
+        assert result.warnings == (), case
