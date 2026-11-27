@@ -163,7 +163,8 @@ def _own_cause(line: _Line) -> str | None:
     """E1, E8, E3a, E3b, E5a and E5b, in this order; the value is quoted as read."""
     if len(line.text) < _MIN_LINE_LENGTH:
         return "a linha está incompleta."
-    if line.text[_LINE_LENGTH:].strip(" "):
+    # Any whitespace (space, tab) is ignored, as in the fields; only real text counts.
+    if line.text[_LINE_LENGTH:].strip():
         return "a linha tem texto depois da posição 78."
     classification = line.classification
     if not classification:
