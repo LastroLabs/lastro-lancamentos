@@ -23,7 +23,7 @@ Cada item vale **0, 1 ou 2**. Total máximo: 12.
 | **Escopo** | Mexeu em outro módulo, fez o que a ficha não pede, ou mudou contrato sem issue `contrato:`. | Pequena sobra de escopo, explicada no PR. | Só o que a ficha pede, na pasta do módulo. |
 | **Clareza** | Código ou mensagens de erro difíceis de entender; o revisor precisou adivinhar. | Legível, com pontos confusos. | Fácil de ler; erros no formato ERRO / MOTIVO / CORREÇÃO. |
 | **Segurança** | Dado real, segredo, ou LLM fora de `src/lastro/ai/`. | Dúvida sobre algum ponto (por exemplo, um nome que parece real), ainda sem resposta. | Nada sensível; o checklist de segurança do PR confere com o diff. |
-| **Documentação** | `progress/` desatualizado ou ausente. | `progress/` em dia; falta registrar em `docs/modules/` ou em `DECISIONS.md`. | `progress/`, página do módulo e decisões em dia. |
+| **Documentação** | `progress/` desatualizado ou ausente. | `progress/` em dia; falta registrar em `docs/modulos/` ou em `DECISIONS.md`. | `progress/`, página do módulo e decisões em dia. |
 
 ## A decisão
 
@@ -48,7 +48,7 @@ Rubrica <ID>
 - Escopo: 2
 - Clareza: 2
 - Segurança: 2
-- Documentação: 1 (falta a armadilha em docs/modules/)
+- Documentação: 1 (falta a armadilha em docs/modulos/)
 Total: 11/12 → ACEITAR
 ```
 

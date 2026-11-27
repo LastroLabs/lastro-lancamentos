@@ -40,17 +40,17 @@ O `hx check-clean` lê os nomes proibidos da variável de ambiente `LASTRO_NOMES
 
 ## Fixtures sintéticas
 
-O gerador é `tools/fixtures_sinteticas.py`. `gerar_arquivos(semente)` é uma função pura, que devolve um mapa de caminho relativo a `fixtures/` para bytes; a mesma semente gera os mesmos bytes (`tools/fixtures_sinteticas.py:3`, `:437`). A **semente padrão é 1** (`tools/fixtures_sinteticas.py:28`). `--semente` aceita inteiro ≥ 0 (`tools/harness.py:1372-1380`). Antes de gravar, o `hx fixtures build` aborta se alguma linha gerada tiver achado do `check-clean` (`tools/harness.py:1390-1391`, `:1461`).
+O gerador é `tools/fixtures_sinteticas.py`. `gerar_arquivos(semente)` é uma função pura, que devolve um mapa de caminho relativo a `fixtures/` para bytes; a mesma semente gera os mesmos bytes (`tools/fixtures_sinteticas.py:3`, `:437`). A **semente padrão é 1** (`tools/fixtures_sinteticas.py:28`). `--semente` aceita inteiro ≥ 0 (`tools/harness.py:1372-1380`). Antes de gravar, o `hx fixtures build` aborta se alguma linha gerada tiver achado do `check-clean` (`_exigir_sem_documentos` em `tools/harness.py`, trava D7). O reduzido seguido da classificação forma uma sequência de 8 a 27 dígitos; quando ela vira CPF ou CNPJ válido, o gerador passa ao reduzido seguinte, com limite de tentativas (`_TENTATIVAS_DO_REDUZIDO`) para que a trava aborte, em vez de travar o build, se tudo for acusado.
 
 Caminhos, todos relativos a `fixtures/` (`tools/harness.py:732`):
 
 - `cadastro.json` (`tools/fixtures_sinteticas.py:440`);
-- `planos/<cliente>.xlsx` (`tools/fixtures_sinteticas.py:237`);
+- `planos/<cliente>.txt`: o plano de contas no formato TXT de 78 colunas, em UTF-8 com CRLF (HAR-05; formato em `docs/modulos/registry.md`, "Leitura do plano de contas em TXT");
 - `ofx/<cliente>-<nn>.ofx` e `gabaritos/<cliente>-<nn>.json`, um par por conta bancária (`tools/fixtures_sinteticas.py:218-219`).
 
 Formato do c6, o que a CAD-05 e a IA-02 leem:
 
-- **`cadastro.json`:** `semente` e `escritorios`. Cada escritório tem `id`, `usuarios` e `clientes`. Cada cliente tem `id`, `nome`, `responsavel`, `socios`, `plano`, `plano_planilha` e `contas_bancarias` (`banco`, `apelido`, `ofx` e `gabarito`). Não traz CNPJ nem movimentações (`tools/fixtures_sinteticas.py:260-283`). No `plano`, cada conta tem `codigo`, `nome` e `transitoria`; a transitória é a `9.9.99` (`tools/fixtures_sinteticas.py:37`, `:232-235`).
+- **`cadastro.json`:** `semente` e `escritorios`. Cada escritório tem `id`, `usuarios` e `clientes`. Cada cliente tem `id`, `nome`, `responsavel`, `socios`, `plano`, `plano_txt` e `contas_bancarias` (`banco`, `apelido`, `ofx` e `gabarito`). Não traz CNPJ nem movimentações (`tools/fixtures_sinteticas.py:260-283`). No `plano`, cada conta tem `codigo` (com pontos, ex.: `1.1.01`), `classificacao` (o código sem pontos, ex.: `1101`), `reduzido` (7 dígitos, único no cliente), `nome`, `tipo` (`S` grupo, `A` analítica) e `transitoria`. O plano tem 10 grupos e 13 analíticas, com os grupos antes das contas abaixo deles; a transitória é a analítica `9.9.99` (`9999`), abaixo de `9` e `9.9` (`PLANO_BASE` em `tools/fixtures_sinteticas.py`). Só analíticas aparecem como `conta_correta` no gabarito.
 - **Gabarito:** `cliente`, `banco`, `apelido`, `saldo_inicial_centavos`, `saldo_final_centavos` e `movimentacoes` (`tools/fixtures_sinteticas.py:420-429`). Cada movimentação tem `data`, `valor_centavos`, `descricao`, `id_transacao` e `conta_correta` (`tools/fixtures_sinteticas.py:190-196`).
 
 `cnpjs_dos_clientes(semente)` devolve o CNPJ válido de cada cliente (id → CNPJ sem máscara), e o primeiro é alfanumérico. Esses CNPJs só existem em tempo de execução e nunca são gravados em arquivo (`tools/fixtures_sinteticas.py:11-12`, `:150-170`).
