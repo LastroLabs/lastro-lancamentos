@@ -1,17 +1,13 @@
 # Plan — CAD-02 · Ler o plano de contas em TXT e apontar linha inválida
 
-**Status:** rascunho (aguardando respostas). A ficha está `passing` (leitor `.xlsx`) e não passou por `hx feature start`; ver pergunta 1.
+**Status:** aprovado (caio-nascime, 27/11/2026). A ficha segue sem `hx feature start` (seção 5, pergunta 1).
 **Branch:** `feat/CAD-02-ler-a-planilha-do-plano-de-contas-e-apon` · **Data:** 27/11/2026 · **Responsável:** marrathomaz
 **Tasks:** `planos/CAD-02/tasks.md`
 
 ## 1. A decidir (humano)
-| # | Pergunta | Gravidade | Sugestão de padrão | Decide |
-|---|---|---|---|---|
-| 1 | A ficha está `passing` pelo leitor `.xlsx` e não vai passar por `hx feature start`, porque a branch já existe e o `start` recusa uma segunda `feat/CAD-02-*`. Seguir o roteiro mesmo assim (o `hx feature verify` grava `regressed` depois do commit de testes e `passing` no fim)? | ATENÇÃO | Sim: é o caminho da T11 e de `docs/refatoracoes/CAD-02.md`. | caio-nascime (líder) |
-| 2 | O arquivo e os nomes de teste da ficha estão em português (`test_plano_txt.py`, `test_txt_valido_vira_...`), e o `CODING_STANDARDS.md` §1 pede inglês. | ATENÇÃO | Manter os nomes da ficha, como na versão `.xlsx` e na CAD-01 (`CODING_STANDARDS.md` §9). O código de `src/` fica em inglês. | marrathomaz |
-| 3 | O `docs/SECURITY.md` §3 ainda diz que o `hx fixtures build` gera "a planilha do plano de contas". | ATENÇÃO | Corrigir para "o plano de contas em TXT" no PR da HAR-05 ou num PR de docs. Não é escopo da CAD-02. | camposs04 |
+Nenhuma pergunta aberta. As 3 perguntas desta seção foram respondidas em 27/11 e estão na seção 5.
 
-Mudanças sugeridas na ficha (o humano aplica em PR): nenhuma obrigatória. Opcional: um exemplo no c9 com `Path` inexistente, caso a resposta à D2 seja recusar em vez de levantar.
+Mudanças sugeridas na ficha (o humano aplica em PR): nenhuma. A D2 foi confirmada (`OSError` para `Path` inexistente), então o c9 não precisa de exemplo novo.
 
 ## 2. Decisões tomadas pelo agente
 ### D1 · Os testes importam o serviço dentro de uma função auxiliar, não no topo do arquivo
@@ -85,6 +81,9 @@ Sem banco nem HTTP: a gravação é da CAD-05.
 - 26/11 · T11 e T12: CAD-02 refeita na própria branch; apagar `test_planilha_plano.py` está autorizado. T12 aprovada por caio-nascime em 27/11.
 - 27/11 · T13: sem issue `contrato:`; a mudança do contrato v0 → v1 fica registrada no `DECISIONS.md` §11 (resposta à antiga pergunta 3, por caio-nascime).
 - 27/11 · D1 a D5 confirmadas por caio-nascime.
+- 27/11 · Pergunta 1: seguir sem `hx feature start`; o `hx feature verify` grava `regressed` depois do commit de testes e `passing` no fim (T11 e roteiro), por caio-nascime.
+- 27/11 · Pergunta 2: arquivo e nomes de teste em português, como estão na ficha (`CODING_STANDARDS.md` §9); o código de `src/` fica em inglês, por caio-nascime.
+- 27/11 · Pergunta 3: o `SECURITY.md` §3 ("planilha") é corrigido no PR da HAR-05, fora da CAD-02, por caio-nascime.
 
 ## 6. Avaliação da ficha
 | # | Achado | Gravidade | Critério |
@@ -103,6 +102,6 @@ Sem banco nem HTTP: a gravação é da CAD-05.
 - `progress/CAD-02.md` ainda descreve o `.xlsx` → reescrever Objetivo e Próxima ação ao encerrar a sessão (T7).
 
 ## 8. Aprovação
-- [ ] Perguntas 1 a 3 respondidas (a antiga 3, sobre a issue de contrato, virou a T13)
+- [x] Perguntas 1 a 3 respondidas (caio-nascime, 27/11)
 - [x] Decisões D1 a D5 confirmadas (caio-nascime, 27/11)
-- [ ] Plan e tasks revisados por ________ em __/__
+- [x] Plan e tasks revisados e aprovados por caio-nascime em 27/11
