@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "caio-nascime",
+  "responsavel": "jvsauma",
   "depende_de": [
     "ACE-01",
     "CAD-03",
@@ -32,14 +32,14 @@
       "descricao": "O contador abre o convite, confirma o usuário, cria a própria senha e passa a entrar; o convite não serve uma segunda vez",
       "exemplo": {
         "entrada": "estado final de c1; sem sessão, contador_c envia POST /api/v1/convites/aceite com o código, o usuário contador_c e a senha 'senha-teste-123'; depois entra pela rota de login da ACE-01; por fim, envia de novo o mesmo aceite com a senha 'outra-senha-123'",
-        "saida": "1º aceite: status 200, mensagem 'Senha criada. Agora é só entrar.'; o convite fica com usado_em preenchido e credencial_hash deixa de ser nulo, gerado pela mesma função de senha da ACE-01; a entrada é aceita e a identificação devolve contador_c, papel contador, ESC-1; a lista do chefe mostra contador_c com situação 'ativo'; 2º aceite: recusado com a mesma resposta de c3 e a senha continua 'senha-teste-123'; o chefe nunca recebe nem vê a senha"
+        "saida": "1º aceite: status 200, mensagem 'Senha criada. Agora é só entrar.'; o convite fica com usado_em preenchido e credencial_hash deixa de ser nulo, gerado pela mesma função de senha da ACE-01; a entrada é aceita e a identificação devolve contador_c, papel contador, ESC-1; a lista do chefe mostra contador_c com situação 'ativo'; 2º aceite: recusado com a mesma resposta de c3 e a senha continua 'senha-teste-123'; o chefe nunca recebe nem vê a senha; o aceite acha o convite por buscar_convite_por_hash (NUC-03), sem consulta direta a convite pelo hash_token, e o escritório da transação vem do que a função devolveu; nenhuma rota da ACE-02 lê usuario.credencial_hash: a senha é gravada por atualização direta da coluna, sem carregar o usuário inteiro"
       }
     },
     {
       "id": "c3",
       "descricao": "Convite inexistente, vencido, já usado, cancelado ou com usuário que não bate recebem a mesma recusa; senha curta não gasta o convite",
       "exemplo": {
-        "entrada": "ESC-1 com contador_c com convite pendente (código K); sem sessão, aceite com: (a) código que não existe; (b) código de um convite vencido 1 segundo antes; (c) código de um convite já usado; (d) código de um convite cancelado; (e) código K com o usuário contador_x; (f) código K, usuário contador_c e senha 'curta'",
+        "entrada": "ESC-1 com contador_c com convite pendente (código K); sem sessão, aceite com: (a) código que não existe; (b) código de um convite cuja validade terminou 1 segundo antes, pelo relógio do banco (o convite é criado no banco com expira_em no passado; o relógio do app não é ajustado); (c) código de um convite já usado; (d) código de um convite cancelado; (e) código K com o usuário contador_x; (f) código K, usuário contador_c e senha 'curta'",
         "saida": "(a) a (e): status 404, mensagem 'Este convite não vale mais. Peça um novo ao chefe do escritório.', corpo idêntico nos cinco, sem nome, usuário ou escritório na resposta; nenhuma senha é gravada e nenhum convite muda; (f): status de dado inválido [definir P-13], mensagem 'A senha precisa ter pelo menos 8 caracteres.', e o convite K continua pendente e aceita depois uma senha válida"
       }
     },
@@ -56,7 +56,7 @@
       "descricao": "O chefe gera um novo convite ou cancela o convite pendente; o código antigo deixa de valer na hora; contador que já criou a senha não recebe convite",
       "exemplo": {
         "entrada": "ESC-1 com chefe_1 (sessão aberta), contador_c com convite pendente (código K1) e contador_a já ativo; chefe_1 (1) gera um novo convite para contador_c (POST /api/v1/contadores/{id}/convite) e recebe K2; (2) contador_c tenta aceitar com K1; (3) chefe_1 cancela o convite de contador_c (DELETE /api/v1/contadores/{id}/convite); (4) contador_c tenta aceitar com K2; (5) chefe_1 tenta gerar convite para contador_a",
-        "saida": "(1) status 201 com o novo código e a nova validade; K1 fica com revogado_em preenchido; (2) recusado como em c3; (3) status 204; a lista mostra contador_c com situação 'sem_convite'; (4) recusado como em c3; contador_c continua sem senha e não consegue entrar; (5) status 409, mensagem 'Este contador já criou a senha.'; a qualquer momento existe no máximo 1 convite pendente por contador; convite vencido aparece na lista com situação 'convite_vencido'"
+        "saida": "(1) status 201 com o novo código e a nova validade; K1 fica com revogado_em preenchido; (2) recusado como em c3; (3) status 204; a lista mostra contador_c com situação 'sem_convite'; (4) recusado como em c3; contador_c continua sem senha e não consegue entrar; (5) status 409, mensagem 'Este contador já criou a senha.'; a qualquer momento existe no máximo 1 convite pendente por contador; convite vencido aparece na lista com situação 'convite_vencido', decidido pelo relógio do banco, o mesmo de buscar_convite_por_hash, para a lista nunca discordar do aceite"
       }
     },
     {
@@ -89,6 +89,22 @@
       "exemplo": {
         "entrada": "ESC-1 com chefe_1, contador_a, contador_c (convite pendente) e EMP-1 sem responsável; ESC-2 com chefe_2 (sessão aberta) e contador_x; chefe_2 tenta (a) atribuir EMP-1 a contador_x; (b) atribuir a contador_x um cliente que não existe; (c) atribuir um cliente de ESC-2 a contador_a; (d) atribuir um cliente de ESC-2 a um contador que não existe; (e) gerar convite para contador_c",
         "saida": "(a) e (b): status 404, mensagem 'Você não tem acesso a este cliente.', corpo idêntico; (c) e (d): status 404, mensagem 'Responsável não encontrado no seu escritório.', corpo idêntico nos dois; (e): status 404, mensagem 'Contador não encontrado no seu escritório.'; nenhum dado de ESC-1 nas respostas; nada muda em ESC-1"
+      }
+    },
+    {
+      "id": "c10",
+      "descricao": "O app sabe se cada pessoa do escritório já criou a senha por uma função do banco que responde só sim ou não, sem ler credencial_hash",
+      "exemplo": {
+        "entrada": "ESC-1 com chefe_1 e contador_a (os dois com senha) e contador_c (convite pendente, sem senha); ESC-2 com contador_x (com senha); como usuário da aplicação: (1) transação em nome de ESC-1 consulta credencial_hash de contador_c direto em usuario; (2) transação em nome de ESC-1 chama usuarios_com_senha com os ids de usuário de chefe_1, contador_a, contador_c, contador_x e um id que não existe; (3) transação sem escritório chama a função com os mesmos ids; (4) tenta alterar ou apagar a função",
+        "saida": "(1) recusado por falta de permissão; (2) 3 linhas: chefe_1 sim, contador_a sim, contador_c não; nenhuma linha de contador_x nem do id inexistente; (3) 0 linhas, sem erro; a função devolve só usuario_id e tem_senha, nunca credencial_hash; é SECURITY DEFINER, com search_path fixo, pertence ao papel dono e o usuário da aplicação só tem EXECUTE; é criada em migração própria da ACE-02 (a seguinte à 0006 da NUC-03); (4) recusado por falta de permissão; a situação da lista (c1, c2, c5) e a recusa de c5 (5) usam essa função, e não consulta à coluna credencial_hash"
+      }
+    },
+    {
+      "id": "c11",
+      "descricao": "Dois aceites do mesmo convite ao mesmo tempo: só um vale",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_c com convite pendente (código K); sem sessão, dois aceites de K com o usuário contador_c são enviados ao mesmo tempo, em conexões diferentes, um com a senha 'senha-teste-123' e outro com 'outra-senha-123'",
+        "saida": "um aceite recebe status 200 e o outro a mesma recusa de c3; o convite K fica com usado_em preenchido uma única vez; a senha gravada é a do aceite que recebeu 200, e contador_c entra com ela e não com a outra"
       }
     }
   ],
@@ -140,6 +156,14 @@
     {
       "criterio": "c6",
       "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_atribui_cliente_a_si_mesmo -q"
+    },
+    {
+      "criterio": "c10",
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_senha_criada_por_funcao_restrita -q"
+    },
+    {
+      "criterio": "c11",
+      "comando": "pytest tests/access/test_cadastro_contador.py::test_dois_aceites_simultaneos_so_um_vale -q"
     }
   ],
   "evidencia": null

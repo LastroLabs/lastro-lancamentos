@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "camposs04",
   "depende_de": [
     "HAR-04"
@@ -44,15 +44,15 @@
       "id": "c4",
       "descricao": "hx fixtures build --check confirma a pasta em dia e falha, sem regravar nada, quando um arquivo diverge ou falta",
       "exemplo": {
-        "entrada": "fixtures/ gerada com a semente padrão; (a) roda --check; (b) altera 1 byte de um OFX e roda --check; (c) restaura, apaga um gabarito e roda --check",
-        "saida": "(a) código 0 e mensagem dizendo que as fixtures estão em dia; (b) e (c) código diferente de 0, com ERRO, MOTIVO e CORREÇÃO citando o arquivo alterado ou ausente e mandando rodar hx fixtures build; em (b) o byte alterado continua lá e em (c) o gabarito continua ausente depois do --check"
+        "entrada": "fixtures/ gerada com a semente padrão; (a) roda --check; (b) altera 1 byte de um OFX e roda --check; (c) restaura, apaga um gabarito e roda --check; (d) restaura, cria em fixtures/ um arquivo a mais, que o gerador não produz, roda --check e depois hx fixtures build",
+        "saida": "(a) código 0 e mensagem dizendo que as fixtures estão em dia; (b), (c) e (d) código diferente de 0, com ERRO, MOTIVO e CORREÇÃO citando o arquivo alterado, ausente ou a mais e mandando rodar hx fixtures build; em (b) o byte alterado continua lá, em (c) o gabarito continua ausente e em (d) o arquivo a mais continua lá depois do --check; em (d), o hx fixtures build seguinte apaga o arquivo a mais e mantém o .gitkeep"
       }
     },
     {
       "id": "c5",
       "descricao": "Nenhum arquivo gerado contém CPF ou CNPJ válido; os CNPJs válidos dos clientes só existem em tempo de execução",
       "exemplo": {
-        "entrada": "fixtures/ gerada com a semente padrão; roda hx check-clean; um teste pede ao gerador, duas vezes, os CNPJs dos clientes da semente padrão",
+        "entrada": "fixtures/ gerada com a semente padrão; roda hx check-clean, que varre fixtures/ mesmo fora do Git; um teste pede ao gerador, duas vezes, os CNPJs dos clientes da semente padrão",
         "saida": "hx check-clean (que detecta CNPJ numérico e alfanumérico, HAR-04) sem nenhum achado em fixtures/; os CNPJs devolvidos têm dígito verificador válido, são distintos entre si, as duas consultas devolvem os mesmos valores e ao menos um é alfanumérico (padrão de julho/2026); nenhum desses CNPJs aparece em arquivo de fixtures/"
       }
     },
@@ -111,6 +111,10 @@
       "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q"
     },
     {
+      "criterio": "c4",
+      "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_a_mais_falha_sem_apagar -q"
+    },
+    {
       "criterio": "c5",
       "comando": "pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean -q"
     },
@@ -123,5 +127,85 @@
       "comando": "pytest tests/harness/test_fixtures.py::test_formato_do_cadastro_e_do_gabarito -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-24T18:47:28Z",
+    "commit": "aa057a6f8ce0",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_ofx_e_gabarito_tem_mesmas_movimentacoes -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_saldo_do_ofx_fecha_em_centavos -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_conta_correta_existe_no_plano_do_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures.py::test_descricoes_trazem_documentos_de_teste -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_fixtures.py::test_mesma_semente_gera_saida_identica -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_fixtures.py::test_outra_semente_gera_saida_diferente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_sem_divergencia_passa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_alterado_falha_sem_regravar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_ausente_falha_sem_regravar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/harness/test_fixtures.py::test_check_com_arquivo_a_mais_falha_sem_apagar -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/harness/test_fixtures.py::test_fixtures_passam_no_check_clean -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/harness/test_fixtures.py::test_cnpj_em_tempo_de_execucao_valido_e_estavel -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/harness/test_fixtures.py::test_formato_do_cadastro_e_do_gabarito -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

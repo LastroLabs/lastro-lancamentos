@@ -26,6 +26,51 @@ class CnpjValidationResult:
 
 
 @dataclass(frozen=True, slots=True)
+class ClientSummary:
+    """Client of the signed-in member's firm, as shown in the list and when opened (CAD-03).
+
+    Contract in version 0 (plan CAD-03, D5). The firm id is never part of it.
+
+    Attributes:
+        client_id: id of the client.
+        name: name of the client, without surrounding spaces.
+        cnpj: 14-character uppercase CNPJ without mask.
+    """
+
+    client_id: str
+    name: str
+    cnpj: str
+
+
+class InvalidClientDataError(Exception):
+    """The name or the CNPJ of the client was refused; nothing was written.
+
+    Attributes:
+        message: plain-Portuguese message that says what to fix.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class ManagerOnlyError(Exception):
+    """Only the manager of the firm may do this (P-02); nothing was written."""
+
+
+class ClientNotFoundError(Exception):
+    """The client does not exist or belongs to another firm; both look the same (P-01)."""
+
+
+class ClientNotAssignedError(Exception):
+    """The manager of the same firm is not the responsible member of the client (P-09)."""
+
+
+class DuplicateCnpjError(Exception):
+    """The firm already has a client with this CNPJ; nothing was written."""
+
+
+@dataclass(frozen=True, slots=True)
 class ChartAccountEntry:
     """A validated ledger account entry parsed from a chart spreadsheet.
 

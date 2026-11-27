@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 from datetime import UTC, datetime
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -131,8 +132,15 @@ def _reject(conn, error, statement, params):
         conn.execute(statement, params)
 
 
+def _act_as(conn, firm):
+    """Name the firm for the whole session, as the server does per transaction (NUC-03)."""
+    conn.execute("SELECT set_config('app.firm_id', %s, false)", (str(firm),))
+
+
 def _seed(conn):
-    firm = _insert(conn, "escritorio", nome="ESCRITORIO_TESTE_DB02")
+    firm = uuid4()
+    _act_as(conn, firm)
+    firm = _insert(conn, "escritorio", id=firm, nome="ESCRITORIO_TESTE_DB02")
     user = _insert(
         conn,
         "usuario",
@@ -389,6 +397,7 @@ def test_db02_codigos_em_texto_e_migracao_reversivel(fresh_database):
         firm, member, clients = _seed(conn)
     _run_alembic(fresh_database, "upgrade", "head")
     with connect(fresh_database.conninfo(APP_ROLE)) as conn:
+        _act_as(conn, firm)
         plan = _plan(conn, firm, clients[0], member, 1)
         account = _account(conn, firm, clients[0], plan, "01.002.0003")
         bank = _bank(conn, firm, clients[0], account, "001")

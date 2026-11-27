@@ -40,12 +40,14 @@ web/src/                    frontend
   pages/client/             cliente final (celular)
 tests/<module>/             testes de cada módulo, mesmo nome da pasta de src/lastro/
 tests/harness/, tests/ci/   testes do harness e da CI (não mexer ao implementar feature)
+tests/conftest.py           fixtures comuns a todos os módulos (`synthetic_fixtures_dir`, HAR-03)
 migrations/                 Alembic, uma migração por PR
 fixtures/                   dados sintéticos gerados (`hx fixtures build`)
 layouts/dominio.yaml        layout da planilha do Domínio (PROVISÓRIO, D-05)
 features/ planos/ progress/ processo: fichas, planos e diário (ver AGENTS.md)
 tools/                      harness: harness.py, hx, hx.ps1
-docs/                       decisões, requisitos, segurança, templates, docs/modules/
+tools/fixtures_sinteticas.py gerador do `hx fixtures build` (só biblioteca padrão, HAR-03)
+docs/                       decisões, requisitos, segurança, templates, docs/modulos/
 gitpages/                   site de documentação (Astro/Starlight, pnpm)
 ```
 
@@ -112,8 +114,8 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 
 | De → para | Contrato |
 |---|---|
-| registry → api, registry (`CAD-03`) | `CnpjValidationResult` (`lastro.registry.contracts`), `validate_cnpj` (`lastro.registry.service`) |
-| registry → registry (`CAD-05`), api | `ChartAccountEntry`, `ChartSpreadsheetResult` (`lastro.registry.contracts`), `read_chart_of_accounts_spreadsheet` (`lastro.registry.service`) |
+| registry → api (`CAD-03`) | `CnpjValidationResult`, `ClientSummary` e os erros de cliente (`lastro.registry.contracts`); `validate_cnpj`, `register_client`, `list_clients`, `get_client` (`lastro.registry.service`). Lista e abertura recebem `access.service.responsible_member_ids` por parâmetro (o `registry` não lê `atribuicao`). Detalhes em `docs/modulos/registry.md` |
+| registry → api (`CAD-02`, `CAD-05`) | `ChartAccountEntry`, `ChartOfAccountsResult` (`lastro.registry.contracts`); `read_chart_of_accounts` (`lastro.registry.service`). Detalhes em `docs/modulos/registry.md` |
 | parsing → validation | `ExtratoLido` |
 | parsing → classification | `MovimentacaoLida` |
 | validation → review, export | `ResultadoConferencia` |
@@ -121,20 +123,15 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | questions → review | `RespostaCliente` |
 | review → export | `ItemRevisado` |
 | access → api e módulos com rota protegida | `SignedInMember` (`access/contracts.py`, ACE-01): quem está conectado, com `member_id`, `firm_id` e `role` |
+| ai → classification (`IA-02`) | `ClientDescription`, `CandidateAccount` (`lastro.ai.contracts`), `suggest_accounts` (`lastro.ai.service`). Sem consumidor ainda; avisar o dono da `classification` por issue `contrato:` quando a ficha existir. Detalhes em `docs/modulos/ai.md` |
 
 **`registry` (`CnpjValidationResult` / `validate_cnpj`, versão 0):**
 - **Assinatura:** `validate_cnpj(cnpj: str) -> CnpjValidationResult` (`src/lastro/registry/service.py`).
 - **Campos (`CnpjValidationResult` em `src/lastro/registry/contracts.py`):** `is_valid: bool`, `normalized: str | None` (14 caracteres maiúsculos, sem máscara, quando válido; `None` caso contrário) e `error_message: str | None` (`None` quando válido).
 - **Mensagens oficiais:** vazio → `"Informe o CNPJ do cliente."`; inválido → `"O CNPJ informado não é válido. Confira os números."`.
-- **Fronteira e impactos:** o contrato devolve apenas a mensagem de recusa — o status HTTP de dado inválido (`P-13`) fica na camada `api/`. Qualquer mudança de campo, assinatura ou mensagem deve avisar a responsável pela `CAD-03` (consumidora direta). Detalhes, notas para `CAD-03`, `DB-01` e `tools/harness.py` ficam em `docs/modulos/registry.md`. Os demais contratos `registry → classification/export` seguem `[definir]` na seção 10.
+- **Fronteira e impactos:** o contrato devolve apenas a mensagem de recusa — o status HTTP de dado inválido (`P-13`) fica na camada `api/`. Qualquer mudança de campo, assinatura ou mensagem deve avisar o responsável pela `CAD-03` (consumidora direta). Detalhes, notas para `CAD-03`, `DB-01` e `tools/harness.py` ficam em `docs/modulos/registry.md`. Os demais contratos `registry → classification/export` seguem `[definir]` na seção 10.
 
-**`registry` (`ChartAccountEntry` / `ChartSpreadsheetResult` / `read_chart_of_accounts_spreadsheet`, versão 0):**
-- **Assinatura:** `read_chart_of_accounts_spreadsheet(source: bytes | Path) -> ChartSpreadsheetResult` (`src/lastro/registry/service.py`).
-- **Campos (`src/lastro/registry/contracts.py`):** `ChartAccountEntry(code: str, name: str)` e `ChartSpreadsheetResult(accounts: tuple[ChartAccountEntry, ...], errors: tuple[str, ...])`, ambos `@dataclass(frozen=True, slots=True)`.
-- **Mensagens oficiais:** planilha sem contas → `"A planilha não tem nenhuma conta."`; arquivo inválido → `"Este arquivo não é uma planilha. Envie um arquivo .xlsx."`; cabeçalho sem `código` ou `nome` na linha 1 → `"A planilha precisa ter as colunas 'código' e 'nome' na primeira linha."`; linha sem código → `"Linha {n}: falta o código da conta."`; linha sem nome → `"Linha {n}: falta o nome da conta."`; código repetido → `"Linha {n}: o código {codigo} já apareceu na linha {primeira}."`.
-- **Fronteira e impactos:** leitura pura em streaming (`openpyxl`, primeira aba, limite de 20 MiB), sem acesso a banco nem HTTP (`P-13` fica em `api/`). Depende da suposição `P-10` (cabeçalho na linha 1, a confirmar com os pilotos). Qualquer mudança de assinatura, campo ou mensagem deve avisar a `CAD-05` (consumidora direta). Detalhes em `docs/modules/registry.md`.
-
-`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
+`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modulos/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
 
 ## 7. Onde colocar código novo
 
@@ -149,7 +146,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | um leitor de banco novo | `parsing/` (D-04: banco novo não é entrega confirmada) |
 | texto para o usuário | `web/src/copy/` no front; mensagem do erro RFC 9457 no back |
 | dado de teste | gerado em `fixtures/`; nunca copiado de extrato real |
-| regra específica de um módulo | `docs/modules/<module>.md`, não aqui |
+| regra específica de um módulo | `docs/modulos/<module>.md`, não aqui |
 | um módulo ou pasta de primeiro nível novos | não crie: registre em `DECISIONS.md` e pergunte |
 
 ## 8. Fichas e pastas
@@ -159,6 +156,8 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 **Exceção DB-02 para testes da DB-01 (23/11/2026, autorizada pela responsável):** `tests/access/conftest.py` e `tests/access/test_identity_schema.py` foram ajustados no PR #54 para validar a DB-01 na revisão `0002` e aceitar a extensão de `cliente` pela DB-02. O ajuste preserva os critérios da DB-01; ver `progress/DB-02.md` e o PR #54.
 
 **Divisão DB-01/NUC-03 (23/11/2026, decisão do responsável DB-01):** esquema e restrições na DB-01; políticas RLS na NUC-03, obrigatoriamente concluída antes de usar dados de piloto. Sem políticas permissivas de contorno. Nomes físicos da DB-01 seguem a ficha em português singular, como exceção ao CODING_STANDARDS.md. Esta divisão não declara o isolamento implementado nem altera a I-4 do produto. Ver `docs/decisoes/DECISIONS.md`, seção 5.
+
+**RLS implementada (NUC-03, 26/11/2026):** a segunda camada da I-4 existe. `core/db.py` leva o escritório ao banco (`use_firm`, reaplicado a cada transação); as migrações `0005` e `0006` ligam a RLS forçada nas 12 tabelas com escritório e criam as cinco funções de busca sem escritório. Tabela nova com `escritorio_id` precisa de RLS e políticas na própria migração. Ver `docs/modulos/access.md` ("Isolamento no banco") e `docs/decisoes/DECISIONS.md`, seção 10.
 
 - O campo `modulo` da ficha é o nome da pasta (`core`, `access`, `registry`, `ai`...) ou `harness`/`ci`. A ficha só cria código na pasta do seu módulo e testes em `tests/<module>/`.
 - O prefixo do ID é histórico e não deriva da pasta: NUC → `core`, ACE → `access`, CAD → `registry`, IA → `ai`, HAR → `harness`, HX → `ci`.

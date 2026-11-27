@@ -30,8 +30,8 @@ Vale também para **issues, PRs e comentários**: não cole trecho de extrato re
 
 ## 3. Dados de teste
 
-- Tudo vem de `hx fixtures build` (razão sintético que gera OFX/PDF e o gabarito). Não escreva fixture à mão com dado que pareça real.
-- **Exceção DB-01 (responsável, 23/11/2026):** enquanto `hx fixtures build` estiver indisponível, seus testes podem gerar dados sintéticos determinísticos, com nomes fictícios, hashes inventados e CNPJs com DV inválido nos testes que não verificam validação fiscal. A exceção não autoriza dados reais nem se estende automaticamente a outras features. Ver `docs/decisoes/DECISIONS.md`, seção 5.
+- Tudo vem de `hx fixtures build` (gera o cadastro, a planilha do plano de contas, o OFX e o gabarito em JSON; não gera PDF). Não escreva fixture à mão com dado que pareça real.
+- **Exceção DB-01 (decisão do responsável em 23/11/2026).** A exceção se encerra quando `hx fixtures build` estiver disponível na `developer` com a integração da HAR-03 (PR #58). Até esse marco, os testes da DB-01 podem usar dados sintéticos determinísticos. A partir desse marco, testes novos que precisarem de cadastro ou extrato completos (escritórios, clientes, OFX, gabarito) usam a fixture de sessão `synthetic_fixtures_dir` (`tests/conftest.py`), que gera os mesmos arquivos do comando em pasta temporária, sem depender da pasta `fixtures/` da raiz. Os testes existentes da DB-01 não precisam migrar: mantêm seus nomes fictícios, hashes inventados e CNPJs com DV inválido nos casos sem validação fiscal. A permissão se limita aos testes da DB-01 e a dados sintéticos. A exceção da DB-02 é separada e está registrada em [DB-02/B1](decisoes/DECISIONS.md#6-decisões-da-db-02--23112026). A exceção da DB-03 também é separada e está registrada em [DB-03/B1](decisoes/DECISIONS.md#8-decisões-da-db-03--25112026) (aval dado por camposs04 em 25/11/2026). Ver [DB-01/B3](decisoes/DECISIONS.md#5-revisão-documental-da-db-01--23112026).
 - **CPF e CNPJ de teste com dígito verificador inválido.** O `hx check-clean` trata número com DV válido como possível dado real; DV inválido passa como sintético. Exemplo: `111.222.333-00`.
 - Nomes de contrapartes inventados e identificáveis como falsos: `CONTRAPARTE_001`, `CLIENTE_TESTE`.
 - Valores, datas e descrições são inventados. Não adapte um extrato real "trocando só os nomes": a estrutura de valores e datas também identifica.
@@ -87,6 +87,8 @@ O `check-clean` **reduz** o risco, não o elimina. A segunda barreira é a revis
 
 **Divisão DB-01/NUC-03 (responsável DB-01, 23/11/2026):** a DB-01 cria as tabelas e restrições; a NUC-03 implementa as políticas RLS. A conclusão da NUC-03 é condição obrigatória antes do uso com dados de piloto. Não criar políticas permissivas para contornar a pendência. FKs compostas não substituem isolamento de leitura e escrita por RLS.
 
+**RLS implementada (NUC-03, 26/11/2026):** RLS forçada nas 12 tabelas com escritório; sem escritório na transação, a aplicação não vê nem grava nada. As buscas feitas antes de se saber o escritório (entrada, sessão, convite e link do cliente) passam só por funções `SECURITY DEFINER` com retorno mínimo. Nenhum papel tem `BYPASSRLS` e não há política aberta para a aplicação; testes travam as duas coisas. A RLS isola por escritório: a regra de carteira (contador só vê clientes atribuídos) e o limite do link a um cliente e uma competência continuam no código. Detalhe em `docs/modulos/access.md` e `DECISIONS.md`, seção 10.
+
 Detalhe nos requisitos (RF-SEG) e nas regras do `AGENTS.md`; aqui só o lembrete.
 
 - **Isolamento no servidor, em toda requisição:** escritório não vê outro escritório; contador só vê clientes atribuídos.
@@ -109,7 +111,7 @@ Aja nesta ordem. Não espere para "ver se alguém notou".
 ## 10. Checklist antes de abrir um PR
 
 - [ ] `hx check-clean` verde, com `LASTRO_NOMES_PROIBIDOS` definida na sua máquina
-- [ ] Nenhuma fixture escrita à mão; CPF/CNPJ de teste com DV inválido
+- [ ] Nenhuma fixture escrita à mão (exceção temporária da DB-01 na seção 3); CPF/CNPJ de teste com DV inválido
 - [ ] Nada de dado real em descrição, comentário ou captura de tela
 - [ ] Chamadas a LLM só por `src/lastro/ai/`, depois de `anonimizar()`
 - [ ] Nenhum segredo, `.env` ou chave nos arquivos nem nos logs
