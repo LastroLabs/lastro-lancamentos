@@ -330,6 +330,20 @@ async def find_person(
     return None if row is None else PersonRow(*row)
 
 
+async def lock_member(db: AsyncSession, firm_id: UUID, member_id: UUID) -> None:
+    """Serialize invitation changes of one member until the transaction ends.
+
+    `FOR NO KEY UPDATE` makes a second request for the same member wait here, so its next
+    statement already sees the invitation the first one stored. It does not conflict with the
+    `FOR KEY SHARE` that inserts into `convite` and `sessao` take on the member row.
+    """
+    await db.execute(
+        select(Member.id)
+        .where(Member.escritorio_id == firm_id, Member.id == member_id)
+        .with_for_update(key_share=True)
+    )
+
+
 async def find_who_has_password(
     db: AsyncSession, user_ids: list[UUID]
 ) -> dict[UUID, bool]:

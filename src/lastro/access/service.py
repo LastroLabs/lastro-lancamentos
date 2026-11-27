@@ -310,10 +310,12 @@ async def issue_invitation(
     """
     firm_id = _manager_firm(membership)
     person = await _find_person(db, firm_id, member_id)
-    has_password = await repository.find_who_has_password(db, [person.user_id])
-    if has_password.get(person.user_id, False):
-        raise AccountantAlreadyActiveError
     try:
+        # The lock comes before every check, so a request that waited sees the other's result.
+        await repository.lock_member(db, firm_id, person.member_id)
+        has_password = await repository.find_who_has_password(db, [person.user_id])
+        if has_password.get(person.user_id, False):
+            raise AccountantAlreadyActiveError
         await repository.revoke_pending_invitation(db, firm_id, person.member_id)
         code, expires_at = await _store_invitation(
             db, firm_id, person.member_id, UUID(membership.member_id), valid_for
@@ -338,6 +340,7 @@ async def cancel_invitation(
     firm_id = _manager_firm(membership)
     person = await _find_person(db, firm_id, member_id)
     try:
+        await repository.lock_member(db, firm_id, person.member_id)
         await repository.revoke_pending_invitation(db, firm_id, person.member_id)
         await db.commit()
     except BaseException:
