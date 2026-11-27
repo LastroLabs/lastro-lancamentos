@@ -9,8 +9,6 @@ dependencies = [
     # ACE-01, plan D4: password hashing with Argon2 (stack: "senha com Argon2").
     "argon2-cffi>=25.1",
     "fastapi>=0.165",
-    # CAD-02, plan D1/D6: read/write .xlsx chart of accounts spreadsheets (and tests).
-    "openpyxl>=3.1.5",
     "psycopg[binary]>=3.3",
     "pydantic>=2.12",
     "pydantic-settings>=2.12",
