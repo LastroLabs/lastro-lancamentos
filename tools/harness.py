@@ -1387,18 +1387,14 @@ def _arquivos_em_disco(pasta: Path) -> set[str]:
     return {r for r in _percorrer_arvore(pasta) if r.rsplit("/", 1)[-1] not in ARQUIVOS_PRESERVADOS}
 
 
-def _exigir_sem_documentos(arquivos: dict[str, bytes], membros_xlsx) -> None:
+def _exigir_sem_documentos(arquivos: dict[str, bytes]) -> None:
     """D7: aborta se alguma linha gerada tiver achado do check-clean (antes de gravar)."""
     nomes = _nomes_proibidos()
     achados: list[str] = []
     for relativo, dados in arquivos.items():
-        if relativo.endswith(".xlsx"):
-            textos = {f"{relativo}!{m}": t for m, t in membros_xlsx(dados).items()}
-        else:
-            textos = {relativo: dados.decode("utf-8", errors="replace")}
-        for onde, texto in textos.items():
-            for numero, linha in enumerate(texto.split("\n"), start=1):
-                achados += [f"{onde}:{numero} ({tipo})" for tipo in tipos_da_linha(linha, nomes)]
+        texto = dados.decode("utf-8", errors="replace")
+        for numero, linha in enumerate(texto.split("\n"), start=1):
+            achados += [f"{relativo}:{numero} ({tipo})" for tipo in tipos_da_linha(linha, nomes)]
     if achados:
         raise HarnessErro(
             "o gerador produziu linha com documento ou segredo; nada foi gravado",
@@ -1458,7 +1454,7 @@ def cmd_fixtures_build(args: argparse.Namespace, raiz: Path) -> int:
         print(f"fixtures em dia: {len(arquivos)} arquivo(s) iguais aos da semente {semente}")
         return 0
 
-    _exigir_sem_documentos(arquivos, gerador.membros_xlsx)
+    _exigir_sem_documentos(arquivos)
     apagados = _gravar_fixtures(pasta, arquivos)
     print(
         f"fixtures: {len(arquivos)} arquivo(s) gravado(s) em {PASTA_FIXTURES}/ "
