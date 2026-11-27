@@ -16,10 +16,10 @@ Como preencher (agente, ao encerrar a sessão):
 Ler e validar o plano de contas exportado do Domínio em TXT de 78 colunas, no módulo `registry` (sem banco nem HTTP). `read_chart_of_accounts(bytes | Path)` devolve `ChartOfAccountsResult(accounts, errors, warnings, refusal)` (contrato v1, `DECISIONS.md` §11 T5 e T13): as contas com reduzido, classificação, nome, tipo e conta superior, os erros tolerados das analíticas folha, os avisos e uma recusa única quando o erro compromete o plano (RF-CAD-03; regra em `docs/modulos/registry.md`).
 
 ## Próxima ação
-Revisão humana dos commits da T2 à T7. Depois, com autorização, `git push` da branch e PR para `developer` citando `DECISIONS.md` §11 T12 (o commit só de testes é o `76a2c51`, e `git diff 76a2c51 -- tests/` está vazio) e T13 (contrato v1, sem issue). Rodar o `check-clean` com `LASTRO_NOMES_PROIBIDOS` definida antes do PR.
+Numa sessão só de testes: escrever o teste do E8 com as duas pontas (tab depois da posição 78 aceito; letra depois da 78 recusada), acrescentá-lo à `verificacao` da ficha por PR humano e rodar o `hx feature verify CAD-02`. Depois, com autorização, `git push` e PR para `developer` citando `DECISIONS.md` §11 T12 (commit só de testes `76a2c51`) e T13 (contrato v1, sem issue). Rodar o `check-clean` com `LASTRO_NOMES_PROIBIDOS` definida antes do PR.
 
 ## Bloqueios e perguntas
-- Leitura a confirmar na revisão: uma linha que é consequência (a conta superior não foi aceita) e também tem erro tolerável (E2, E2z, E4) conta como causa, porque o passo 8 do `registry.md` exige "sem problema de hierarquia" para tolerar. Nenhum teste da ficha cobre esse caso.
+- O teste do E8 com tab ainda não existe. A regra 3 impede editar `tests/` na sessão de implementação, então o comportamento novo só foi conferido à mão (ver Rodei, 27/11 · S3).
 - O "Pronto quando" da T3 (c2) só passa com a hierarquia da T4, porque o teste confere a conta superior `11`. E o c6(d) da T4 precisa da tolerância da analítica folha, que por isso entrou na T4, e não na T5.
 
 ## Feito
@@ -34,6 +34,7 @@ Revisão humana dos commits da T2 à T7. Depois, com autorização, `git push` d
 - 27/11 · S3 · T5 (`b9489d7`): toleradas viram causa quando não sobra analítica; avisos de sintética sem filhas.
 - 27/11 · S3 · T6 (`f84cc61`): `openpyxl` fora do `pyproject.toml`; `uv.lock` regenerado no contêiner (saíram `openpyxl` e `et-xmlfile`, `revision = 5`); imagem `lastro-dev` reconstruída.
 - 27/11 · S3 · T7: ficha em `passing` pelo `hx feature verify` (`72406b9`).
+- 27/11 · S3 · E8 passa a ignorar qualquer espaço em branco depois da posição 78: primeiro o `registry.md` (`bae4406`), depois o código (`89cfd61`). Texto de verdade continua recusado.
 
 ## Rodei
 - 25/11 · S1 · `hx feature verify CAD-02` → c1, c2, c3 e c4 (2 comandos) ok; evidência registrada em `features/CAD-02.json` no commit `edd1cdf` (sobre `01bc3bdebeb2`).
@@ -48,6 +49,9 @@ Revisão humana dos commits da T2 à T7. Depois, com autorização, `git push` d
 - 27/11 · S3 · `python tools/harness.py check-clean`: 0 achado(s), `RESULTADO: OK` (aviso: `LASTRO_NOMES_PROIBIDOS` não definida).
 - 27/11 · S3 · `python tools/harness.py verify` com a imagem reconstruída: ruff OK, pytest OK, Arquitetura e E2E pulados; `RESULTADO: OK`.
 - 27/11 · S3 · `python tools/harness.py feature verify CAD-02`: c1 a c10 OK; `RESULTADO: OK`.
+- 27/11 · S3 · Comparação da implementação com a referência da simulação em 20.000 arquivos aleatórios sintéticos (script fora do repositório). Antes do ajuste do E8: com tab, 26 arquivos recusados por mim e aceitos pela referência. Depois: aceitar ou recusar coincide em todos; só sobram mensagens diferentes (tab no lugar do tipo: E5a aqui, E5b na referência; linha que repete reduzido e classificação: E6 aqui, E7 na referência).
+- 27/11 · S3 · Conferência manual do E8 novo: tab, tab com espaços e só espaços depois da 78 são aceitos; `  X` e tab seguido de `X` são recusados com a mensagem do E8. `pytest tests/registry/test_plano_txt.py -q`: 10 passed.
+- 27/11 · S3 · `python tools/harness.py check-clean`: 0 achado(s), `RESULTADO: OK`. `python tools/harness.py verify` depois do ajuste do E8: ruff OK, pytest OK, `RESULTADO: OK`.
 
 ## Falhou
 - 25/11 · S2 · Nenhuma falha de código, lint ou teste; apenas o aviso esperado de `LASTRO_NOMES_PROIBIDOS` não definida ao rodar `sh tools/hx check-clean` sem a variável no ambiente.
@@ -57,6 +61,8 @@ Revisão humana dos commits da T2 à T7. Depois, com autorização, `git push` d
 - 25/11 · S1 · Escolhida `openpyxl>=3.1.5` (D1/D6) para leitura em streaming (`read_only=True`, `data_only=True`, limite de 20 MiB alinhado à D-06, D5) e geração dos `.xlsx` sintéticos nos testes; regra pura em `registry/` sem banco/HTTP (D2); retorno estruturado imutável `ChartSpreadsheetResult` / `ChartAccountEntry` sem exceção de negócio (D3); assinatura `read_chart_of_accounts_spreadsheet(source: bytes | Path)` (D4); cabeçalho na linha 1 normalizado ignorando colunas extras (P-10, pergunta 1), linhas totalmente vazias ignoradas preservando numeração real do Excel (pergunta 2), normalização de células numéricas/strings preservando zeros à esquerda e pontos (pergunta 3), nomes de testes da ficha mantidos com código em inglês (pergunta 4) e contrato v0 documentado em `docs/modules/registry.md` + `ARCHITECTURE.md` §6 (pergunta 5). Detalhes em `planos/CAD-02/plan.md`.
 - 27/11 · S3 · Leitor do TXT conforme `planos/CAD-02/plan.md` (D2 a D5, confirmadas): `stat()` antes de ler e `OSError` sobe ao chamador; `0000000` não é repetição; `uv lock` no contêiner; funções pequenas por etapa da regra em `chart_txt.py`. As decisões S1 do `.xlsx` acima ficam substituídas (`DECISIONS.md` §11 T1).
 - 27/11 · S3 · E8 considera só o caractere espaço depois da posição 78, conforme o texto da tabela ("texto que não é espaço"). E3b e E2 citam o valor sem os espaços das pontas.
+- 27/11 · S3 · E8: tab e outros espaços em branco depois da posição 78 não contam como texto (escolhida a opção B por caio-nascime em 27/11). Motivo: o tab já conta como espaço em branco nos campos, e a recusa apontaria um problema invisível para a contadora (RF-AVI-02). Os dois planos reais não têm tab (conferido por caio-nascime). Substitui a decisão anterior desta sessão ("E8 considera só o caractere espaço").
+- 27/11 · S3 · Mantidas as mensagens que diferem da referência: tab no lugar do tipo dá "falta o tipo da conta (S ou A)." (E5a), e linha que repete reduzido e classificação mostra o E6, que vem primeiro na tabela do `registry.md`.
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
