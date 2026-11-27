@@ -13,7 +13,8 @@
   "responsavel": "RaissaOliveira19",
   "depende_de": [
     "DB-02",
-    "NUC-03"
+    "NUC-03",
+    "ACE-02"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
