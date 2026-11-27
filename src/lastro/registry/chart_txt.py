@@ -147,8 +147,8 @@ def _content_lines(text: str) -> list[_Line]:
 def _own_error(line: _Line) -> _OwnError | None:
     """At most one error per line: the causes come before the tolerable errors.
 
-    So the message points at what really blocks the load (E1, E8, E3, E5 before E2,
-    E4).
+    So the message points at what really blocks the load (E1, E8, E3, E5, E9 before
+    E2, E4).
     """
     cause = _own_cause(line)
     if cause is not None:
@@ -160,11 +160,10 @@ def _own_error(line: _Line) -> _OwnError | None:
 
 
 def _own_cause(line: _Line) -> str | None:
-    """E1, E8, E3a, E3b, E5a and E5b, in this order; the value is quoted as read."""
+    """E1, E8, E3a, E3b, E5a, E5b and E9, in this order; the value is quoted as read."""
     if len(line.text) < _MIN_LINE_LENGTH:
         return "a linha está incompleta."
-    # Any whitespace (space, tab) is ignored, as in the fields; only real text counts.
-    if line.text[_LINE_LENGTH:].strip():
+    if _has_text(line.text[_LINE_LENGTH:]):
         return "a linha tem texto depois da posição 78."
     classification = line.classification
     if not classification:
@@ -176,6 +175,9 @@ def _own_cause(line: _Line) -> str | None:
         return "falta o tipo da conta (S ou A)."
     if kind not in _KINDS:
         return f'o tipo "{kind}" não é válido. Use S ou A.'
+    # [68:78] may be missing or short (editors cut trailing spaces); only text counts.
+    if _has_text(line.text[_MIN_LINE_LENGTH:_LINE_LENGTH]):
+        return "a linha tem texto depois do tipo da conta (posições 69 a 78)."
     return None
 
 
@@ -191,6 +193,11 @@ def _own_tolerable_error(line: _Line) -> str | None:
     if not line.name:
         return "falta o nome da conta."
     return None
+
+
+def _has_text(text: str) -> bool:
+    """True if there is anything but whitespace: space and tab are ignored (E8 and E9)."""
+    return bool(text.strip())
 
 
 def _is_digits(text: str) -> bool:
