@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "in_progress",
+  "estado": "passing",
   "responsavel": "jvsauma",
   "depende_de": [
     "ACE-01",
@@ -166,5 +166,80 @@
       "comando": "pytest tests/access/test_cadastro_contador.py::test_dois_aceites_simultaneos_so_um_vale -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-27T03:41:39Z",
+    "commit": "1cda080cc8ce",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_cadastra_contador_e_recebe_convite -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_contador_aceita_convite_cria_senha_e_entra -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_convite_invalido_recebe_a_mesma_recusa -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_senha_curta_nao_gasta_o_convite -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_cadastro_de_contador_invalido_ou_duplicado_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_gera_novo_convite_ou_cancela -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_atribui_cliente_com_um_responsavel_ativo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_cliente_com_responsavel_nao_e_atribuido_de_novo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_contador_sem_papel_de_chefe_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c9",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_de_outro_escritorio_nao_atribui_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c9",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_atribuir_a_contador_de_outro_escritorio_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_chefe_atribui_cliente_a_si_mesmo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c10",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_senha_criada_por_funcao_restrita -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c11",
+        "comando": "pytest tests/access/test_cadastro_contador.py::test_dois_aceites_simultaneos_so_um_vale -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }
