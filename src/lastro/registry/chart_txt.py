@@ -308,14 +308,37 @@ def _check_lines(lines: list[_Line]) -> ChartOfAccountsResult:
     causes, tolerated = _sort_out(lines, own_errors, repetitions, hierarchy)
     if causes:
         return _refuse(_refusal_message(causes))
+    # Without causes there is no hierarchy cause nor consequence: what is not blocked
+    # is accepted.
     accepted = [line for line in lines if line.number not in blocked]
     if not any(line.kind == "A" for line in accepted):
+        # The tolerated lines become causes, so the real error shows.
+        if tolerated:
+            return _refuse(_refusal_message(tolerated))
         return _refuse(NO_ANALYTIC_MESSAGE)
+    return _accepted_result(accepted, tolerated, hierarchy)
+
+
+def _accepted_result(
+    accepted: list[_Line], tolerated: list[str], hierarchy: _Hierarchy
+) -> ChartOfAccountsResult:
+    """Accounts in file order, the tolerated errors and the warnings.
+
+    A synthetic account with nothing below it is a warning. One whose only child was
+    tolerated is not: the error of the child already shows.
+    """
     accounts = tuple(
         _entry(line, hierarchy.parents[line.classification]) for line in accepted
     )
+    warnings = tuple(
+        _at(
+            line, f"a conta sintética {line.classification} não tem contas abaixo dela."
+        )
+        for line in accepted
+        if line.kind == "S" and line.classification not in hierarchy.with_children
+    )
     return ChartOfAccountsResult(
-        accounts=accounts, errors=tuple(tolerated), warnings=(), refusal=None
+        accounts=accounts, errors=tuple(tolerated), warnings=warnings, refusal=None
     )
 
 
