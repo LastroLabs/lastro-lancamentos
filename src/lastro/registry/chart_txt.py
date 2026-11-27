@@ -25,8 +25,24 @@ NO_ANALYTIC_MESSAGE = (
     "Confira se é o plano de contas do cliente."
 )
 
+FIX_ONE_SUFFIX = "Corrija essa linha e envie o arquivo de novo."
+FIX_MANY_SUFFIX = "Corrija e envie o arquivo de novo."
+
 # ZIP (.xlsx included) and PDF; a NUL byte also means a binary file.
 _NOT_TEXT_SIGNATURES = (b"PK\x03\x04", b"%PDF-")
+_MIN_LINE_LENGTH = 68
+_LINE_LENGTH = 78
+_REDUCED_CODE_LENGTH = 7
+_ZERO_REDUCED_CODE = "0000000"
+_KINDS = ("S", "A")
+
+
+@dataclass(frozen=True, slots=True)
+class _OwnError:
+    """The first error of the table "Erros de linha" found in one line."""
+
+    message: str
+    is_tolerable: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,13 +127,86 @@ def _content_lines(text: str) -> list[_Line]:
     return lines
 
 
+def _own_error(line: _Line) -> _OwnError | None:
+    """At most one error per line: the causes come before the tolerable errors.
+
+    So the message points at what really blocks the load (E1, E8, E3, E5 before E2,
+    E4).
+    """
+    cause = _own_cause(line)
+    if cause is not None:
+        return _OwnError(message=cause, is_tolerable=False)
+    tolerable = _own_tolerable_error(line)
+    if tolerable is not None:
+        return _OwnError(message=tolerable, is_tolerable=True)
+    return None
+
+
+def _own_cause(line: _Line) -> str | None:
+    """E1, E8, E3a, E3b, E5a and E5b, in this order; the value is quoted as read."""
+    if len(line.text) < _MIN_LINE_LENGTH:
+        return "a linha está incompleta."
+    if line.text[_LINE_LENGTH:].strip(" "):
+        return "a linha tem texto depois da posição 78."
+    classification = line.classification
+    if not classification:
+        return "falta a classificação da conta."
+    if not _is_digits(classification):
+        return f'a classificação "{classification}" precisa ter só números.'
+    kind = line.kind
+    if not kind.strip():
+        return "falta o tipo da conta (S ou A)."
+    if kind not in _KINDS:
+        return f'o tipo "{kind}" não é válido. Use S ou A.'
+    return None
+
+
+def _own_tolerable_error(line: _Line) -> str | None:
+    """E2 (empty, then not 7 digits), E2z and E4, in this order."""
+    reduced_code = line.reduced_code
+    if not reduced_code:
+        return "falta o código reduzido da conta."
+    if len(reduced_code) != _REDUCED_CODE_LENGTH or not _is_digits(reduced_code):
+        return f'o código reduzido "{reduced_code}" precisa ter 7 dígitos.'
+    if reduced_code == _ZERO_REDUCED_CODE:
+        return "o código reduzido não pode ser 0000000."
+    if not line.name:
+        return "falta o nome da conta."
+    return None
+
+
+def _is_digits(text: str) -> bool:
+    """Non-empty and only ASCII digits (`str.isdigit` alone accepts "²" and others)."""
+    return text.isascii() and text.isdigit()
+
+
 def _check_lines(lines: list[_Line]) -> ChartOfAccountsResult:
     """Apply the line rules and build the result."""
+    causes = []
+    for line in lines:
+        error = _own_error(line)
+        if error is not None:
+            causes.append(_at(line, error.message))
+    if causes:
+        return _refuse(_refusal_message(causes))
     accepted = lines
     if not any(line.kind == "A" for line in accepted):
         return _refuse(NO_ANALYTIC_MESSAGE)
     accounts = tuple(_entry(line, None) for line in accepted)
     return ChartOfAccountsResult(accounts=accounts, errors=(), warnings=(), refusal=None)
+
+
+def _at(line: _Line, message: str) -> str:
+    return f"Linha {line.number}: {message}"
+
+
+def _refusal_message(causes: list[str]) -> str:
+    """The first cause (lowest line number) and how many other causes there are."""
+    others = len(causes) - 1
+    if others == 0:
+        return f"{causes[0]} {FIX_ONE_SUFFIX}"
+    noun = "linha" if others == 1 else "linhas"
+    return f"{causes[0]} Há mais {others} {noun} com problema. {FIX_MANY_SUFFIX}"
 
 
 def _entry(line: _Line, parent: str | None) -> ChartAccountEntry:
