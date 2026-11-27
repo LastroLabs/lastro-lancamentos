@@ -14,10 +14,10 @@ are random 14-digit strings made at run time: no CNPJ literal is committed
 
 import csv
 import secrets
-from pathlib import Path
 import uuid
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 
 import psycopg
 import pytest
