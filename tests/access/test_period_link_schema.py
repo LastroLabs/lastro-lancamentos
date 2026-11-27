@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 from datetime import UTC, date, datetime, timedelta
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -190,11 +191,19 @@ def head_database(fresh_database):
     return fresh_database
 
 
+def _act_as(conn, firm):
+    """Name the firm for the whole session, as the server does per transaction (NUC-03)."""
+    conn.execute("SELECT set_config('app.firm_id', %s, false)", (str(firm),))
+
+
 def _insert(conn, table, **values):
-    statement = sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING *").format(
+    # The application role cannot read usuario.credencial_hash (NUC-03), so `*` would fail.
+    returning = "id" if table == "usuario" else "*"
+    statement = sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING {}").format(
         sql.Identifier(table),
         sql.SQL(", ").join(map(sql.Identifier, values)),
         sql.SQL(", ").join(sql.Placeholder() for _ in values),
+        sql.SQL(returning),
     )
     cursor = conn.execute(statement, list(values.values()))
     names = [column.name for column in cursor.description]
@@ -296,13 +305,14 @@ def _model(name, table):
 
 def _seed(conn):
     """Fictional firms, members and clients (DB-03/B1)."""
-    firm = _insert(conn, "escritorio", nome="ESCRITORIO_TESTE_DB03_1")["id"]
-    other_firm = _insert(conn, "escritorio", nome="ESCRITORIO_TESTE_DB03_2")["id"]
+    firm, other_firm = uuid4(), uuid4()
     state = {"firm": firm, "other_firm": other_firm}
-    for key, owner, role in (
-        ("chief", firm, "chefe"),
-        ("foreign", other_firm, "contador"),
+    for key, owner, role, name in (
+        ("foreign", other_firm, "contador", "ESCRITORIO_TESTE_DB03_2"),
+        ("chief", firm, "chefe", "ESCRITORIO_TESTE_DB03_1"),
     ):
+        _act_as(conn, owner)  # each firm is written in its own name
+        _insert(conn, "escritorio", id=owner, nome=name)
         user = _insert(
             conn,
             "usuario",
@@ -592,6 +602,7 @@ def test_db03_migracao_reversivel(fresh_database):
         _seed_registry(conn, state)
     _run_alembic(fresh_database, "upgrade", "head")
     with connect(fresh_database.conninfo(APP_ROLE)) as conn:
+        _act_as(conn, state["firm"])
         _require_schema(conn)
         period = _insert(conn, "competencia", **_period(state))["id"]
         _insert(conn, "link_cliente", **_link(state, period))

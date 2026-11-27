@@ -3,7 +3,8 @@
   "titulo": "Gerar link do cliente com validade e permitir invalidar",
   "modulo": "access",
   "requisitos": [
-    "RF-SEG-01"
+    "RF-SEG-01",
+    "RF-SEG-02"
   ],
   "prioridade": "must",
   "onda": 2,
@@ -12,7 +13,8 @@
   "responsavel": "camposs04",
   "depende_de": [
     "ACE-02",
-    "NUC-02"
+    "NUC-02",
+    "NUC-03"
   ],
   "bloqueada_por": null,
   "tipo_verificacao": "comando",
@@ -64,6 +66,22 @@
         "entrada": "ESC-1 com chefe_1 (sessão aberta) e contador_a; EMP-1 atribuída a contador_a, com um link L1 válido de 10/2026; EMP-4 atribuída a chefe_1; chefe_1 tenta (a) gerar link para EMP-1 e (b) invalidar L1; depois gera o link L4 de EMP-4, competência 10/2026, abre L4 sem login, invalida L4 e abre L4 de novo sem login",
         "saida": "(a) e (b): status 403, mensagem 'Atribua este cliente a você para fazer isso.', corpo idêntico nos 2, sem dado de EMP-1; nenhum link novo de EMP-1 e L1 continua válido; L4: gerado com código de ao menos 43 caracteres; a 1ª abertura mostra a competência 10/2026; depois de invalidado: status 404, mensagem 'Este link não vale mais. Peça um novo ao seu contador.'"
       }
+    },
+    {
+      "id": "c7",
+      "descricao": "Abrir o link sem login acha o link pela função do banco da NUC-03 (buscar_link_por_hash), e quem recusa o link vencido é o app, pelo próprio relógio",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a e EMP-1 atribuída a ele; link L1 de EMP-1, competência 10/2026, gerado com a validade padrão; abre-se L1 sem login (a) 1 dia após a geração e (b) 7 dias e 1 segundo após, com o relógio do app ajustado no teste e o do banco sem mudança",
+        "saida": "(a) aceito, e a resposta mostra a competência 10/2026; (b) status 404, mensagem 'Este link não vale mais. Peça um novo ao seu contador.'; nas duas aberturas o app chama buscar_link_por_hash e não faz nenhuma consulta direta a link_cliente pelo hash_token; o escritório da transação vem do que a função devolveu"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "Quem abre o link vê só o cliente e a competência daquele link, mesmo que o escritório tenha outros clientes e competências",
+      "exemplo": {
+        "entrada": "ESC-1 com contador_a; EMP-1 (competências 10/2026 e 11/2026) e EMP-2 (competência 10/2026), as duas atribuídas a contador_a; link L1 de EMP-1, competência 10/2026; abre-se L1 sem login (a) só com o código e (b) com o código de L1 e, na query e no corpo da requisição, o identificador de EMP-2, o de ESC-2 e o da competência 11/2026 de EMP-1",
+        "saida": "(a) a resposta mostra só EMP-1 e a competência 10/2026; nenhum dado de EMP-2 nem de 11/2026; (b) resposta igual à de (a): identificador de cliente, escritório ou competência vindo da requisição é ignorado, e vale só o que a função devolveu para o código"
+      }
     }
   ],
   "verificacao": [
@@ -98,6 +116,14 @@
     {
       "criterio": "c6",
       "comando": "pytest tests/access/test_link_cliente.py::test_link_chefe_nao_atribuido_403_e_atribuido_gera_e_invalida -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/access/test_link_cliente.py::test_abrir_link_usa_funcao_do_banco_e_relogio_do_app -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/access/test_link_cliente.py::test_link_mostra_so_o_proprio_cliente_e_competencia -q"
     }
   ],
   "evidencia": null

@@ -81,8 +81,9 @@ python -m lastro.access.admin criar-escritorio \
 - **Usuário que já existe** (em qualquer caixa, ativo ou não) é recusado sem alterar nada, nem a
   senha, e sem criar escritório. O login é gravado em minúsculas.
 - **Nome de escritório repetido é permitido.** O que identifica é o login do chefe.
-- **Aviso NUC-03:** a gravação usa o papel da aplicação (`DATABASE_URL`). Quando entrar a RLS, a
-  política precisa deixar o comando inserir `escritorio`, `usuario` e `membro`.
+- **Com a RLS (NUC-03):** a gravação usa o papel da aplicação (`DATABASE_URL`).
+  `insert_firm_with_manager` gera o `id` do escritório no app (`uuid4`) e põe a sessão em nome
+  dele antes do primeiro insert (plano NUC-03, D5). Sem política aberta.
 - **Papel na identificação:** o banco guarda `chefe`; a rota `GET /api/v1/session` devolve
   `manager` (ver "Rotas").
 
@@ -108,8 +109,9 @@ Comente na #68 e avise caio-nascime (ACE-02) e jvsauma (NUC-03).
   minúsculas (ACE-02); dois logins que só diferem na caixa travam os dois.
 - **Um vínculo ativo por usuário** no MVP (D10, `DECISIONS.md` seção 7). Quem trabalha em dois escritórios usa um usuário em cada; com dois vínculos, a entrada dá o 409 acima.
 - **Prazo da sessão (plan, D9):** cai depois de 2 h sem uso (`SESSION_IDLE_TIMEOUT`) e nunca passa de 12 h desde a entrada (`SESSION_MAX_DURATION`). O token não muda: cada pedido aceito só empurra `sessao.expira_em` no banco. Por isso `identify` grava e faz commit, e toda rota protegida custa um `UPDATE` em `sessao`. O cookie vale 12 h no navegador; quem decide se a sessão ainda vale é o servidor.
-- **RLS (NUC-03).** A entrada procura o usuário antes de saber o escritório; a política de
-  `usuario` precisa deixar essa consulta passar.
+- **RLS (NUC-03).** A entrada procura o usuário antes de saber o escritório, por
+  `buscar_usuario_por_login`. A aplicação não lê `usuario.credencial_hash` direto: um
+  `SELECT *` em `usuario` falha para `lastro_app`. Leia só as colunas de que precisa.
 - **Sem log de credencial.** Nada deste módulo registra senha, hash ou token.
 
 ## Tabelas da DB-03: competência e link do cliente
@@ -126,5 +128,55 @@ Decisões em `planos/DB-03/plan.md`.
 **Fica para a ACE-05:** conferir que quem cria o link é o responsável ativo (P-09) e calcular
 `expira_em` (prazo da D-06; sem valor padrão no banco).
 
-**Fica para a NUC-03:** a RLS destas tabelas e a busca do link pelo `hash_token` sem escritório
-no contexto (recomendação em `progress/DB-03.md`, a decisão é do dono da NUC-03).
+**Feito na NUC-03:** a RLS destas tabelas e a busca do link pelo `hash_token` sem escritório
+(`buscar_link_por_hash`, migração `0006`). Ver a seção abaixo.
+
+## Isolamento no banco (NUC-03)
+
+Migrações `0005` e `0006`; decisões em `planos/NUC-03/plan.md` e em `DECISIONS.md`, seção 10.
+
+**Como funciona:** as 12 tabelas com escritório têm RLS ligada e forçada. Uma linha só aparece, e
+só pode ser gravada, numa transação em nome do escritório dela. Sem escritório, a aplicação vê 0
+linhas e não grava nada, sem erro.
+
+**Como usar:** com uma sessão de `Database.sessionmaker`, chame `use_firm(db, firm_id)`
+(`lastro.core.db`). O escritório vale para todas as transações seguintes da mesma sessão, também
+depois de um `commit`. Nas rotas protegidas, `identify` já deixa a sessão em nome do escritório do
+membro.
+
+**Buscas antes de se saber o escritório:** só pelas funções abaixo, nunca por consulta direta.
+Todas são `SECURITY DEFINER`, pertencem a `lastro_owner`, têm `search_path` fixo e só
+`lastro_app` pode executá-las. Depois da busca, chame `use_firm` com o `escritorio_id` devolvido
+e siga normalmente.
+
+| Função | Recebe | Devolve | Quem usa |
+|---|---|---|---|
+| `buscar_usuario_por_login` | login em minúsculas | `usuario_id`, `credencial_hash`, `ativo` | entrada (ACE-01) |
+| `buscar_vinculos_do_usuario` | `usuario_id` | `escritorio_id`, `membro_id`, `papel`, um por vínculo ativo | entrada (ACE-01) |
+| `buscar_sessao_por_hash` | hash do token | `escritorio_id`, `membro_id`, `expira_em`, `encerrada_em` | `identify`, `sign_out` |
+| `buscar_convite_por_hash` | hash do código | `escritorio_id`, `convite_id`, `membro_id`; só convite pendente | aceite do convite (ACE-02) |
+| `buscar_link_por_hash` | hash do código | `escritorio_id`, `link_id`, `cliente_id`, `competencia_id`, `expira_em`; link invalidado não volta | abrir o link (ACE-05) |
+
+Nomes e retornos são contrato v0 (regra 11). Mudou? Abra issue `contrato:` e avise o dono da
+NUC-03 e quem usa a função.
+
+**Link do cliente (ACE-05):**
+- O link **vencido** volta da função. Quem recusa é o app, comparando `expira_em` com o próprio
+  relógio, com a mesma recusa do código inexistente (P5 = A). Sem essa comparação, o link vencido
+  funciona.
+- A RLS isola por **escritório, não por cliente**. Depois de `use_firm`, o banco mostra todos os
+  clientes daquele escritório. Filtre sempre pelo `cliente_id` e pelo `competencia_id` que a função
+  devolveu, e ignore qualquer identificador vindo da requisição (ACE-05, c8).
+- Pendências antes do plano da ACE-05: quem cria a competência e onde se configura a validade
+  (`DECISIONS.md`, seção 10, Q1 e Q2).
+
+**Armadilhas:**
+- **Tabela nova com `escritorio_id`** precisa, na própria migração, de `ENABLE` e `FORCE ROW LEVEL
+  SECURITY`, da política `isolamento_escritorio` para `lastro_app` e da política `acesso_do_dono`
+  para `lastro_owner`. Sem isso, a tabela fica sem isolamento.
+- **Nunca** dê `BYPASSRLS` a um papel nem crie política aberta para `lastro_app`: os testes
+  `test_migracoes.py` e `test_isolamento_banco.py` falham.
+- **Testes como `lastro_app`** precisam definir `app.firm_id` na transação. Seeds como
+  superusuário ignoram a RLS.
+- **Contêiner de teste como root** cria arquivos do root no repositório (`web/dist`, caches) e
+  quebra o build do front: rode com o seu usuário.

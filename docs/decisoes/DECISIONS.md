@@ -142,3 +142,44 @@ Decisão de camposs04 (líder) sobre a issue #69, aberta na revisão do PR #67 (
 | RF-SEG-03/A2 | **Pendente.** Uma chave Pix pode ser CPF, CNPJ, e-mail, telefone ou chave aleatória (EVP). A implementação precisa definir a precedência entre `[CHAVE_PIX]` e os marcadores de CPF, CNPJ, e-mail e telefone (por exemplo, se um CNPJ usado como chave Pix vira `[CNPJ]` ou `[CHAVE_PIX]`). Fica em aberto; decidir no plano da implementação. |
 
 Consequência: `src/lastro/ai/anonymization.py` passa a precisar dessas regras, a implementar em PR separado (a #69 segue aberta para isso). Pela regra 9 do AGENTS.md, antes do código o RF-SEG-03 (`gitpages/src/data/fonte/requisitos-v0.2.md` e o JSON gerado), o `docs/SECURITY.md` §5 e a ficha da feature precisam ser atualizados.
+
+## 10. Decisões da NUC-03 — 26/11/2026
+
+Plano em `planos/NUC-03/plan.md`. D1 a D5 confirmadas por jvsauma; P4 revista, P5 e P6 respondidas por caio-nascime na revisão do PR #76, com a concordância de jvsauma. Valem para toda ficha que lê ou grava tabela com escritório.
+
+| Referência | Decisão e alcance |
+|---|---|
+| NUC-03/R1 | **RLS forçada** em todas as tabelas com escritório (12 hoje). O escritório vai ao banco por `set_config('app.firm_id', …, true)`, reaplicado a cada transação por `use_firm` (`core/db.py`). Sem escritório, a aplicação não vê nem grava nada, sem erro. Tabela nova com `escritorio_id` precisa de `ENABLE` e `FORCE`, da política da aplicação e da política do dono na própria migração. Sem `BYPASSRLS` e sem política aberta para `lastro_app`. Plano D1 a D3. |
+| NUC-03/R2 | **Buscas antes de se saber o escritório** só por funções `SECURITY DEFINER` (dona `lastro_owner`, `search_path` fixo, `EXECUTE` só para `lastro_app`, retorno mínimo): `buscar_sessao_por_hash`, `buscar_vinculos_do_usuario`, `buscar_convite_por_hash`, `buscar_usuario_por_login` (`0005`) e `buscar_link_por_hash` (`0006`). Nome e retorno são contrato v0 (regra 11). A aplicação não lê `usuario.credencial_hash` direto. Plano D2, D4 e D6. |
+| NUC-03/R3 | **Link do cliente:** `buscar_link_por_hash` filtra o link invalidado e devolve escritório, link, cliente, competência e `expira_em`. O vencido é recusado pelo **app**, com o próprio relógio e a mesma recusa do inexistente (P5 = A), para a ACE-05 poder testar o segundo exato. A RLS isola por escritório, não por cliente: quem abre o link só vê o cliente e a competência que a função devolveu (ACE-05, c8). |
+| NUC-03/R4 | **Nunca ler `usuario` inteiro pelo ORM.** Vale para toda ficha que lê `usuario` (nome ou login de uma pessoa, responsável de um cliente, lista de contadores). O app não tem leitura de `credencial_hash` (R2), e o modelo `User` mapeia essa coluna: `db.get(User, …)`, `select(User)` ou um relacionamento que carregue `User` montam um `SELECT` com ela, e o banco recusa a consulta inteira (`permission denied for table usuario`). Ler só as colunas necessárias (`select(User.id, User.identificador_login, User.nome)`, como `access/repository.py` já faz). Gravar a senha continua permitido, com `update(User).where(User.id == …).values(credencial_hash=…)`, sem carregar o objeto e sem `RETURNING` da coluna. Recomendado: marcar a coluna em `access/models.py` com `deferred=True, deferred_raiseload=True`, para o ORM nunca carregá-la sozinho e o erro, se houver, sair no Python apontando o campo. Aprovada por caio-nascime em 26/11/2026, a partir da ACE-02/F2. |
+
+### Pendências para a ACE-05 [definir]
+
+Sem resposta, os testes da ACE-05 teriam de inventar regra (regra 12). Decidir antes do `/planejar` da ACE-05.
+
+| Referência | Pergunta | Sugestão (não é decisão) |
+|---|---|---|
+| ACE-05/Q1 | **Quem cria a competência?** O link exige `competencia_id`, a DB-03 só cria a tabela e nenhuma ficha grava a linha. Opções: (a) gerar o link cria a competência se ela não existir; (b) outra ficha cria; (c) só semente de teste, o que deixa o fluxo real sem caminho. [definir] | (a): é o único caminho que não pede ficha nova. |
+| ACE-05/Q2 | **Onde se configura a validade do link?** A D-06 diz "configurável" e o RF-SEG-01 diz "[definir]"; o c2(2) da ACE-05 pede "validade configurada para 1 dia". Opções: variável de ambiente, configuração por escritório ou parâmetro da rota. [definir] | Variável de ambiente com padrão de 7 dias: é a mais simples, e a D-06 é provisória. |
+| ACE-05/N1 | **Nota para o plano (não é pergunta):** `link_cliente.criado_em` tem `now()` do banco como padrão e a `0004` exige `expira_em > criado_em`. Se o app calcular `expira_em` com o próprio relógio, um teste que atrase esse relógio na geração quebra a restrição, e "exatamente 7 dias após a geração" deixa de ser exato. O app deve gravar também `criado_em` e fazer `expira_em = criado_em + validade`, os dois do mesmo relógio. | — |
+
+### Decisões para a ACE-02
+
+Aprovadas por caio-nascime (responsável da ACE-02) em 26/11/2026, para alinhar a ACE-02 à NUC-03. F1: a NUC-03/R2 tirou do app a leitura de `usuario.credencial_hash`, mas a ACE-02 precisa saber quem já criou a senha (situação na lista em c1, c2 e c5; recusa "Este contador já criou a senha." em c5 (5)). O convite não resolve: o chefe da ADM-01 e os contadores da semente têm senha sem nunca ter tido convite.
+
+| Referência | Decisão e alcance |
+|---|---|
+| ACE-02/F1 | **Função `usuarios_com_senha(uuid[])`**, no padrão da NUC-03/R2 (`SECURITY DEFINER`, dona `lastro_owner`, `search_path` fixo, `EXECUTE` só para `lastro_app`). Recebe ids de usuário e devolve só `usuario_id` e `tem_senha` (booleano), nunca o hash. Responde só por quem é membro do escritório definido na transação (`app.firm_id`); sem escritório, 0 linhas. Criada em migração própria da ACE-02, a seguinte à `0006`. Critério c10 da ACE-02. Nome e retorno são contrato v0 (regra 11): abrir issue `contrato:`. Alternativas descartadas: coluna legível nova em `usuario` (muda o modelo da DB-01) e usar `buscar_usuario_por_login` na lista (traz o hash para um código que não precisa dele). |
+| ACE-02/F2 | **Aplica a NUC-03/R4** (nunca ler `usuario` inteiro pelo ORM). Na ACE-02, os pontos que leem `usuario` são a lista de contadores (c1), a conferência do login no aceite (c2 e c3 (e)) e a checagem de usuário repetido (c4); todos leem só colunas. A senha do aceite é gravada por `update(User)` direto, sem carregar o usuário (c2). |
+| ACE-02/F3 | **O convite vencido é decidido pelo relógio do banco.** `buscar_convite_por_hash` filtra com `expira_em > now()` (`0005`), então o aceite segue o relógio do banco. A situação `convite_vencido` da lista usa a mesma regra (`expira_em <= now()` na consulta), para nunca discordar do aceite. Nos testes, o convite vencido é criado no banco com `expira_em` no passado; adiantar o relógio do app não tem efeito. **Diferença intencional** em relação ao link do cliente, que é decidido pelo relógio do app (NUC-03/R3): cada uma segue o que a sua função já faz; não "uniformizar" sem mudar a função, os testes e as fichas. Critérios c3 (b) e c5 da ACE-02. |
+| ACE-02/F4 | **O aceite passa pela função e gasta o convite uma vez só.** O aceite acha o convite por `buscar_convite_por_hash`, nunca por consulta direta a `convite` (com a RLS, ela devolve 0 linhas), e define o escritório da transação com o que a função devolveu (`use_firm`). Como a função só lê, sem travar a linha, dois aceites simultâneos podem passar por ela. Por isso, na mesma transação e nesta ordem: (1) `UPDATE convite SET usado_em = now() WHERE id = … AND usado_em IS NULL AND revogado_em IS NULL AND expira_em > now()`; (2) se mudou 0 linhas, desfazer e responder com a recusa de c3; (3) só então gravar a senha (F2). O segundo aceite espera a trava da linha, reavalia o `WHERE` depois do commit do primeiro e muda 0 linhas. Critérios c2 e c11 da ACE-02. |
+
+### Avisos para a ACE-03 e a ACE-04
+
+Para ler ao rodar `/planejar` dessas fichas. Nenhum critério muda; os avisos evitam um erro de permissão que os testes só mostrariam como erro 500.
+
+| Referência | Aviso |
+|---|---|
+| ACE-03/A1 | **Aplica a NUC-03/R4.** A lista do chefe traz o responsável de cada cliente com id, nome e usuário (c6 e c8). Ler esses campos com `select(User.id, User.nome, User.identificador_login)` junto de `atribuicao` e `membro`, nunca com `select(User)`, `db.get(User, …)` ou relacionamento que carregue o objeto `User`. |
+| ACE-04/A1 | **Aplica a NUC-03/R4.** A consulta do responsável depois da troca (c2, c6 e c7) e a lista do chefe com o novo responsável (c7) leem nome e usuário de uma pessoa: só colunas, como na ACE-03/A1. A reatribuição grava em `atribuicao` e não precisa ler `usuario`. |
