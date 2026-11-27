@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "caio-nascime",
+  "responsavel": "jvsauma",
   "depende_de": [
     "ACE-01",
     "CAD-03",
