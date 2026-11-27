@@ -47,7 +47,7 @@ layouts/dominio.yaml        layout da planilha do Domínio (PROVISÓRIO, D-05)
 features/ planos/ progress/ processo: fichas, planos e diário (ver AGENTS.md)
 tools/                      harness: harness.py, hx, hx.ps1
 tools/fixtures_sinteticas.py gerador do `hx fixtures build` (só biblioteca padrão, HAR-03)
-docs/                       decisões, requisitos, segurança, templates, docs/modules/
+docs/                       decisões, requisitos, segurança, templates, docs/modulos/
 gitpages/                   site de documentação (Astro/Starlight, pnpm)
 ```
 
@@ -115,6 +115,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | De → para | Contrato |
 |---|---|
 | registry → api (`CAD-03`) | `CnpjValidationResult`, `ClientSummary` e os erros de cliente (`lastro.registry.contracts`); `validate_cnpj`, `register_client`, `list_clients`, `get_client` (`lastro.registry.service`). Lista e abertura recebem `access.service.responsible_member_ids` por parâmetro (o `registry` não lê `atribuicao`). Detalhes em `docs/modulos/registry.md` |
+| registry → api (`CAD-02`, `CAD-05`) | `ChartAccountEntry`, `ChartOfAccountsResult` (`lastro.registry.contracts`); `read_chart_of_accounts` (`lastro.registry.service`). Detalhes em `docs/modulos/registry.md` |
 | parsing → validation | `ExtratoLido` |
 | parsing → classification | `MovimentacaoLida` |
 | validation → review, export | `ResultadoConferencia` |
@@ -130,7 +131,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 - **Mensagens oficiais:** vazio → `"Informe o CNPJ do cliente."`; inválido → `"O CNPJ informado não é válido. Confira os números."`.
 - **Fronteira e impactos:** o contrato devolve apenas a mensagem de recusa — o status HTTP de dado inválido (`P-13`) fica na camada `api/`. Qualquer mudança de campo, assinatura ou mensagem deve avisar o responsável pela `CAD-03` (consumidora direta). Detalhes, notas para `CAD-03`, `DB-01` e `tools/harness.py` ficam em `docs/modulos/registry.md`. Os demais contratos `registry → classification/export` seguem `[definir]` na seção 10.
 
-`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modules/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
+`[definir]` em qual `contracts.py` cada contrato vive (proposta: no do módulo que o produz). Os campos estão na fonte (seção "Contratos entre módulos"). Mudar um contrato: issue `contrato:`, um PR que atualize os dois lados e o `docs/modulos/` dos dois módulos. Nomes de contratos, tabelas e identificadores do código continuam em português até haver decisão.
 
 ## 7. Onde colocar código novo
 
@@ -145,7 +146,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | um leitor de banco novo | `parsing/` (D-04: banco novo não é entrega confirmada) |
 | texto para o usuário | `web/src/copy/` no front; mensagem do erro RFC 9457 no back |
 | dado de teste | gerado em `fixtures/`; nunca copiado de extrato real |
-| regra específica de um módulo | `docs/modules/<module>.md`, não aqui |
+| regra específica de um módulo | `docs/modulos/<module>.md`, não aqui |
 | um módulo ou pasta de primeiro nível novos | não crie: registre em `DECISIONS.md` e pergunte |
 
 ## 8. Fichas e pastas
