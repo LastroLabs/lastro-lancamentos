@@ -164,7 +164,7 @@ A `api/` decide pelo `refusal`: preenchido → 422 (P-13) com a mensagem; `None`
 | Cód. | Condição | Mensagem | Classe |
 |---|---|---|---|
 | E1 | menos de 68 caracteres | `a linha está incompleta.` | causa |
-| E8 | texto que não é espaço depois da posição 78 | `a linha tem texto depois da posição 78.` | causa |
+| E8 | texto que não é espaço em branco depois da posição 78 (espaço e tab não contam) | `a linha tem texto depois da posição 78.` | causa |
 | E3a | classificação vazia | `falta a classificação da conta.` | causa |
 | E3b | classificação com algo além de dígitos | `a classificação "{valor}" precisa ter só números.` | causa |
 | E5a | tipo em branco | `falta o tipo da conta (S ou A).` | causa |
