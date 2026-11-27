@@ -304,3 +304,20 @@ def test_arquivo_sem_conta_analitica_recusado():
         f"Linha 3: falta o nome da conta. Há mais 1 linha com problema. {FIX_MANY}",
         "(b)",
     )
+
+
+def test_espaco_em_branco_depois_da_posicao_78_ignorado():
+    """c11: a tab or spaces after position 78 are ignored; real text there refuses the file."""
+    expected = _summary(_read(_file(*VALID)))
+    for case, tail in {"(a) tab": "\t", "(b) espaços e tab": "  \t"}.items():
+        result = _read(_file(*VALID[:5], VALID[5] + tail))
+        assert result.refusal is None, (case, result.refusal)
+        assert _summary(result) == expected, case
+        assert result.errors == (), case
+        assert result.warnings == (), case
+
+    _assert_refused(
+        _read(_file(*VALID[:5], VALID[5] + "\tX")),
+        f"Linha 6: a linha tem texto depois da posição 78. {FIX_ONE}",
+        "(c) tab e letra",
+    )
