@@ -150,8 +150,8 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-27T05:57:21Z",
-    "commit": "4be63786358e",
+    "verificado_em": "2026-11-27T06:02:19Z",
+    "commit": "dc70b733079a",
     "resultados": [
       {
         "criterio": "c1",
@@ -201,6 +201,11 @@
       {
         "criterio": "c10",
         "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_sem_conta_analitica_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c11",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_espaco_em_branco_depois_da_posicao_78_ignorado -q",
         "resultado": "ok"
       }
     ]
