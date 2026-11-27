@@ -141,7 +141,7 @@ def _plano_do_cliente(semente: int, id_cliente: str) -> list[dict]:
             "transitoria": codigo == TRANSITORIA,
         }
         for _ in range(_TENTATIVAS_DO_REDUZIDO):
-            conta["reduzido"] = f"{sorteio.inteiro(0, 9_999_999):07d}"
+            conta["reduzido"] = f"{sorteio.inteiro(1, 9_999_999):07d}"
             if conta["reduzido"] not in reduzidos and not harness.tipos_da_linha(
                 _linha_do_plano(conta), []
             ):
