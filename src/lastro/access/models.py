@@ -43,7 +43,10 @@ class User(Base):
     identificador_login: Mapped[str] = mapped_column(Text)
     nome: Mapped[str] = mapped_column(Text)
     ativo: Mapped[bool] = mapped_column(server_default=text("true"))
-    credencial_hash: Mapped[str | None] = mapped_column(Text)
+    # Never loaded by accident: reading it raises instead of fetching the hash (ACE-02, D5).
+    credencial_hash: Mapped[str | None] = mapped_column(
+        Text, deferred=True, deferred_raiseload=True
+    )
 
 
 class Member(Base):

@@ -123,6 +123,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | questions → review | `RespostaCliente` |
 | review → export | `ItemRevisado` |
 | access → api e módulos com rota protegida | `SignedInMember` (`access/contracts.py`, ACE-01): quem está conectado, com `member_id`, `firm_id` e `role` |
+| access → api (`ACE-02`) | `TeamMember`, `IssuedInvitation`, `Responsible`, `PersonStatus` e os erros de convite e atribuição (`lastro.access.contracts`); `register_accountant`, `list_team`, `issue_invitation`, `cancel_invitation`, `accept_invitation`, `assign_client`, `get_responsible` (`lastro.access.service`). A atribuição recebe `registry.service.client_exists` por parâmetro (o `access` não lê `cliente`). Detalhes em `docs/modulos/access.md` |
 | ai → classification (`IA-02`) | `ClientDescription`, `CandidateAccount` (`lastro.ai.contracts`), `suggest_accounts` (`lastro.ai.service`). Sem consumidor ainda; avisar o dono da `classification` por issue `contrato:` quando a ficha existir. Detalhes em `docs/modulos/ai.md` |
 
 **`registry` (`CnpjValidationResult` / `validate_cnpj`, versão 0):**

@@ -19,11 +19,11 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from lastro.access import service
 from lastro.access.contracts import UsernameTakenError
+from lastro.access.passwords import MIN_PASSWORD_LENGTH
 from lastro.core.config import get_settings
 from lastro.core.db import Database
 
 ENV_VAR = "LASTRO_SENHA_CHEFE"
-MIN_PASSWORD_LENGTH = 8
 
 EXIT_OK = 0
 EXIT_REFUSED = 1

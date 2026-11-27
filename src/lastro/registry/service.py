@@ -179,6 +179,24 @@ async def get_client(
     return _summary(row)
 
 
+async def client_exists(db: AsyncSession, firm_id: str, client_id: str) -> bool:
+    """Whether the firm has a client with this id; false for a malformed id or another firm's.
+
+    Passed by `api/` to `lastro.access.service`, which does not read `cliente` (ACE-02, plan
+    question 3). Nothing is written.
+
+    Args:
+        db: database session, in the name of the firm.
+        firm_id: firm of the session.
+        client_id: id from the address.
+    """
+    try:
+        parsed_id = UUID(client_id)
+    except ValueError:
+        return False
+    return await repository.find_client(db, UUID(firm_id), parsed_id) is not None
+
+
 def _firm_id(membership: Membership) -> UUID | None:
     """Firm of an active membership, or None (inactive or without a firm sees nothing)."""
     if not membership.is_active or membership.firm_id is None:
