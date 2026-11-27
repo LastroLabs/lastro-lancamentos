@@ -16,13 +16,14 @@ Como preencher (agente, ao encerrar a sessão):
 Substituir a planilha sintética do plano de contas por TXT de 78 colunas, com grupos e analíticas, preservando os gabaritos e a proteção contra documentos válidos.
 
 ## Próxima ação
-Preparar `planos/HAR-05/plan.md` e `tasks.md` para aprovação humana antes de escrever testes.
+Aguardar a revisão e a aprovação humana de `planos/HAR-05/plan.md` e `tasks.md`; depois escrever os testes da T1 antes do código.
 
 ## Bloqueios e perguntas
 - A aprovação humana do plano é necessária antes dos testes (regra 3 do `AGENTS.md`).
 
 ## Feito
 - 27/11 · S1 · A HAR-05 foi iniciada pelo harness; a branch foi criada manualmente a partir de `origin/developer` após a opção interativa ficar sem resposta.
+- 27/11 · S1 · Plano e tarefas da HAR-05 preparados para revisão, sem escrever testes ou código de implementação.
 
 ## Rodei
 - 27/11 · S1 · `python tools/harness.py feature start HAR-05` → ficha e progress iniciados, sem branch automática; `git switch -c feat/HAR-05-gerar-o-plano-de-contas-sintetico-em-txt` → branch criada.
