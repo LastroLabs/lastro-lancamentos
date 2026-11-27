@@ -6,7 +6,7 @@ O `hx fixtures build` (em `harness.py`) grava esse mapa; o `--check` só compara
 Regras (plan da HAR-03):
 - D3: todo sorteio sai de `random.Random(semente).random()`, com conversões próprias. Métodos
   como `randrange` e `choice` não têm garantia de dar o mesmo resultado entre versões.
-- D2: .xlsx escrito à mão com `zipfile`, entradas sem compressão e data 1980-01-01.
+- HAR-05: plano em TXT de 78 colunas, com grupos e contas analíticas.
 - D4: OFX 1.0.2 (SGML), ASCII, datas e período fixos (sem relógio).
 - D5: CPF e CNPJ nas descrições têm DV inválido. Os CNPJs válidos dos clientes só existem em
   tempo de execução (`cnpjs_dos_clientes`) e nunca vão para arquivo.
@@ -17,38 +17,45 @@ Todos os dados são inventados.
 
 from __future__ import annotations
 
-import io
 import json
 import random
-import zipfile
-from xml.sax.saxutils import escape
 
 import harness
 
 SEMENTE_PADRAO = 1
+_TENTATIVAS_DO_REDUZIDO = 20
 
 # Período fixo do extrato (outubro de 2026) e data do servidor. Nada vem do relógio.
 _ANO, _MES, _ULTIMO_DIA = 2026, 10, 31
 _DTSERVER = "20261101"
 
-_DATA_FIXA_DO_ZIP = (1980, 1, 1, 0, 0, 0)
 _ALFANUMERICOS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 TRANSITORIA = "9.9.99"
 PLANO_BASE = (
-    ("1.1.01", "Caixa"),
-    ("1.1.02", "Bancos conta movimento"),
-    ("1.1.03", "Clientes a receber"),
-    ("2.1.01", "Fornecedores a pagar"),
-    ("2.1.02", "Impostos a recolher"),
-    ("2.1.03", "Salários a pagar"),
-    ("3.1.01", "Receita de vendas"),
-    ("3.1.02", "Receita de serviços"),
-    ("4.1.01", "Despesas bancárias"),
-    ("4.1.02", "Aluguel"),
-    ("4.1.03", "Energia e água"),
-    ("4.1.04", "Pró-labore"),
-    (TRANSITORIA, "Transitória"),
+    ("1", "Ativo", "S"),
+    ("1.1", "Ativo circulante", "S"),
+    ("1.1.01", "Caixa", "A"),
+    ("1.1.02", "Bancos conta movimento", "A"),
+    ("1.1.03", "Clientes a receber", "A"),
+    ("2", "Passivo", "S"),
+    ("2.1", "Passivo circulante", "S"),
+    ("2.1.01", "Fornecedores a pagar", "A"),
+    ("2.1.02", "Impostos a recolher", "A"),
+    ("2.1.03", "Salários a pagar", "A"),
+    ("3", "Receitas", "S"),
+    ("3.1", "Receitas operacionais", "S"),
+    ("3.1.01", "Receita de vendas", "A"),
+    ("3.1.02", "Receita de serviços", "A"),
+    ("4", "Despesas", "S"),
+    ("4.1", "Despesas operacionais", "S"),
+    ("4.1.01", "Despesas bancárias", "A"),
+    ("4.1.02", "Aluguel", "A"),
+    ("4.1.03", "Energia e água", "A"),
+    ("4.1.04", "Pró-labore", "A"),
+    ("9", "Transitórias", "S"),
+    ("9.9", "Contas transitórias", "S"),
+    (TRANSITORIA, "Transitória", "A"),
 )
 
 # Modelos de movimentação: (descrição, sinal, mínimo e máximo em centavos, conta correta).
@@ -108,6 +115,42 @@ class _Sorteio:
 
     def digitos(self, quantidade: int) -> list[int]:
         return [self.inteiro(0, 9) for _ in range(quantidade)]
+
+
+def _linha_do_plano(conta: dict) -> str:
+    """Linha de 78 colunas do contrato TXT da CAD-02."""
+    return (
+        f"{conta['reduzido']}{conta['classificacao']:<20}"
+        f"{conta['nome'][:40]:<40}{conta['tipo']}{' ' * 10}"
+    )
+
+
+def _plano_do_cliente(semente: int, id_cliente: str) -> list[dict]:
+    """Plano com reduzidos reproduzíveis, sem consumir o sorteio dos extratos."""
+    numero_cliente = int(id_cliente.rsplit("-", 1)[1])
+    sorteio = _Sorteio(semente * 1_000_003 + numero_cliente)
+    reduzidos: set[str] = set()
+    plano = []
+    for codigo, nome, tipo in PLANO_BASE:
+        conta = {
+            "codigo": codigo,
+            "classificacao": codigo.replace(".", ""),
+            "reduzido": "",
+            "nome": nome,
+            "tipo": tipo,
+            "transitoria": codigo == TRANSITORIA,
+        }
+        for _ in range(_TENTATIVAS_DO_REDUZIDO):
+            conta["reduzido"] = f"{sorteio.inteiro(0, 9_999_999):07d}"
+            if conta["reduzido"] not in reduzidos and not harness.tipos_da_linha(
+                _linha_do_plano(conta), []
+            ):
+                break
+        if conta["reduzido"] in reduzidos:
+            raise RuntimeError("não foi possível sortear um reduzido único")
+        reduzidos.add(conta["reduzido"])
+        plano.append(conta)
+    return plano
 
 
 def _dv_errado(certo: int) -> int:
@@ -230,11 +273,8 @@ def gerar_modelo(semente: int = SEMENTE_PADRAO) -> dict:
                     "nome": nome,
                     "responsavel": responsavel,
                     "socios": [{"nome": f"SOCIO TESTE {n:02d}"} for n in (1, 2)],
-                    "plano": [
-                        {"codigo": codigo, "nome": nome_conta, "transitoria": codigo == TRANSITORIA}
-                        for codigo, nome_conta in PLANO_BASE
-                    ],
-                    "plano_planilha": f"planos/{id_cliente}.xlsx",
+                    "plano": _plano_do_cliente(semente, id_cliente),
+                    "plano_txt": f"planos/{id_cliente}.txt",
                     "contas_bancarias": contas,
                 }
             )
@@ -249,7 +289,7 @@ def gerar_modelo(semente: int = SEMENTE_PADRAO) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# T3: cadastro.json e planilha .xlsx
+# T3: cadastro.json e plano TXT
 # ---------------------------------------------------------------------------
 
 
@@ -269,7 +309,7 @@ def _cadastro(modelo: dict) -> dict:
                 "clientes": [
                     {
                         **{k: cli[k] for k in ("id", "nome", "responsavel", "socios", "plano")},
-                        "plano_planilha": cli["plano_planilha"],
+                        "plano_txt": cli["plano_txt"],
                         "contas_bancarias": [
                             {k: conta[k] for k in campos_da_conta}
                             for conta in cli["contas_bancarias"]
@@ -283,93 +323,16 @@ def _cadastro(modelo: dict) -> dict:
     }
 
 
-_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-_NS_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-_NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-_NS_PKG = "http://schemas.openxmlformats.org/package/2006/relationships"
-_NS_CT = "http://schemas.openxmlformats.org/package/2006/content-types"
-_TIPO_OOXML = "application/vnd.openxmlformats-officedocument.spreadsheetml"
 
 
-def _membros_da_planilha(linhas: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """Membros (nome, XML) de um .xlsx mínimo de 1 aba, com sharedStrings (D2)."""
-    textos: list[str] = []
-    indice: dict[str, int] = {}
-    xml_linhas = []
-    for numero, valores in enumerate(linhas, start=1):
-        celulas = []
-        for coluna, valor in zip("AB", valores):
-            if valor not in indice:
-                indice[valor] = len(textos)
-                textos.append(valor)
-            celulas.append(f'<c r="{coluna}{numero}" t="s"><v>{indice[valor]}</v></c>')
-        xml_linhas.append(f'<row r="{numero}">{"".join(celulas)}</row>')
-    compartilhadas = "".join(f"<si><t>{escape(t)}</t></si>" for t in textos)
-    return [
-        ("[Content_Types].xml", (
-            f'{_XML}<Types xmlns="{_NS_CT}">'
-            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-            '<Default Extension="xml" ContentType="application/xml"/>'
-            f'<Override PartName="/xl/workbook.xml" ContentType="{_TIPO_OOXML}.sheet.main+xml"/>'
-            f'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="{_TIPO_OOXML}.worksheet+xml"/>'
-            f'<Override PartName="/xl/styles.xml" ContentType="{_TIPO_OOXML}.styles+xml"/>'
-            f'<Override PartName="/xl/sharedStrings.xml" ContentType="{_TIPO_OOXML}.sharedStrings+xml"/>'
-            "</Types>"
-        )),
-        ("_rels/.rels", (
-            f'{_XML}<Relationships xmlns="{_NS_PKG}">'
-            f'<Relationship Id="rId1" Type="{_NS_REL}/officeDocument" Target="xl/workbook.xml"/>'
-            "</Relationships>"
-        )),
-        ("xl/workbook.xml", (
-            f'{_XML}<workbook xmlns="{_NS_MAIN}" xmlns:r="{_NS_REL}">'
-            '<sheets><sheet name="Plano" sheetId="1" r:id="rId1"/></sheets></workbook>'
-        )),
-        ("xl/_rels/workbook.xml.rels", (
-            f'{_XML}<Relationships xmlns="{_NS_PKG}">'
-            f'<Relationship Id="rId1" Type="{_NS_REL}/worksheet" Target="worksheets/sheet1.xml"/>'
-            f'<Relationship Id="rId2" Type="{_NS_REL}/styles" Target="styles.xml"/>'
-            f'<Relationship Id="rId3" Type="{_NS_REL}/sharedStrings" Target="sharedStrings.xml"/>'
-            "</Relationships>"
-        )),
-        ("xl/worksheets/sheet1.xml", (
-            f'{_XML}<worksheet xmlns="{_NS_MAIN}"><sheetData>{"".join(xml_linhas)}</sheetData>'
-            "</worksheet>"
-        )),
-        ("xl/styles.xml", (
-            f'{_XML}<styleSheet xmlns="{_NS_MAIN}">'
-            '<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>'
-            '<fills count="1"><fill><patternFill patternType="none"/></fill></fills>'
-            '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
-            '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-            '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>'
-            "</styleSheet>"
-        )),
-        ("xl/sharedStrings.xml", (
-            f'{_XML}<sst xmlns="{_NS_MAIN}" count="{len(textos)}" uniqueCount="{len(textos)}">'
-            f"{compartilhadas}</sst>"
-        )),
-    ]
+# ---------------------------------------------------------------------------
+# Plano TXT de largura fixa
+# ---------------------------------------------------------------------------
 
 
-def membros_xlsx(dados: bytes) -> dict[str, str]:
-    """Texto de cada membro de um .xlsx (para a trava de documentos do harness, D7)."""
-    with zipfile.ZipFile(io.BytesIO(dados)) as z:
-        return {nome: z.read(nome).decode("utf-8", errors="replace") for nome in z.namelist()}
-
-
-def _planilha(plano: list[dict]) -> bytes:
-    """Plano de contas em .xlsx, igual byte a byte para a mesma entrada (D2)."""
-    linhas = [("código", "nome"), *((c["codigo"], c["nome"]) for c in plano)]
-    saida = io.BytesIO()
-    with zipfile.ZipFile(saida, "w", compression=zipfile.ZIP_STORED) as z:
-        for nome, xml in _membros_da_planilha(linhas):
-            info = zipfile.ZipInfo(nome, date_time=_DATA_FIXA_DO_ZIP)
-            info.compress_type = zipfile.ZIP_STORED
-            info.create_system = 0  # o padrão muda entre Windows e Unix
-            info.external_attr = 0
-            z.writestr(info, xml.encode("utf-8"))
-    return saida.getvalue()
+def _plano_txt(plano: list[dict]) -> bytes:
+    """Plano sem cabeçalho, em UTF-8 com CRLF e 78 colunas por linha."""
+    return ("\r\n".join(_linha_do_plano(conta) for conta in plano) + "\r\n").encode("utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -440,7 +403,7 @@ def gerar_arquivos(semente: int = SEMENTE_PADRAO) -> dict[str, bytes]:
     arquivos: dict[str, bytes] = {"cadastro.json": _json(_cadastro(modelo))}
     for esc in modelo["escritorios"]:
         for cli in esc["clientes"]:
-            arquivos[cli["plano_planilha"]] = _planilha(cli["plano"])
+            arquivos[cli["plano_txt"]] = _plano_txt(cli["plano"])
             for conta in cli["contas_bancarias"]:
                 arquivos[conta["ofx"]] = _ofx(conta)
                 arquivos[conta["gabarito"]] = _json(_gabarito(cli, conta))
