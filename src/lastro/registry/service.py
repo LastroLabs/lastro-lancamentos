@@ -23,10 +23,10 @@ from lastro.core.contracts import (
 )
 from lastro.core.service import decide_access, filter_visible_clients
 from lastro.registry import repository
-from lastro.registry.chart_spreadsheet import _read_chart_of_accounts_spreadsheet
+from lastro.registry.chart_txt import _read_chart_of_accounts
 from lastro.registry.cnpj import _validate_cnpj
 from lastro.registry.contracts import (
-    ChartSpreadsheetResult,
+    ChartOfAccountsResult,
     ClientNotAssignedError,
     ClientNotFoundError,
     ClientSummary,
@@ -61,17 +61,23 @@ def validate_cnpj(cnpj: str) -> CnpjValidationResult:
     return _validate_cnpj(cnpj)
 
 
-def read_chart_of_accounts_spreadsheet(source: bytes | Path) -> ChartSpreadsheetResult:
-    """Read and validate a client's chart of accounts `.xlsx` spreadsheet.
+def read_chart_of_accounts(source: bytes | Path) -> ChartOfAccountsResult:
+    """Read and validate the client's chart of accounts exported as text (CAD-02).
+
+    Bad content never raises: it becomes `refusal`, or a message in `errors` or
+    `warnings`. The rule is in docs/modulos/registry.md.
 
     Args:
-        source: Raw `.xlsx` bytes or filesystem path to the spreadsheet file.
+        source: raw bytes of the uploaded file, or the path of the file.
 
     Returns:
-        Structured result containing the accepted accounts in row order and any
-        plain-Portuguese row or file-level error messages.
+        The accepted accounts in file order with tolerated errors and warnings, or
+        a single refusal message.
+
+    Raises:
+        OSError: `source` is a path that does not exist or cannot be read (plan D2).
     """
-    return _read_chart_of_accounts_spreadsheet(source)
+    return _read_chart_of_accounts(source)
 
 
 async def register_client(
