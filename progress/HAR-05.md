@@ -16,11 +16,12 @@ Como preencher (agente, ao encerrar a sessão):
 Substituir a planilha sintética do plano de contas por TXT de 78 colunas, com grupos e analíticas, preservando os gabaritos e a proteção contra documentos válidos.
 
 ## Próxima ação
-Solicitar revisão do PR ao dono do harness; conferir a leitura dos TXT pela CAD-02 quando o PR dessa ficha estiver integrado à `developer`.
+Obter a revisão do dono do harness no PR #90; repetir a prova integrada depois que a CAD-02 estiver em `developer`.
 
 ## Bloqueios e perguntas
 - A responsável aprovou o plano, as tarefas e os testes em 27/11; a marcação das caixas do plano continua reservada a ela.
-- A integração com a CAD-02 aguarda o PR #74, ainda aberto com mudanças solicitadas. `LASTRO_NOMES_PROIBIDOS` não está definida neste ambiente; o `check-clean` pulou apenas essa checagem.
+- O leitor do branch do PR #74 aceitou os três TXT da HAR-05, com 23 contas por cliente, sem erros nem avisos. A integração em `developer` aguarda o merge desse PR, ainda aberto com mudanças solicitadas.
+- `LASTRO_NOMES_PROIBIDOS` não está definida neste ambiente; o `check-clean` pulou apenas essa checagem.
 
 ## Feito
 - 27/11 · S1 · A HAR-05 foi iniciada pelo harness; a branch foi criada manualmente a partir de `origin/developer` após a opção interativa ficar sem resposta.
@@ -29,12 +30,14 @@ Solicitar revisão do PR ao dono do harness; conferir a leitura dos TXT pela CAD
 - 27/11 · S1 · Raissa aprovou os testes e a exceção T12; testes e ajuste autorizado da HAR-03 registrados no commit `15d2468` antes do código.
 - 27/11 · S1 · Gerador passou a emitir três planos TXT por semente, com 10 grupos e 13 analíticas por cliente, reduzidos independentes e trava de documentos preservada. Código e documentação no commit `06b5a85`.
 - 27/11 · S1 · OFX e gabaritos da semente padrão preservados byte a byte em relação a `origin/developer` (8 arquivos); `git diff 15d2468 HEAD -- tests/` vazio.
+- 27/11 · S1 · PR #90 aberto para `developer`; mudança do contrato registrada na issue #89. O leitor do branch do PR #74 aceitou os três planos gerados (23 contas cada, sem erros nem avisos).
 
 ## Rodei
 - 27/11 · S1 · `python tools/harness.py feature start HAR-05` → ficha e progress iniciados, sem branch automática; `git switch -c feat/HAR-05-gerar-o-plano-de-contas-sintetico-em-txt` → branch criada.
 - 27/11 · S1 · `python -m pytest tests/harness/test_fixtures_plano_txt.py -q` → 3 falhas esperadas antes da implementação; `python -m pytest tests/harness/test_fixtures_plano_txt.py tests/harness/test_fixtures.py -q` → 24 passaram depois.
 - 27/11 · S1 · `python tools/harness.py feature verify HAR-03` → regressão esperada em c3/c6 antes do código; depois → 14 verificações OK. `python tools/harness.py feature verify HAR-05` → 3 falhas antes do código; depois → c1–c3 OK.
 - 27/11 · S1 · `python tools/harness.py verify` → ruff e pytest OK; `python tools/harness.py fixtures build` → 12 arquivos; `python tools/harness.py fixtures build --check` → 12 iguais; `python tools/harness.py check-clean` → 0 achados, nomes pulados por variável ausente.
+- 27/11 · S1 · Leitura cruzada com `read_chart_of_accounts` da CAD-02 no branch do PR #74 → 3 planos aceitos, 23 contas em cada, 0 erros, 0 avisos.
 
 ## Falhou
 - 27/11 · S1 · A criação automática da branch não ocorreu porque o prompt interativo do harness recebeu resposta vazia; a branch foi criada manualmente.
