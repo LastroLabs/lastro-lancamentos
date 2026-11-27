@@ -101,6 +101,14 @@
         "entrada": "plano de c1 com a linha 6 seguida de: (a) um tab; (b) espaços e um tab; (c) um tab e a letra X",
         "saida": "(a) e (b) as 6 contas de c1 aceitas, 0 erros, 0 avisos, sem recusa; (c) 'Linha 6: a linha tem texto depois da posição 78. Corrija essa linha e envie o arquivo de novo.', nenhuma conta aceita"
       }
+    },
+    {
+      "id": "c12",
+      "descricao": "Texto nas posições 69 a 78, logo depois do tipo, recusa o arquivo; espaço em branco ali, ou linha que termina antes, é aceito",
+      "exemplo": {
+        "entrada": "plano de c1 com a linha 6 assim: (a) letra X na posição 69; (b) letra X na posição 78; (c) um tab na posição 70; (d) cortada em 70 caracteres; (e) cortada em 68 caracteres, terminando no tipo",
+        "saida": "(a) e (b) 'Linha 6: a linha tem texto depois do tipo da conta (posições 69 a 78). Corrija essa linha e envie o arquivo de novo.', nenhuma conta aceita; (c), (d) e (e) as 6 contas de c1 aceitas, 0 erros, 0 avisos, sem recusa"
+      }
     }
   ],
   "verificacao": [
@@ -147,6 +155,10 @@
     {
       "criterio": "c11",
       "comando": "pytest tests/registry/test_plano_txt.py::test_espaco_em_branco_depois_da_posicao_78_ignorado -q"
+    },
+    {
+      "criterio": "c12",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_texto_nas_posicoes_69_a_78_recusa_o_arquivo -q"
     }
   ],
   "evidencia": {

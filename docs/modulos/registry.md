@@ -118,7 +118,7 @@ result = read_chart_of_accounts(data)  # bytes ou Path; nunca levanta exceção 
 | `[7:27]` | classificação | só dígitos, alinhada à esquerda, sem pontos; a hierarquia vem dela |
 | `[27:67]` | nome | até 40 caracteres, truncado pelo programa; o tipo pode ficar colado ao nome (`...LTDAA`) |
 | `[67]` | tipo | `S` (grupo) ou `A` (analítica) |
-| `[68:78]` | espaços | |
+| `[68:78]` | espaços | posições 69 a 78; espaço e tab não contam; texto aqui recusa o arquivo (E9). Pode faltar: a linha de 68 a 77 caracteres é aceita |
 
 A conta superior é o **maior prefixo próprio** da classificação que existe no arquivo (`110101` → `1101` → `11` → `1`). Não depende da máscara (`1.1.2.3.3` ou `1.1.1.2.5`) nem da ordem das linhas.
 
@@ -165,6 +165,7 @@ A `api/` decide pelo `refusal`: preenchido → 422 (P-13) com a mensagem; `None`
 |---|---|---|---|
 | E1 | menos de 68 caracteres | `a linha está incompleta.` | causa |
 | E8 | texto que não é espaço em branco depois da posição 78 (espaço e tab não contam) | `a linha tem texto depois da posição 78.` | causa |
+| E9 | texto que não é espaço em branco em `[68:78]`, as posições 69 a 78 (espaço e tab não contam) | `a linha tem texto depois do tipo da conta (posições 69 a 78).` | causa |
 | E3a | classificação vazia | `falta a classificação da conta.` | causa |
 | E3b | classificação com algo além de dígitos | `a classificação "{valor}" precisa ter só números.` | causa |
 | E5a | tipo em branco | `falta o tipo da conta (S ou A).` | causa |
