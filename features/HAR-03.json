@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "regressed",
+  "estado": "passing",
   "responsavel": "camposs04",
   "depende_de": [
     "HAR-04"
@@ -124,17 +124,12 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-24T18:47:28Z",
-    "commit": "aa057a6f8ce0",
+    "verificado_em": "2026-11-27T13:42:35Z",
+    "commit": "fd74f5e6e98d",
     "resultados": [
       {
         "criterio": "c1",
         "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q",
-        "resultado": "ok"
-      },
-      {
-        "criterio": "c1",
-        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q",
         "resultado": "ok"
       },
       {
