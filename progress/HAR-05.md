@@ -31,6 +31,7 @@ Obter a revisão do dono do harness no PR #90; repetir a prova integrada depois 
 - 27/11 · S1 · Gerador passou a emitir três planos TXT por semente, com 10 grupos e 13 analíticas por cliente, reduzidos independentes e trava de documentos preservada. Código e documentação no commit `06b5a85`.
 - 27/11 · S1 · OFX e gabaritos da semente padrão preservados byte a byte em relação a `origin/developer` (8 arquivos); `git diff 15d2468 HEAD -- tests/` vazio.
 - 27/11 · S1 · PR #90 aberto para `developer`; mudança do contrato registrada na issue #89. O leitor do branch do PR #74 aceitou os três planos gerados (23 contas cada, sem erros nem avisos).
+- 27/11 · S1 · Ajustado o sorteio para excluir `0000000`, que o contrato da CAD-02 recusa. Depois da correção, o leitor do PR #74 voltou a aceitar os três planos da semente padrão, sem erros nem avisos; OFX e gabaritos seguiram idênticos à base.
 
 ## Rodei
 - 27/11 · S1 · `python tools/harness.py feature start HAR-05` → ficha e progress iniciados, sem branch automática; `git switch -c feat/HAR-05-gerar-o-plano-de-contas-sintetico-em-txt` → branch criada.
@@ -38,6 +39,7 @@ Obter a revisão do dono do harness no PR #90; repetir a prova integrada depois 
 - 27/11 · S1 · `python tools/harness.py feature verify HAR-03` → regressão esperada em c3/c6 antes do código; depois → 14 verificações OK. `python tools/harness.py feature verify HAR-05` → 3 falhas antes do código; depois → c1–c3 OK.
 - 27/11 · S1 · `python tools/harness.py verify` → ruff e pytest OK; `python tools/harness.py fixtures build` → 12 arquivos; `python tools/harness.py fixtures build --check` → 12 iguais; `python tools/harness.py check-clean` → 0 achados, nomes pulados por variável ausente.
 - 27/11 · S1 · Leitura cruzada com `read_chart_of_accounts` da CAD-02 no branch do PR #74 → 3 planos aceitos, 23 contas em cada, 0 erros, 0 avisos.
+- 27/11 · S1 · Após excluir `0000000`: 24 testes de fixtures, HAR-05 c1–c3 e 14 verificações HAR-03 OK; 3.000 planos gerados com reduzidos únicos e não zero; `fixtures build --check` → 12 iguais; `check-clean` → 0 achados, nomes pulados.
 
 ## Falhou
 - 27/11 · S1 · A criação automática da branch não ocorreu porque o prompt interativo do harness recebeu resposta vazia; a branch foi criada manualmente.
