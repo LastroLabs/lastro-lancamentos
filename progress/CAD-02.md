@@ -16,10 +16,10 @@ Como preencher (agente, ao encerrar a sessão):
 Ler e validar o plano de contas exportado do Domínio em TXT de 78 colunas, no módulo `registry` (sem banco nem HTTP). `read_chart_of_accounts(bytes | Path)` devolve `ChartOfAccountsResult(accounts, errors, warnings, refusal)` (contrato v1, `DECISIONS.md` §11 T5 e T13): as contas com reduzido, classificação, nome, tipo e conta superior, os erros tolerados das analíticas folha, os avisos e uma recusa única quando o erro compromete o plano (RF-CAD-03; regra em `docs/modulos/registry.md`).
 
 ## Próxima ação
-Acompanhar a CI do PR #74 (o `hx verify` completo não rodou localmente depois do teste do c11) e a revisão. Rodar o `check-clean` com `LASTRO_NOMES_PROIBIDOS` definida.
+Acompanhar a CI do PR #74 e a nova revisão da Raissa depois do E9. Rodar o `check-clean` com `LASTRO_NOMES_PROIBIDOS` definida.
 
 ## Bloqueios e perguntas
-- O teste do c11 foi escrito depois do código, a pedido de caio-nascime; está explicado no PR para a revisão.
+- O teste do c11 foi escrito depois do código, a pedido de caio-nascime; está explicado no PR para a revisão. O c12 seguiu a ordem normal (teste falhando antes do código).
 - O "Pronto quando" da T3 (c2) só passa com a hierarquia da T4, porque o teste confere a conta superior `11`. E o c6(d) da T4 precisa da tolerância da analítica folha, que por isso entrou na T4, e não na T5.
 
 ## Feito
@@ -36,6 +36,7 @@ Acompanhar a CI do PR #74 (o `hx verify` completo não rodou localmente depois d
 - 27/11 · S3 · T7: ficha em `passing` pelo `hx feature verify` (`72406b9`).
 - 27/11 · S3 · E8 passa a ignorar qualquer espaço em branco depois da posição 78: primeiro o `registry.md` (`bae4406`), depois o código (`89cfd61`). Texto de verdade continua recusado.
 - 27/11 · S3 · Critério c11 na ficha (`924d00a`) e teste `test_espaco_em_branco_depois_da_posicao_78_ignorado` (`dc70b73`), a pedido de caio-nascime; os 10 testes anteriores não mudaram.
+- 27/11 · S4 · Revisão do PR (8/12): a faixa `[68:78]` não era validada. E9 e critério c12 no `registry.md` e na ficha (`14e2298`), teste do c12 só de teste (`4117e39`), E9 depois do E5 no `registry.md` (`235022d`), código (`84efeac`), ficha pelo harness (`5366a3f`).
 
 ## Rodei
 - 25/11 · S1 · `hx feature verify CAD-02` → c1, c2, c3 e c4 (2 comandos) ok; evidência registrada em `features/CAD-02.json` no commit `edd1cdf` (sobre `01bc3bdebeb2`).
@@ -55,10 +56,18 @@ Acompanhar a CI do PR #74 (o `hx verify` completo não rodou localmente depois d
 - 27/11 · S3 · `python tools/harness.py check-clean`: 0 achado(s), `RESULTADO: OK`. `python tools/harness.py verify` depois do ajuste do E8: ruff OK, pytest OK, `RESULTADO: OK`.
 - 27/11 · S3 · `pytest tests/registry/test_plano_txt.py -q`: 11 passed. Com o `chart_txt.py` de `f84cc61` (antes do ajuste do E8), o teste do c11 falha no caso do tab, como esperado.
 - 27/11 · S3 · `python tools/harness.py feature verify CAD-02`: c1 a c11 OK, `RESULTADO: OK`.
+- 27/11 · S4 · Reprodução da revisão em script fora do repositório: `X` em `[68]`, `[71]` e `[77]` aceito, `refusal=None`.
+- 27/11 · S4 · Teste do c12 sobre o código antigo: falha no caso (a), `refusal=None`; os outros 11 passam.
+- 27/11 · S4 · `docker compose run --rm -T dev pytest tests/registry/test_plano_txt.py -q`: 12 passed.
+- 27/11 · S4 · `python tools/harness.py verify`: ruff OK, pytest OK, Arquitetura e E2E pulados, `RESULTADO: OK`.
+- 27/11 · S4 · `python tools/harness.py feature verify CAD-02`: c1 a c12 OK, `RESULTADO: OK`.
+- 27/11 · S4 · `python tools/harness.py check-clean`: 0 achado(s), `RESULTADO: OK` (aviso: `LASTRO_NOMES_PROIBIDOS` não definida).
+- 27/11 · S4 · Leitor deste branch sobre os 3 TXT gerados pelo `fixtures_sinteticas.py` do branch da HAR-05: 23 contas cada, 0 erros, 0 avisos, sem recusa, todas as linhas com 78 caracteres. O teste de geração da HAR-05 não rodou (está no outro branch).
 
 ## Falhou
 - 25/11 · S2 · Nenhuma falha de código, lint ou teste; apenas o aviso esperado de `LASTRO_NOMES_PROIBIDOS` não definida ao rodar `sh tools/hx check-clean` sem a variável no ambiente.
 - 27/11 · S3 · Na T3, o teste do c2 falhou só na conta superior (`None` em vez de `'11'`), que entrou na T4. Depois da T4 ele passou.
+- 27/11 · S4 · Com o E9 antes do E3, o c8 falhou: o byte inválido desloca a linha 7 e o `A` cai em `[69]`, dando E9 em vez de E5a. Resolvido pondo o E9 depois do E5.
 - 27/11 · S3 · `hx verify` depois do teste do c11 interrompido por demora, a pedido de caio-nascime; fica para a CI. O último `hx verify` completo e verde foi com o código atual, antes do teste novo.
 
 ## Decisões
@@ -67,6 +76,7 @@ Acompanhar a CI do PR #74 (o `hx verify` completo não rodou localmente depois d
 - 27/11 · S3 · E8 considera só o caractere espaço depois da posição 78, conforme o texto da tabela ("texto que não é espaço"). E3b e E2 citam o valor sem os espaços das pontas.
 - 27/11 · S3 · E8: tab e outros espaços em branco depois da posição 78 não contam como texto (escolhida a opção B por caio-nascime em 27/11). Motivo: o tab já conta como espaço em branco nos campos, e a recusa apontaria um problema invisível para a contadora (RF-AVI-02). Os dois planos reais não têm tab (conferido por caio-nascime). Substitui a decisão anterior desta sessão ("E8 considera só o caractere espaço").
 - 27/11 · S3 · Mantidas as mensagens que diferem da referência: tab no lugar do tipo dá "falta o tipo da conta (S ou A)." (E5a), e linha que repete reduzido e classificação mostra o E6, que vem primeiro na tabela do `registry.md`.
+- 27/11 · S4 · E9 (caio-nascime): texto em `[68:78]` é causa; espaço e tab não contam; linha de 68 a 77 caracteres continua aceita. Mensagem: `a linha tem texto depois do tipo da conta (posições 69 a 78).` Vem depois do E5 (c8). Os dois planos reais têm a faixa em branco (conferido por caio-nascime, fora do repositório).
 
 ## Fim de sessão
 - [x] `hx verify` verde, ou a falha está descrita em "Falhou"
