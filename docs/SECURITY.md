@@ -87,7 +87,7 @@ O `check-clean` **reduz** o risco, não o elimina. A segunda barreira é a revis
 
 **Divisão DB-01/NUC-03 (responsável DB-01, 23/11/2026):** a DB-01 cria as tabelas e restrições; a NUC-03 implementa as políticas RLS. A conclusão da NUC-03 é condição obrigatória antes do uso com dados de piloto. Não criar políticas permissivas para contornar a pendência. FKs compostas não substituem isolamento de leitura e escrita por RLS.
 
-**RLS implementada (NUC-03, 26/11/2026):** RLS forçada nas 12 tabelas com escritório; sem escritório na transação, a aplicação não vê nem grava nada. As buscas feitas antes de se saber o escritório (entrada, sessão, convite e link do cliente) passam só por funções `SECURITY DEFINER` com retorno mínimo. Nenhum papel tem `BYPASSRLS` e não há política aberta para a aplicação; testes travam as duas coisas. A RLS isola por escritório: a regra de carteira (contador só vê clientes atribuídos) e o limite do link a um cliente e uma competência continuam no código. Detalhe em `docs/modulos/access.md` e `DECISIONS.md`, seção 10.
+**RLS implementada (NUC-03, 26/11/2026):** RLS forçada nas 12 tabelas com escritório; sem escritório na transação, a aplicação não vê nem grava nada. As buscas feitas antes de se saber o escritório (entrada, sessão, convite e link do cliente) passam só por funções `SECURITY DEFINER` com retorno mínimo. Nenhum papel tem `BYPASSRLS` e não há política aberta para a aplicação; testes travam as duas coisas. A RLS isola por escritório: a regra de carteira (contador só vê clientes atribuídos) e o limite do link a um cliente e uma competência continuam no código. Detalhe em `docs/modulos/access.md` e `DECISIONS.md`, seção 9.
 
 Detalhe nos requisitos (RF-SEG) e nas regras do `AGENTS.md`; aqui só o lembrete.
 

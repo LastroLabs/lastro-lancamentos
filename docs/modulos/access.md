@@ -133,7 +133,7 @@ Decisões em `planos/DB-03/plan.md`.
 
 ## Isolamento no banco (NUC-03)
 
-Migrações `0005` e `0006`; decisões em `planos/NUC-03/plan.md` e em `DECISIONS.md`, seção 10.
+Migrações `0005` e `0006`; decisões em `planos/NUC-03/plan.md` e em `DECISIONS.md`, seção 9.
 
 **Como funciona:** as 12 tabelas com escritório têm RLS ligada e forçada. Uma linha só aparece, e
 só pode ser gravada, numa transação em nome do escritório dela. Sem escritório, a aplicação vê 0
@@ -168,7 +168,7 @@ NUC-03 e quem usa a função.
   clientes daquele escritório. Filtre sempre pelo `cliente_id` e pelo `competencia_id` que a função
   devolveu, e ignore qualquer identificador vindo da requisição (ACE-05, c8).
 - Pendências antes do plano da ACE-05: quem cria a competência e onde se configura a validade
-  (`DECISIONS.md`, seção 10, Q1 e Q2).
+  (`DECISIONS.md`, seção 9, Q1 e Q2).
 
 **Armadilhas:**
 - **Tabela nova com `escritorio_id`** precisa, na própria migração, de `ENABLE` e `FORCE ROW LEVEL

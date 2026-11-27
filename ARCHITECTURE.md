@@ -156,7 +156,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 
 **Divisão DB-01/NUC-03 (23/11/2026, decisão do responsável DB-01):** esquema e restrições na DB-01; políticas RLS na NUC-03, obrigatoriamente concluída antes de usar dados de piloto. Sem políticas permissivas de contorno. Nomes físicos da DB-01 seguem a ficha em português singular, como exceção ao CODING_STANDARDS.md. Esta divisão não declara o isolamento implementado nem altera a I-4 do produto. Ver `docs/decisoes/DECISIONS.md`, seção 5.
 
-**RLS implementada (NUC-03, 26/11/2026):** a segunda camada da I-4 existe. `core/db.py` leva o escritório ao banco (`use_firm`, reaplicado a cada transação); as migrações `0005` e `0006` ligam a RLS forçada nas 12 tabelas com escritório e criam as cinco funções de busca sem escritório. Tabela nova com `escritorio_id` precisa de RLS e políticas na própria migração. Ver `docs/modulos/access.md` ("Isolamento no banco") e `docs/decisoes/DECISIONS.md`, seção 10.
+**RLS implementada (NUC-03, 26/11/2026):** a segunda camada da I-4 existe. `core/db.py` leva o escritório ao banco (`use_firm`, reaplicado a cada transação); as migrações `0005` e `0006` ligam a RLS forçada nas 12 tabelas com escritório e criam as cinco funções de busca sem escritório. Tabela nova com `escritorio_id` precisa de RLS e políticas na própria migração. Ver `docs/modulos/access.md` ("Isolamento no banco") e `docs/decisoes/DECISIONS.md`, seção 9.
 
 - O campo `modulo` da ficha é o nome da pasta (`core`, `access`, `registry`, `ai`...) ou `harness`/`ci`. A ficha só cria código na pasta do seu módulo e testes em `tests/<module>/`.
 - O prefixo do ID é histórico e não deriva da pasta: NUC → `core`, ACE → `access`, CAD → `registry`, IA → `ai`, HAR → `harness`, HX → `ci`.
