@@ -1,10 +1,12 @@
-"""Contracts of the registry module (CAD-01, RF-CAD-01).
+"""Contracts of the registry module (CAD-01, CAD-02).
 
 Immutable data exchanged between `registry.service` and the modules that consume
-CNPJ validation (such as client registration and the API layer).
+registry domain operations (such as client registration, chart of accounts
+import, and the API layer).
 """
 
 from dataclasses import dataclass
+from typing import Literal
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,3 +69,47 @@ class ClientNotAssignedError(Exception):
 
 class DuplicateCnpjError(Exception):
     """The firm already has a client with this CNPJ; nothing was written."""
+
+
+@dataclass(frozen=True, slots=True)
+class ChartAccountEntry:
+    """An accepted account of the chart of accounts text file (CAD-02, contract v1).
+
+    Attributes:
+        line_number: position of the line in the file; blank lines count.
+        reduced_code: 7-digit code assigned by the accounting program.
+        classification: digits only; the hierarchy comes from it.
+        name: account name without surrounding spaces.
+        kind: "S" (group, synthetic) or "A" (receives entries, analytic).
+        parent_classification: longest proper prefix of `classification` present
+            in the file; `None` for top-level accounts.
+    """
+
+    line_number: int
+    reduced_code: str
+    classification: str
+    name: str
+    kind: Literal["S", "A"]
+    parent_classification: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChartOfAccountsResult:
+    """Outcome of reading the chart of accounts text file (CAD-02, contract v1).
+
+    `api/` decides by `refusal`: filled means 422 (P-13) with the message; `None`
+    means success, with `errors` and `warnings` in the response.
+
+    Attributes:
+        accounts: accepted accounts in file order; `()` when refused.
+        errors: plain-Portuguese messages of tolerated lines, left out of
+            `accounts`; `()` when refused.
+        warnings: plain-Portuguese messages that do not block the load; `()` when
+            refused.
+        refusal: single plain-Portuguese refusal message; `None` when accepted.
+    """
+
+    accounts: tuple[ChartAccountEntry, ...]
+    errors: tuple[str, ...]
+    warnings: tuple[str, ...]
+    refusal: str | None
