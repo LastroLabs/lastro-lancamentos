@@ -16,10 +16,10 @@ Como preencher (agente, ao encerrar a sessão):
 O contador (ou o chefe atribuído a si) cadastra, lista e altera contas bancárias do cliente com banco, apelido e meses de uso opcionais; nada é apagado.
 
 ## Próxima ação
-Humano: conferir o resultado do `hx verify`, decidir sobre o erro de ordem de imports em `tests/registry/test_contas_bancarias.py` (I001; `ruff check --fix` nesse arquivo), commitar e rodar `hx feature verify CAD-04`.
+Revisão do PR da CAD-04 na `developer`. Depois, CAD-06 (identificação protegida e conta contábil da conta bancária) e consumidores das contas.
 
 ## Bloqueios e perguntas
-- `ruff check .` acusa I001 (ordem dos imports) em `tests/registry/test_contas_bancarias.py`; a regra 3 proíbe editar `tests/`, então fica para o humano.
+- (nenhum)
 
 ## Feito
 - 27/11 · S2 · T2 a T7: `bancos.csv` (463 bancos do STR/BCB), `banks.py`, `bank_accounts.py`, contratos v0, repositório, serviço, rotas POST/GET/PATCH, docs (`registry.md`, `ARCHITECTURE.md` §6), OpenAPI e `schema.d.ts` regenerados.
@@ -29,10 +29,16 @@ Humano: conferir o resultado do `hx verify`, decidir sobre o erro de ordem de im
 - 27/11 · S2 · `docker compose run --rm dev pytest -q` → 533 passed, 1 failed (teste do OpenAPI, ver Falhou)
 - 27/11 · S2 · `docker compose run --rm dev pytest tests/web/test_web_foundation.py -q` com os arquivos gerados no stage → 5 passed
 - 27/11 · S2 · `python tools/harness.py check-clean` → 0 achados, OK
+- 27/11 · S2 · `docker compose run --rm -T --user uid:gid dev pytest -q tests/web` → 5 passed
+- 27/11 · S2 · `pytest -q` completo (como root) → 534 passed; `ruff check .` → All checks passed
+- 27/11 · S2 · commits: 706eaff (implementação) e e2724dc (ordem de import no teste)
+- 27/11 · S2 · `hx verify` (ruff e pytest, no container, com `--user`) → OK
+- 27/11 · S2 · `hx feature verify CAD-04` (rodado pelo responsável) → `passing`, c1 a c8 ok, no commit e2724dc
 
 ## Falhou
 - 27/11 · S2 · `test_web01_cliente_da_api_gerado_do_openapi_e_estavel` falhou porque `docs/api/openapi.json` regenerado ainda não estava no git; passou depois de `git add`.
-- 27/11 · S2 · `ruff check .`: I001 em `tests/registry/test_contas_bancarias.py` (não editado, regra 3).
+- 27/11 · S2 · `ruff check .`: I001 em `tests/registry/test_contas_bancarias.py` (não editado por mim, regra 3); o responsável corrigiu a mão e entrou no commit e2724dc.
+- 27/11 · S2 · `hx verify` falhava no teste do front (`pnpm run build`, EACCES em `web/dist/assets`): a pasta tinha dono root, criada por pytest que rodei no Docker como root; o `hx` roda com `--user uid:gid`. Removi `web/dist` e passou. Não era código.
 
 ## Decisões
 - 27/11 · S2 · id da conta é `uuid7` gerado na aplicação: a tabela não tem coluna de criação e a lista ordena por id.
