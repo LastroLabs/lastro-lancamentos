@@ -18,6 +18,7 @@ Lastro (nome provisório) lê o extrato bancário de clientes pequenos de escrit
 
 Entrega: branch `feat/<ID>-...`, nunca direto na main; PR com o template de `.github/`.
 O `hx` está em implementação. Se um comando não existir ainda, diga que não rodou. Nunca afirme que algo passou sem ter rodado.
+No Windows, rode o `hx` pelo PowerShell (`. .\tools\hx.ps1`); `verify` e `feature verify` não rodam de dentro do container `dev` (ver `docs/modulos/harness.md`).
 
 **Encerrar a sessão:** quando o dev pedir para encerrar, antes de responder atualize `progress/<ID>.md`. Reescreva Objetivo, Próxima ação e Bloqueios; acrescente, com data e sem apagar, em Feito, Rodei, Falhou e Decisões. Registre só o que realmente rodou e nada de dado real. Rode `hx verify` se puder e mostre o resultado.
 

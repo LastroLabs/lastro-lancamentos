@@ -6,6 +6,17 @@ O `hx` roda no host e só usa a biblioteca padrão do Python. Este documento reg
 
 `tools/hx` procura `python3` e, se não achar, `python`; sem nenhum dos dois, sai com 1 e uma mensagem (`tools/hx:3-10`). Depois só repassa os argumentos para `tools/harness.py` (`tools/hx:11`). No PowerShell, o equivalente é `tools/hx.ps1`.
 
+**Windows:** rode o `hx` pelo PowerShell (`. .\tools\hx.ps1`). No Git Bash, `python3` costuma ser o atalho da Microsoft Store: o `tools/hx` o encontra, mas ele não executa ("Python não foi encontrado"). Não rode `hx verify` nem `hx feature verify` de dentro do container `dev`: os dois chamam `docker compose run` e o container não tem a CLI do Docker ("Docker indisponível"). Só `hx check-clean` funciona lá dentro.
+
+## Velocidade do `hx verify` (issue #93)
+
+A suíte completa caiu de ~22 min para poucos minutos sem tirar teste (`planos/perf-93/plan.md`, `DECISIONS.md` §12):
+- **Paralelo:** `pytest` roda em até 4 processos (`pytest-xdist`, `addopts` no `pyproject.toml`). Um arquivo (`.py`) ou um teste (`::`, como em cada critério do `hx feature verify`) roda em série. Para investigar uma falha em série: `pytest -n 0`. Regras para escrever teste seguro em paralelo: `CODING_STANDARDS.md`, seção 2.
+- **Banco migrado:** as fixtures `migrated_database` e `head_database` copiam um banco-modelo já migrado (`CREATE DATABASE ... TEMPLATE`), criado uma vez por revisão e por processo (`tests/conftest.py`). Testes que sobem e descem migrações continuam usando `fresh_database`.
+- **Um PostgreSQL por processo**, definido só em `tests/conftest.py` (`postgres_server`).
+- **Front:** `web/node_modules` e a store do pnpm ficam no volume Docker `web-node-modules` (`docker-compose.yml`), não na pasta compartilhada. Para recomeçar do zero: `docker compose --profile dev down` e `docker volume rm <projeto>_web-node-modules` (o prefixo é o nome da pasta do repositório; ex.: `lastro_web-node-modules`). A pasta antiga `.pnpm-store/` na raiz do repositório (ignorada pelo Git) deixa de ser usada e pode ser apagada.
+- **Imagem:** dependências Python com bytecode pré-compilado (`UV_COMPILE_BYTECODE=1` no `Dockerfile`). Mudou `pyproject.toml`, `uv.lock` ou `Dockerfile`? `docker compose --profile dev build dev`.
+
 ## Comandos
 
 | Comando | O que faz | Origem |

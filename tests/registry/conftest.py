@@ -17,6 +17,5 @@ OWNER_ROLE = _CORE.OWNER_ROLE
 REPO_ROOT = _CORE.REPO_ROOT
 connect = _CORE.connect
 process_output = _CORE.process_output
-postgres_server = _CORE.postgres_server
 fresh_database = _CORE.fresh_database
 migrated_database = _CORE.migrated_database

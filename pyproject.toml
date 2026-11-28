@@ -22,6 +22,9 @@ dependencies = [
 dev = [
     "httpx>=0.28",
     "pytest>=9.2",
+    # Issue #93, plan D5: the suite runs in parallel processes (MIT; chosen over
+    # pytest-parallel, unmaintained since 2021, and pytest-run-parallel, made for threads).
+    "pytest-xdist>=3.8",
     "ruff>=0.14",
     "testcontainers[postgres]>=4.15",
 ]
@@ -29,6 +32,13 @@ dev = [
 [tool.uv]
 # The code is not installed as a package: the image uses PYTHONPATH=/app/src (plan D6).
 package = false
+
+[tool.pytest.ini_options]
+# Issue #93, plan D6 (DECISIONS §12, V2): `-n auto` asks tests/conftest.py how many processes
+# to use. A whole suite or folder runs in up to 4; one file or one test (`::`, as in
+# `hx feature verify`) runs in series. `loadgroup` keeps each `xdist_group` in one process.
+# To debug in series: `pytest -n 0`.
+addopts = "-n auto --dist loadgroup"
 
 [tool.ruff.lint]
 # EXE002: no Docker Desktop (Windows) o bind mount mostra todo arquivo como executável (755),

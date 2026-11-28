@@ -9,10 +9,7 @@ so each one keeps its own cookie (plan D2). No real data.
 """
 
 import hashlib
-import os
 import secrets
-import subprocess
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -64,26 +61,10 @@ PEOPLE = (
 
 
 @pytest.fixture
-def head_database(fresh_database):
-    """Fresh database with every migration applied (`alembic upgrade head`)."""
-    result = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
-        cwd=REPO_ROOT,
-        env={
-            **os.environ,
-            "PYTHONPATH": str(REPO_ROOT / "src"),
-            "DATABASE_URL": fresh_database.database_url,
-            "MIGRATIONS_DATABASE_URL": fresh_database.migrations_database_url,
-        },
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, (
-        f"alembic upgrade head failed:\n{result.stdout[-2000:]}\n{result.stderr[-2000:]}"
-    )
-    return fresh_database
+def head_database(database_templates):
+    """Fresh database with every migration applied: a copy of the `head` template (issue #93)."""
+    with database_templates.cloned("head") as database:
+        yield database
 
 
 def _connect(database):

@@ -104,47 +104,6 @@ def _new_pw():
     return secrets.token_hex(16)
 
 
-@pytest.fixture(scope="session")
-def postgres_server():
-    postgres_module = _require("testcontainers.postgres", "plan D1")
-    admin_pw = _new_pw()
-    container = postgres_module.PostgresContainer(
-        POSTGRES_IMAGE,
-        username=SUPERUSER,
-        password=admin_pw,
-        dbname="postgres",
-        driver=None,
-    )
-    # The finally also covers a failed start or wait: with Ryuk disabled (plan D1), nothing
-    # else would remove a container that was created but never became ready.
-    try:
-        try:
-            container.start()
-        except Exception as error:  # noqa: BLE001 (docker, proxy or timeout: all become one clear failure)
-            pytest.fail(
-                "Could not start the test PostgreSQL through Testcontainers. Check that Docker is "
-                "running and that the 'docker-proxy' service (profile 'dev') is up and allows "
-                f"creating containers. Cause: {type(error).__name__}: {error}"
-            )
-        server = PostgresServer(
-            host=container.get_container_host_ip(),
-            port=int(container.get_exposed_port(5432)),
-            superuser_password=admin_pw,
-            owner_password=_new_pw(),
-            app_password=_new_pw(),
-        )
-        if not CREATE_ROLES_SQL.is_file():
-            pytest.fail(f"Missing roles script: {CREATE_ROLES_SQL.relative_to(REPO_ROOT)} (plan D5)")
-        admin = FreshDatabase(server=server, name="postgres").conninfo(SUPERUSER)
-        with connect(admin) as conn, conn.cursor() as cursor:
-            cursor.execute(CREATE_ROLES_SQL.read_text(encoding="utf-8"))
-            _set_password(cursor, OWNER_ROLE, server.owner_password)
-            _set_password(cursor, APP_ROLE, server.app_password)
-        yield server
-    finally:
-        container.stop()
-
-
 @pytest.fixture
 def fresh_database(postgres_server):
     """New empty database owned by `lastro_owner`, dropped after the test."""
@@ -191,8 +150,7 @@ def process_output(result, limit=2000):
 
 
 @pytest.fixture
-def migrated_database(fresh_database):
-    """Fresh database with every migration applied."""
-    result = run_alembic_upgrade(fresh_database)
-    assert result.returncode == 0, f"alembic upgrade head failed:\n{process_output(result)}"
-    return fresh_database
+def migrated_database(database_templates):
+    """Fresh database with every migration applied: a copy of the `head` template (issue #93)."""
+    with database_templates.cloned("head") as database:
+        yield database
