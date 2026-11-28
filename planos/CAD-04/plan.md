@@ -26,7 +26,7 @@ Mudanças sugeridas na ficha (o humano aplica em PR): trocar `[definir P-13]` po
 - **Alternativas:** A) regex `^\d{4}-(0[1-9]|1[0-2])$` + `date(ano, mes, 1)` · B) `datetime.strptime` (aceita `2026-1`)
 - **Escolhida:** A — **motivo:** "2026-1" e "10/2026" têm de ser recusados (c6). Ano `0000` cai na mesma mensagem. **Impacto:** T3. [x] confirmar
 ### D6 · Contratos v0 novos no `registry` (regra 11)
-- `BankAccountSummary(account_id, bank, bank_name, nickname, currency, first_month, last_month)` e `InvalidBankAccountDataError(message)` e `DuplicateNicknameError` em `registry/contracts.py`; funções `add_bank_account`, `list_bank_accounts`, `update_bank_account` em `registry/service.py`. Registrar em `ARCHITECTURE.md` §6 e `docs/modulos/registry.md`. Sem consumidor existente: não precisa de issue `contrato:`. **Impacto:** T7.x[x] confirmar
+- `BankAccountSummary(account_id, bank, bank_name, nickname, currency, first_month, last_month)` e `InvalidBankAccountDataError(message)` e `DuplicateNicknameError` em `registry/contracts.py`; funções `add_bank_account`, `list_bank_accounts`, `update_bank_account` em `registry/service.py`. Registrar em `ARCHITECTURE.md` §6 e `docs/modulos/registry.md`. Sem consumidor existente: não precisa de issue `contrato:`. **Impacto:** T7. [x] confirmar
 
 ## 3. Resumo e abordagem
 O contador (ou o chefe atribuído a si) cadastra, lista e altera contas bancárias do cliente com banco, apelido e meses opcionais; nada é apagado.
