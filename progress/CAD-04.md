@@ -16,12 +16,13 @@ Como preencher (agente, ao encerrar a sessão):
 O contador (ou o chefe atribuído a si) cadastra, lista e altera contas bancárias do cliente com banco, apelido e meses de uso opcionais; nada é apagado.
 
 ## Próxima ação
-Revisão do PR da CAD-04 na `developer`. Depois, CAD-06 (identificação protegida e conta contábil da conta bancária) e consumidores das contas.
+Merge do PR #94 na `developer` depois da aprovação do revisor e da conferência dos nomes proibidos pelos donos da CI. Depois, CAD-06 (identificação protegida e conta contábil da conta bancária) e consumidores das contas.
 
 ## Bloqueios e perguntas
 - (nenhum)
 
 ## Feito
+- 28/11 · S5 · plan, `docs/modulos/registry.md` e progress atualizados com as decisões da revisão; `developer` sem novidades (nenhum pull necessário).
 - 27/11 · S3 · merge de `origin/developer` (conflito em `contracts.py` e `service.py`: mantidos os dois lados, CAD-04 e CAD-02/05); correção da corrida no PATCH e teste de dois PATCH concorrentes.
 - 27/11 · S2 · T2 a T7: `bancos.csv` (463 bancos do STR/BCB), `banks.py`, `bank_accounts.py`, contratos v0, repositório, serviço, rotas POST/GET/PATCH, docs (`registry.md`, `ARCHITECTURE.md` §6), OpenAPI e `schema.d.ts` regenerados.
 
@@ -46,6 +47,8 @@ Revisão do PR da CAD-04 na `developer`. Depois, CAD-06 (identificação protegi
 - 27/11 · S2 · `hx verify` falhava no teste do front (`pnpm run build`, EACCES em `web/dist/assets`): a pasta tinha dono root, criada por pytest que rodei no Docker como root; o `hx` roda com `--user uid:gid`. Removi `web/dist` e passou. Não era código.
 
 ## Decisões
+- 28/11 · S5 · decisões do responsável na revisão do PR #94 (registradas no plan, seção 5, P6 a P8): mês em branco conta como ausente; `bancos.csv` atualizado à mão; teste de corrida e ajuste de import aprovados como exceção à regra 3.
+- 28/11 · S5 · `LASTRO_NOMES_PROIBIDOS` não é definida pelo responsável da CAD-04. Pelo CODEOWNERS e pelo histórico, o dono do segredo e da CI é caio-nascime (com camposs04); a checagem de nomes não rodou localmente e o PR registra isso.
 - 28/11 · S4 · a pedido do responsável, troquei `[definir P-13]` por 422 em c2, c4, c6 e c7 da ficha (só texto) e corrigi o typo `x[x]` do plan.md; a evidência foi regravada pelo `feature verify`.
 - 27/11 · S3 · `update_bank_account` trava o cliente (`FOR UPDATE`) antes de ler a conta e valida contra o valor lido sob a trava (READ COMMITTED enxerga o PATCH anterior já commitado). Teste novo em arquivo separado `tests/registry/test_contas_bancarias_corrida.py`, sem editar o `test_contas_bancarias.py`.
 - 27/11 · S3 · `features/CAD-04.json` ainda traz `[definir P-13]` em c2, c4, c6 e c7: o plano diz que o humano aplica a troca por 422 em PR; não editei a ficha.

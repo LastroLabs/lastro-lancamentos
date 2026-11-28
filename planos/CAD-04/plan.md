@@ -47,6 +47,9 @@ Ordem: testes (T1) → lista de bancos e leitura (T2) → validações puras (T3
 - 27/11 · P3: `POST/GET /api/v1/clients/{client_id}/bank-accounts`, `PATCH …/bank-accounts/{account_id}`; campos `id`, `bank`, `bank_name`, `nickname`, `currency`, `first_month`, `last_month`. Resposta de jvsauma.
 - 27/11 · P4: PATCH com campo omitido = não muda; `first_month`/`last_month` `null` = limpa; `nickname` `null` ou vazio = "Dê um apelido para a conta."; `bank` igual ao atual aceita, diferente = 422 da c7(a). Resposta de jvsauma.
 - 27/11 · P5: apelido até 255 caracteres após `strip` ("O apelido deve ter no máximo 255 caracteres."); ordem: acesso (401/404/403) → banco vazio → apelido vazio → banco formato → banco existe → apelido longo → meses → duplicado (409); todo 422 antes do 409. Resposta de jvsauma.
+- 28/11 · P6 (revisão do PR #94): mês `first_month`/`last_month` em branco (`""`) conta como ausente, igual a `null`; no PATCH, `""` limpa o mês. Resposta de jvsauma.
+- 28/11 · P7 (revisão do PR #94): o `bancos.csv` é atualizado à mão, por PR, quando o BCB mudar a lista; sem rotina automática no MVP. Resposta de jvsauma.
+- 28/11 · P8 (revisão do PR #94): o teste de corrida `tests/registry/test_contas_bancarias_corrida.py` (criado depois do código, em resposta à rubrica) e o ajuste de ordem de import em `test_contas_bancarias.py` (ruff I001, feito à mão) estão aprovados como exceção à regra 3. Resposta de jvsauma.
 - 22/11 · P-09 e 25/11 · P-13: valem como estão (DECISIONS.md).
 
 ## 6. Avaliação da ficha

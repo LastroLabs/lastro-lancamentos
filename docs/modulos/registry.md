@@ -93,6 +93,10 @@ Todas recebem `find_responsibles` (`access.service.responsible_member_ids`, pass
 
 `BankAccountSummary` (`lastro.registry.contracts`): `account_id`, `bank`, `bank_name` (do `bancos.csv`), `nickname`, `currency` (`BRL`), `first_month` e `last_month` (`AAAA-MM` ou `None`). Sem id do escritório.
 
+### Meses de uso
+
+`first_month` e `last_month` são opcionais e vêm como `AAAA-MM`. Ausente (`null`) e em branco (`""`) valem o mesmo: sem mês (P6). No PATCH, `null` e `""` limpam o mês; campo omitido não muda (P4).
+
 ### Ordem das checagens de dado (P5)
 
 Banco vazio → apelido vazio → formato do banco (3 dígitos ASCII, `' 341 '` vira `'341'`) → banco na lista → apelido com mais de 255 caracteres → meses (`AAAA-MM`, gravado no dia 1; último antes do primeiro) → apelido repetido. Todo 422 vem antes do 409.
@@ -118,7 +122,8 @@ Banco vazio → apelido vazio → formato do banco (3 dígitos ASCII, `' 341 '` 
 
 - A unicidade do apelido não tem apoio do esquema: vale pela trava do cliente e pela comparação em Python. Quem gravar conta por outro caminho precisa repetir a regra.
 - O `id` da conta é gerado na aplicação (`uuid7`), porque a tabela não tem coluna de criação e a lista ordena por ele.
-- O `bancos.csv` deve ser atualizado à mão se o BCB mudar a lista.
+- O `bancos.csv` é uma foto da lista do BCB de 27/11/2026 e é atualizado à mão, por PR, quando o BCB mudar a lista (P7). Enquanto isso, um banco novo recebe "Não encontramos um banco com este código". Bancos sem número-código no BCB (`n/a`) não entram.
+- No PATCH, a trava do cliente vem antes da leitura da conta: a leitura sob a trava enxerga o PATCH anterior já gravado (corrida coberta por `test_contas_bancarias_corrida.py`).
 
 ## Esquema do cadastro e do plano de contas (DB-02, DB-04)
 
