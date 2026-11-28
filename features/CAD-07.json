@@ -9,7 +9,7 @@
   "onda": 2,
   "essencial": false,
   "estado": "not_started",
-  "responsavel": "jvsauma",
+  "responsavel": "marrathomaz",
   "depende_de": [
     "ACE-02",
     "NUC-02"
