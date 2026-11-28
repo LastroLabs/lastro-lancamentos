@@ -26,7 +26,6 @@ FreshDatabase = _CORE.FreshDatabase
 connect = _CORE.connect
 process_output = _CORE.process_output
 run_alembic_upgrade = _CORE.run_alembic_upgrade
-postgres_server = _CORE.postgres_server
 fresh_database = _CORE.fresh_database
 
 
