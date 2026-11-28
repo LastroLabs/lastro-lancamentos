@@ -121,6 +121,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{client_id}/bank-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Bank Accounts
+         * @description List the bank accounts of the client (CAD-04, c1, c3, c8).
+         */
+        get: operations["list_bank_accounts_api_v1_clients__client_id__bank_accounts_get"];
+        put?: never;
+        /**
+         * Add Bank Account
+         * @description Give a bank account to the client (CAD-04, c1, c2, c4, c5, c6, c8).
+         */
+        post: operations["add_bank_account_api_v1_clients__client_id__bank_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{client_id}/bank-accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Bank Account
+         * @description Change nickname and months of use of an account; there is no delete (CAD-04, c7).
+         */
+        patch: operations["update_bank_account_api_v1_clients__client_id__bank_accounts__account_id__patch"];
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -229,6 +273,55 @@ export interface components {
          */
         AssignmentResponse: {
             responsible: components["schemas"]["ResponsibleResponse"] | null;
+        };
+        /**
+         * BankAccountPatch
+         * @description Fields to change; the registry looks at which ones were sent (plan answer P4).
+         */
+        BankAccountPatch: {
+            /** Bank */
+            bank?: string | null;
+            /** First Month */
+            first_month?: string | null;
+            /** Last Month */
+            last_month?: string | null;
+            /** Nickname */
+            nickname?: string | null;
+        };
+        /**
+         * BankAccountRequest
+         * @description New bank account. Every field is optional here so the registry answers with the
+         *     message of the ficha when one is missing (plan CAD-04, T5).
+         */
+        BankAccountRequest: {
+            /** Bank */
+            bank?: string | null;
+            /** First Month */
+            first_month?: string | null;
+            /** Last Month */
+            last_month?: string | null;
+            /** Nickname */
+            nickname?: string | null;
+        };
+        /**
+         * BankAccountResponse
+         * @description Bank account as shown to the member: never the firm id.
+         */
+        BankAccountResponse: {
+            /** Bank */
+            bank: string;
+            /** Bank Name */
+            bank_name: string;
+            /** Currency */
+            currency: string;
+            /** First Month */
+            first_month: string | null;
+            /** Id */
+            id: string;
+            /** Last Month */
+            last_month: string | null;
+            /** Nickname */
+            nickname: string;
         };
         /**
          * ClientRequest
@@ -896,6 +989,207 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_bank_accounts_api_v1_clients__client_id__bank_accounts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountResponse"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_bank_account_api_v1_clients__client_id__bank_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_bank_account_api_v1_clients__client_id__bank_accounts__account_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankAccountPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };

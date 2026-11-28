@@ -22,16 +22,20 @@ from lastro.core.contracts import (
     Role,
 )
 from lastro.core.service import decide_access, filter_visible_clients
-from lastro.registry import repository
+from lastro.registry import bank_accounts, repository
+from lastro.registry.banks import bank_name
 from lastro.registry.chart_txt import _read_chart_of_accounts
 from lastro.registry.cnpj import _validate_cnpj
 from lastro.registry.contracts import (
+    BankAccountSummary,
     ChartOfAccountsResult,
     ClientNotAssignedError,
     ClientNotFoundError,
     ClientSummary,
     CnpjValidationResult,
     DuplicateCnpjError,
+    DuplicateNicknameError,
+    InvalidBankAccountDataError,
     InvalidClientDataError,
     ManagerOnlyError,
 )
@@ -217,6 +221,182 @@ async def client_exists(db: AsyncSession, firm_id: str, client_id: str) -> bool:
     except ValueError:
         return False
     return await repository.find_client(db, UUID(firm_id), parsed_id) is not None
+
+
+async def _own_client(
+    db: AsyncSession,
+    membership: Membership,
+    client_id: str,
+    find_responsibles: FindResponsibles,
+) -> tuple[UUID, UUID]:
+    """Firm and client ids after the access rule allowed it (plan CAD-04, D1)."""
+    summary = await get_client(db, membership, client_id, find_responsibles)
+    firm_id = _firm_id(membership)
+    assert firm_id is not None  # get_client raised otherwise
+    return firm_id, UUID(summary.client_id)
+
+
+async def add_bank_account(
+    db: AsyncSession,
+    membership: Membership,
+    client_id: str,
+    find_responsibles: FindResponsibles,
+    bank: str | None,
+    nickname: str | None,
+    first_month: str | None = None,
+    last_month: str | None = None,
+) -> BankAccountSummary:
+    """Give a bank account to the member's client (CAD-04, c1, c2, c4, c5, c6, c8).
+
+    Order: access (404, 403) -> data (422, order of plan answer P5) -> repeated nickname (409).
+
+    Args:
+        db: database session; committed only when the account is stored.
+        membership: membership of the session.
+        client_id: id from the address.
+        find_responsibles: finds the active responsible member of each client.
+        bank: 3-digit bank code, spaces at the ends are ignored.
+        nickname: nickname typed by the accountant.
+        first_month: first month of use, `AAAA-MM`, optional.
+        last_month: last month of use, `AAAA-MM`, optional.
+
+    Raises:
+        ClientNotFoundError: no access to the client (P-01).
+        ClientNotAssignedError: manager who is not the responsible (P-09).
+        InvalidBankAccountDataError: bank, nickname or months refused.
+        DuplicateNicknameError: the client already has this nickname.
+    """
+    firm_id, parsed_client = await _own_client(
+        db, membership, client_id, find_responsibles
+    )
+    valid = bank_accounts.validate_new_account(bank, nickname, first_month, last_month)
+    try:
+        await repository.lock_client(db, firm_id, parsed_client)
+        existing = await repository.list_bank_accounts(db, firm_id, parsed_client)
+        _check_nickname_free(existing, valid.nickname, None)
+        row = await repository.insert_bank_account(
+            db,
+            firm_id,
+            parsed_client,
+            valid.bank,
+            valid.nickname,
+            valid.first_month,
+            valid.last_month,
+        )
+        await db.commit()
+    except BaseException:
+        await db.rollback()
+        raise
+    return _account_summary(row)
+
+
+async def list_bank_accounts(
+    db: AsyncSession,
+    membership: Membership,
+    client_id: str,
+    find_responsibles: FindResponsibles,
+) -> list[BankAccountSummary]:
+    """Bank accounts of a client the member may open, in the order they were created (CAD-04).
+
+    Raises:
+        ClientNotFoundError: no access to the client (P-01).
+        ClientNotAssignedError: manager who is not the responsible (P-09).
+    """
+    firm_id, parsed_client = await _own_client(
+        db, membership, client_id, find_responsibles
+    )
+    rows = await repository.list_bank_accounts(db, firm_id, parsed_client)
+    return [_account_summary(row) for row in rows]
+
+
+async def update_bank_account(
+    db: AsyncSession,
+    membership: Membership,
+    client_id: str,
+    account_id: str,
+    find_responsibles: FindResponsibles,
+    changes: dict[str, str | None],
+) -> BankAccountSummary:
+    """Change nickname and months of use of an account; the bank never changes (CAD-04, c7).
+
+    `changes` holds only the fields the request sent (plan answer P4): a missing field stays;
+    `first_month` or `last_month` as None clears it; `nickname` None or empty is refused;
+    `bank` equal to the stored one is accepted, any other is refused.
+
+    Raises:
+        ClientNotFoundError: no access to the client, or the account is not of this client.
+        ClientNotAssignedError: manager who is not the responsible (P-09).
+        InvalidBankAccountDataError: nickname, bank or months refused.
+        DuplicateNicknameError: another account of the client has this nickname.
+    """
+    firm_id, parsed_client = await _own_client(
+        db, membership, client_id, find_responsibles
+    )
+    try:
+        parsed_account = UUID(account_id)
+    except ValueError as error:
+        raise ClientNotFoundError from error
+    try:
+        # Lock first, read after: a PATCH that waited here must see what the one before it
+        # committed, or it would write back the old nickname or month (rubric CAD-04).
+        await repository.lock_client(db, firm_id, parsed_client)
+        current = await repository.find_bank_account(
+            db, firm_id, parsed_client, parsed_account
+        )
+        if current is None:
+            raise ClientNotFoundError
+
+        nickname = current.nickname
+        if "nickname" in changes:
+            nickname = bank_accounts.clean_nickname(changes["nickname"])
+        if "bank" in changes and (changes["bank"] or "").strip() != current.bank:
+            raise InvalidBankAccountDataError(bank_accounts.BANK_CHANGE_MESSAGE)
+        bank_accounts.check_nickname_length(nickname)
+        first = current.first_month
+        last = current.last_month
+        if "first_month" in changes:
+            first = bank_accounts.parse_month(changes["first_month"])
+        if "last_month" in changes:
+            last = bank_accounts.parse_month(changes["last_month"])
+        bank_accounts.check_month_order(first, last)
+
+        existing = await repository.list_bank_accounts(db, firm_id, parsed_client)
+        _check_nickname_free(existing, nickname, parsed_account)
+        await repository.update_bank_account(
+            db, firm_id, parsed_client, parsed_account, nickname, first, last
+        )
+        await db.commit()
+    except BaseException:
+        await db.rollback()
+        raise
+    return _account_summary(
+        repository.BankAccountRow(
+            parsed_account, current.bank, nickname, current.currency, first, last
+        )
+    )
+
+
+def _check_nickname_free(
+    existing: list[repository.BankAccountRow], nickname: str, own_id: UUID | None
+) -> None:
+    wanted = bank_accounts.normalize_nickname(nickname)
+    for row in existing:
+        if row.account_id != own_id and (
+            bank_accounts.normalize_nickname(row.nickname) == wanted
+        ):
+            raise DuplicateNicknameError
+
+
+def _account_summary(row: repository.BankAccountRow) -> BankAccountSummary:
+    return BankAccountSummary(
+        account_id=str(row.account_id),
+        bank=row.bank,
+        bank_name=bank_name(row.bank) or "",
+        nickname=row.nickname,
+        currency=row.currency,
+        first_month=bank_accounts.format_month(row.first_month),
+        last_month=bank_accounts.format_month(row.last_month),
+    )
 
 
 def _firm_id(membership: Membership) -> UUID | None:

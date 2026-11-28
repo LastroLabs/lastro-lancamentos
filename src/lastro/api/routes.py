@@ -44,10 +44,13 @@ from lastro.core.contracts import Membership
 from lastro.core.db import Database, get_database, get_session, is_database_reachable
 from lastro.registry import service as registry
 from lastro.registry.contracts import (
+    BankAccountSummary,
     ClientNotAssignedError,
     ClientNotFoundError,
     ClientSummary,
     DuplicateCnpjError,
+    DuplicateNicknameError,
+    InvalidBankAccountDataError,
     InvalidClientDataError,
     ManagerOnlyError,
 )
@@ -77,6 +80,10 @@ MANAGER_ONLY_DETAIL = "Só o chefe do escritório pode fazer isso."
 NOT_ASSIGNED_DETAIL = "Atribua este cliente a você para fazer isso."
 NOT_FOUND_TITLE = "Cliente não encontrado"
 NO_CLIENT_ACCESS_DETAIL = "Você não tem acesso a este cliente."
+DUPLICATE_NICKNAME_TITLE = "Apelido já usado"
+DUPLICATE_NICKNAME_DETAIL = (
+    "Já existe uma conta com este apelido neste cliente. Use outro apelido."
+)
 DUPLICATE_CNPJ_TITLE = "CNPJ já cadastrado"
 DUPLICATE_CNPJ_DETAIL = "Este CNPJ já está cadastrado no seu escritório."
 
@@ -90,7 +97,9 @@ USERNAME_TAKEN_DETAIL = "Este usuário já existe. Escolha outro."
 PASSWORD_CREATED_TITLE = "Senha já criada"
 PASSWORD_CREATED_DETAIL = "Este contador já criou a senha."
 DEAD_INVITATION_TITLE = "Convite inválido"
-DEAD_INVITATION_DETAIL = "Este convite não vale mais. Peça um novo ao chefe do escritório."
+DEAD_INVITATION_DETAIL = (
+    "Este convite não vale mais. Peça um novo ao chefe do escritório."
+)
 ALREADY_ASSIGNED_TITLE = "Cliente já atribuído"
 ALREADY_ASSIGNED_DETAIL = "Este cliente já tem um responsável. Use a reatribuição."
 PASSWORD_CREATED_MESSAGE = "Senha criada. Agora é só entrar."
@@ -146,6 +155,37 @@ class ClientResponse(BaseModel):
     id: str
     name: str
     cnpj: str
+
+
+class BankAccountRequest(BaseModel):
+    """New bank account. Every field is optional here so the registry answers with the
+    message of the ficha when one is missing (plan CAD-04, T5)."""
+
+    bank: str | None = None
+    nickname: str | None = None
+    first_month: str | None = None
+    last_month: str | None = None
+
+
+class BankAccountPatch(BaseModel):
+    """Fields to change; the registry looks at which ones were sent (plan answer P4)."""
+
+    bank: str | None = None
+    nickname: str | None = None
+    first_month: str | None = None
+    last_month: str | None = None
+
+
+class BankAccountResponse(BaseModel):
+    """Bank account as shown to the member: never the firm id."""
+
+    id: str
+    bank: str
+    bank_name: str
+    nickname: str
+    currency: str
+    first_month: str | None
+    last_month: str | None
 
 
 class AccountantRequest(BaseModel):
@@ -266,6 +306,21 @@ async def _client_not_found(_request: Request, _error: Exception) -> JSONRespons
     return _problem(status.HTTP_404_NOT_FOUND, NOT_FOUND_TITLE, NO_CLIENT_ACCESS_DETAIL)
 
 
+async def _invalid_bank_account_data(
+    _request: Request, error: Exception
+) -> JSONResponse:
+    assert isinstance(error, InvalidBankAccountDataError)
+    return _problem(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, INVALID_DATA_TITLE, error.message
+    )
+
+
+async def _duplicate_nickname(_request: Request, _error: Exception) -> JSONResponse:
+    return _problem(
+        status.HTTP_409_CONFLICT, DUPLICATE_NICKNAME_TITLE, DUPLICATE_NICKNAME_DETAIL
+    )
+
+
 async def _duplicate_cnpj(_request: Request, _error: Exception) -> JSONResponse:
     return _problem(
         status.HTTP_409_CONFLICT, DUPLICATE_CNPJ_TITLE, DUPLICATE_CNPJ_DETAIL
@@ -274,7 +329,9 @@ async def _duplicate_cnpj(_request: Request, _error: Exception) -> JSONResponse:
 
 async def _accountant_not_found(_request: Request, _error: Exception) -> JSONResponse:
     return _problem(
-        status.HTTP_404_NOT_FOUND, ACCOUNTANT_NOT_FOUND_TITLE, ACCOUNTANT_NOT_FOUND_DETAIL
+        status.HTTP_404_NOT_FOUND,
+        ACCOUNTANT_NOT_FOUND_TITLE,
+        ACCOUNTANT_NOT_FOUND_DETAIL,
     )
 
 
@@ -307,13 +364,17 @@ async def _username_taken(_request: Request, _error: Exception) -> JSONResponse:
     )
 
 
-async def _accountant_already_active(_request: Request, _error: Exception) -> JSONResponse:
+async def _accountant_already_active(
+    _request: Request, _error: Exception
+) -> JSONResponse:
     return _problem(
         status.HTTP_409_CONFLICT, PASSWORD_CREATED_TITLE, PASSWORD_CREATED_DETAIL
     )
 
 
-async def _client_already_assigned(_request: Request, _error: Exception) -> JSONResponse:
+async def _client_already_assigned(
+    _request: Request, _error: Exception
+) -> JSONResponse:
     return _problem(
         status.HTTP_409_CONFLICT, ALREADY_ASSIGNED_TITLE, ALREADY_ASSIGNED_DETAIL
     )
@@ -331,6 +392,8 @@ EXCEPTION_HANDLERS = {
     ClientNotAssignedError: _client_not_assigned,
     ClientNotFoundError: _client_not_found,
     DuplicateCnpjError: _duplicate_cnpj,
+    InvalidBankAccountDataError: _invalid_bank_account_data,
+    DuplicateNicknameError: _duplicate_nickname,
     AccountantNotFoundError: _accountant_not_found,
     ResponsibleNotFoundError: _responsible_not_found,
     InvalidInvitationError: _dead_invitation,
@@ -515,6 +578,101 @@ async def get_client(
         db, _membership(member), client_id, access.responsible_member_ids
     )
     return _client_response(client)
+
+
+def _account_response(account: BankAccountSummary) -> BankAccountResponse:
+    return BankAccountResponse(
+        id=account.account_id,
+        bank=account.bank,
+        bank_name=account.bank_name,
+        nickname=account.nickname,
+        currency=account.currency,
+        first_month=account.first_month,
+        last_month=account.last_month,
+    )
+
+
+ACCOUNT_RESPONSES = {
+    **UNAUTHORIZED_RESPONSES,
+    status.HTTP_403_FORBIDDEN: {"model": Problem},
+    status.HTTP_404_NOT_FOUND: {"model": Problem},
+}
+
+
+@router.post(
+    "/clients/{client_id}/bank-accounts",
+    status_code=status.HTTP_201_CREATED,
+    response_model=BankAccountResponse,
+    responses={
+        **ACCOUNT_RESPONSES,
+        status.HTTP_409_CONFLICT: {"model": Problem},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"model": Problem},
+    },
+)
+async def add_bank_account(
+    client_id: str,
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    body: BankAccountRequest,
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> BankAccountResponse:
+    """Give a bank account to the client (CAD-04, c1, c2, c4, c5, c6, c8)."""
+    account = await registry.add_bank_account(
+        db,
+        _membership(member),
+        client_id,
+        access.responsible_member_ids,
+        body.bank,
+        body.nickname,
+        body.first_month,
+        body.last_month,
+    )
+    return _account_response(account)
+
+
+@router.get(
+    "/clients/{client_id}/bank-accounts",
+    response_model=list[BankAccountResponse],
+    responses=ACCOUNT_RESPONSES,
+)
+async def list_bank_accounts(
+    client_id: str,
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> list[BankAccountResponse]:
+    """List the bank accounts of the client (CAD-04, c1, c3, c8)."""
+    accounts = await registry.list_bank_accounts(
+        db, _membership(member), client_id, access.responsible_member_ids
+    )
+    return [_account_response(account) for account in accounts]
+
+
+@router.patch(
+    "/clients/{client_id}/bank-accounts/{account_id}",
+    response_model=BankAccountResponse,
+    responses={
+        **ACCOUNT_RESPONSES,
+        status.HTTP_409_CONFLICT: {"model": Problem},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"model": Problem},
+    },
+)
+async def update_bank_account(
+    client_id: str,
+    account_id: str,
+    member: Annotated[SignedInMember, Depends(require_signed_in_member)],
+    body: BankAccountPatch,
+    db: Annotated[AsyncSession, Depends(get_session)],
+) -> BankAccountResponse:
+    """Change nickname and months of use of an account; there is no delete (CAD-04, c7)."""
+    changes = {name: getattr(body, name) for name in body.model_fields_set}
+    account = await registry.update_bank_account(
+        db,
+        _membership(member),
+        client_id,
+        account_id,
+        access.responsible_member_ids,
+        changes,
+    )
+    return _account_response(account)
 
 
 def _invitation_validity(request: Request) -> timedelta:

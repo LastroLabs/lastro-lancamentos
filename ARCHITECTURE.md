@@ -115,6 +115,7 @@ Regras que a estrutura precisa garantir. As de negócio e de dados (centavos, sa
 | De → para | Contrato |
 |---|---|
 | registry → api (`CAD-03`) | `CnpjValidationResult`, `ClientSummary` e os erros de cliente (`lastro.registry.contracts`); `validate_cnpj`, `register_client`, `list_clients`, `get_client` (`lastro.registry.service`). Lista e abertura recebem `access.service.responsible_member_ids` por parâmetro (o `registry` não lê `atribuicao`). Detalhes em `docs/modulos/registry.md` |
+| registry → api (`CAD-04`) | `BankAccountSummary`, `InvalidBankAccountDataError`, `DuplicateNicknameError` (`lastro.registry.contracts`); `add_bank_account`, `list_bank_accounts`, `update_bank_account` (`lastro.registry.service`), com `responsible_member_ids` por parâmetro. Ordem das checagens e mensagens em `docs/modulos/registry.md` |
 | registry → api (`CAD-02`, `CAD-05`) | `ChartAccountEntry`, `ChartOfAccountsResult` (`lastro.registry.contracts`); `read_chart_of_accounts` (`lastro.registry.service`). Detalhes em `docs/modulos/registry.md` |
 | parsing → validation | `ExtratoLido` |
 | parsing → classification | `MovimentacaoLida` |
