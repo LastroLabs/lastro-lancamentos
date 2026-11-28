@@ -29,7 +29,7 @@
 - **Fora do escopo:** compilar a biblioteca padrão do Python (`python -c pass` já leva 0,14 s)
 - **Pronto quando:** `docker compose build dev` e `pytest -q --durations=25` verdes, com o mesmo número da T1; tempo anotado na #93
 
-## [ ] T3 (falta só a CI verde no push) · `node_modules` do front num volume nomeado (D2)
+## [x] T3 · `node_modules` do front num volume nomeado (D2)
 - **Regra (em linguagem simples):** o build e o Vitest leem milhares de arquivos do `node_modules`. Pela pasta compartilhada com o Windows isso é lento; num volume do Docker é rápido. Os 4 testes do front continuam rodando tudo.
 - **Critérios de aceite:**
   - [ ] `docker-compose.yml`: o serviço `dev` monta um volume nomeado em `/app/web/node_modules`, declarado em `volumes:` no fim do arquivo, com comentário do motivo
@@ -95,7 +95,7 @@
 - **Fora do escopo:** marcar teste a teste; mudar asserção
 - **Pronto quando:** as 3 execuções paralelas verdes, `-n 0` verde e o tempo anotado na #93
 
-## [ ] T8 (falta push, CI e PR) · Medição final, documentação e verificação
+## [ ] T8 (CI verde em 28/11: verify 1 min 40 s; falta o PR) · Medição final, documentação e verificação
 - **Critérios de aceite:**
   - [ ] `pytest -q --durations=25` e `hx verify` (host) medidos e comparados com a T1 na #93
   - [ ] `docs/modulos/` ou `ARCHITECTURE.md`: uma nota sobre o banco-modelo, o volume (como limpar: `docker volume rm`) e o paralelo (`pytest -n 0` para investigar)
