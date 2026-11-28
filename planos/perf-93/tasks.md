@@ -7,7 +7,7 @@
 
 ---
 
-## [ ] T1 · Medição de base
+## [x] T1 · Medição de base
 - **Regra (em linguagem simples):** sem o número de antes, não dá para saber se cada passo ajudou.
 - **Critérios de aceite:**
   - [ ] Na branch, sem mudanças: `pytest -q --durations=25` completo no container `dev`; anotar o total, os 25 mais lentos e o número de testes
@@ -16,7 +16,7 @@
 - **Arquivos:** nenhum no repositório
 - **Pronto quando:** o comentário com a base está na #93
 
-## [ ] T2 · Bytecode pré-compilado na imagem (D1)
+## [x] T2 (critério de 1,6 s não atingido: 1,8–2,4 s) · Bytecode pré-compilado na imagem (D1)
 - **Regra (em linguagem simples):** hoje cada processo Python recompila as bibliotecas do zero (~2,5 s). Compilando uma vez, no build, cada processo começa mais rápido. Nenhum teste muda.
 - **Critérios de aceite:**
   - [ ] `Dockerfile`, estágio `base`: `UV_COMPILE_BYTECODE=1` vale para os `uv sync` de `dev` e de `runtime`; o `PYTHONDONTWRITEBYTECODE=1` fica
@@ -29,7 +29,7 @@
 - **Fora do escopo:** compilar a biblioteca padrão do Python (`python -c pass` já leva 0,14 s)
 - **Pronto quando:** `docker compose build dev` e `pytest -q --durations=25` verdes, com o mesmo número da T1; tempo anotado na #93
 
-## [ ] T3 · `node_modules` do front num volume nomeado (D2)
+## [ ] T3 (falta só a CI verde no push) · `node_modules` do front num volume nomeado (D2)
 - **Regra (em linguagem simples):** o build e o Vitest leem milhares de arquivos do `node_modules`. Pela pasta compartilhada com o Windows isso é lento; num volume do Docker é rápido. Os 4 testes do front continuam rodando tudo.
 - **Critérios de aceite:**
   - [ ] `docker-compose.yml`: o serviço `dev` monta um volume nomeado em `/app/web/node_modules`, declarado em `volumes:` no fim do arquivo, com comentário do motivo
@@ -43,7 +43,7 @@
 - **Fora do escopo:** o `node_modules` do host (o editor continua usando o dele); `gitpages/`
 - **Pronto quando:** `pytest tests/web tests/core/test_ambiente.py -q` verde local e CI verde no push
 
-## [ ] T4 · Exceção à regra 3 registrada (humano)
+## [x] T4 · Exceção à regra 3 registrada (humano)
 - **Regra (em linguagem simples):** trocar como uma fixture prepara o banco mexe em `tests/`, e o `AGENTS.md` proíbe isso ao implementar. Só com uma lista fechada e escrita, como a T12.
 - **Critérios de aceite:**
   - [ ] Entrada nova no `docs/decisoes/DECISIONS.md` (pergunta 1 do plan) com a lista: `tests/conftest.py` (ganha `postgres_server`, a fábrica de modelos, o gancho de número de processos e o grupo do front), `tests/core/conftest.py` (`postgres_server` sai; `migrated_database` clona `head`), `tests/access/conftest.py` (`migrated_database` clona `0002`; reatribuição de `postgres_server` sai), `tests/registry/conftest.py` (reatribuição de `postgres_server` sai), `tests/access/test_login.py::head_database` e `tests/access/test_period_link_schema.py::head_database` (clonam `head`)
@@ -52,7 +52,7 @@
 - **Arquivos:** `docs/decisoes/DECISIONS.md` (o agente pode redigir; o humano aprova)
 - **Pronto quando:** a entrada está aprovada e commitada
 
-## [ ] T5 · Um PostgreSQL só para a suíte (D4)
+## [x] T5 · Um PostgreSQL só para a suíte (D4)
 - **Regra (em linguagem simples):** hoje três pastas sobem três bancos de teste. Um só basta, porque cada teste já ganha um banco próprio dentro dele.
 - **Critérios de aceite:**
   - [ ] `postgres_server` (escopo de sessão) definido só no `tests/conftest.py`, com o mesmo corpo de hoje
@@ -64,7 +64,7 @@
 - **Fora do escopo:** banco-modelo (T6)
 - **Pronto quando:** `pytest -q` completo verde, o mesmo número de testes da T1, um container só
 
-## [ ] T6 · Banco-modelo por revisão (D3)
+## [x] T6 · Banco-modelo por revisão (D3)
 - **Regra (em linguagem simples):** em vez de cada teste migrar um banco vazio (~5 s), o banco é migrado uma vez por revisão e cada teste recebe uma cópia em menos de 1 s. Os testes de migração continuam migrando do zero, porque é isso que provam.
 - **Critérios de aceite:**
   - [ ] Fábrica de sessão no `tests/conftest.py`: para cada revisão pedida, cria uma vez um banco-modelo (vazio + `alembic upgrade <rev>`), fecha as conexões e guarda o nome
@@ -79,7 +79,7 @@
 - **Fora do escopo:** `database_at_db02`/`database_at_db04` (DB-04, pergunta 5); paralelo
 - **Pronto quando:** `pytest -q --durations=25` completo verde com o mesmo número da T1; `git diff developer -- tests/` só nas fixtures da T4, sem `def test_` alterado
 
-## [ ] T7 · Testes em paralelo com `pytest-xdist` (D5, D6, D7)
+## [x] T7 · Testes em paralelo com `pytest-xdist` (D5, D6, D7)
 - **Regra (em linguagem simples):** em vez de um teste por vez, a suíte roda em até 4 processos. Um teste rodado sozinho (`feature verify`) continua em série. As regras para escrever teste seguro em paralelo estão no `CODING_STANDARDS.md`, seção 2.
 - **Critérios de aceite:**
   - [ ] `pytest-xdist` no grupo `dev` do `pyproject.toml`, `uv.lock` atualizado (`uv lock`); escolha e motivo na D5 (regra 12)
@@ -95,7 +95,7 @@
 - **Fora do escopo:** marcar teste a teste; mudar asserção
 - **Pronto quando:** as 3 execuções paralelas verdes, `-n 0` verde e o tempo anotado na #93
 
-## [ ] T8 · Medição final, documentação e verificação
+## [ ] T8 (falta push, CI e PR) · Medição final, documentação e verificação
 - **Critérios de aceite:**
   - [ ] `pytest -q --durations=25` e `hx verify` (host) medidos e comparados com a T1 na #93
   - [ ] `docs/modulos/` ou `ARCHITECTURE.md`: uma nota sobre o banco-modelo, o volume (como limpar: `docker volume rm`) e o paralelo (`pytest -n 0` para investigar)
