@@ -37,6 +37,7 @@ Revisão do PR da CAD-04 na `developer`. Depois, CAD-06 (identificação protegi
 - 27/11 · S2 · `hx feature verify CAD-04` (rodado pelo responsável) → `passing`, c1 a c8 ok, no commit e2724dc
 - 27/11 · S3 · `hx verify` após o merge com `developer` e a correção da corrida → OK (ruff e pytest)
 - 27/11 · S3 · `pytest tests/registry/test_contas_bancarias_corrida.py` com a ordem antiga da trava → falha (apelido desfeito); com a correção → passa
+- 28/11 · S4 · `hx feature verify CAD-04` após trocar `[definir P-13]` por 422 na ficha → OK, c1 a c8
 
 ## Falhou
 - 27/11 · S3 · rubrica do PR #94: o PATCH lia a conta antes da trava do cliente; dois PATCH concorrentes (apelido e último mês) desfaziam um ao outro, contra a P4. Reproduzido por teste com a ordem antiga (apelido desfeito).
@@ -45,6 +46,7 @@ Revisão do PR da CAD-04 na `developer`. Depois, CAD-06 (identificação protegi
 - 27/11 · S2 · `hx verify` falhava no teste do front (`pnpm run build`, EACCES em `web/dist/assets`): a pasta tinha dono root, criada por pytest que rodei no Docker como root; o `hx` roda com `--user uid:gid`. Removi `web/dist` e passou. Não era código.
 
 ## Decisões
+- 28/11 · S4 · a pedido do responsável, troquei `[definir P-13]` por 422 em c2, c4, c6 e c7 da ficha (só texto) e corrigi o typo `x[x]` do plan.md; a evidência foi regravada pelo `feature verify`.
 - 27/11 · S3 · `update_bank_account` trava o cliente (`FOR UPDATE`) antes de ler a conta e valida contra o valor lido sob a trava (READ COMMITTED enxerga o PATCH anterior já commitado). Teste novo em arquivo separado `tests/registry/test_contas_bancarias_corrida.py`, sem editar o `test_contas_bancarias.py`.
 - 27/11 · S3 · `features/CAD-04.json` ainda traz `[definir P-13]` em c2, c4, c6 e c7: o plano diz que o humano aplica a troca por 422 em PR; não editei a ficha.
 - 27/11 · S2 · id da conta é `uuid7` gerado na aplicação: a tabela não tem coluna de criação e a lista ordena por id.
