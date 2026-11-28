@@ -1,12 +1,14 @@
 {
   "id": "CAD-02",
-  "titulo": "Ler a planilha do plano de contas e apontar linha inválida",
+  "titulo": "Ler o plano de contas em TXT e apontar linha inválida",
   "modulo": "registry",
-  "requisitos": ["RF-CAD-03"],
+  "requisitos": [
+    "RF-CAD-03"
+  ],
   "prioridade": "must",
   "onda": 1,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "marrathomaz",
   "depende_de": [],
   "bloqueada_por": null,
@@ -14,43 +16,215 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "Uma planilha válida vira a lista de contas com código e nome, na ordem das linhas",
+      "descricao": "Um arquivo TXT válido vira a lista de contas com reduzido, classificação, nome, tipo e conta superior, na ordem das linhas",
       "exemplo": {
-        "entrada": "planilha .xlsx criada pelo teste, com cabeçalho 'código' e 'nome' na linha 1 e 3 linhas: '1.1.01' 'Caixa'; '2.1.05' 'Fornecedores'; '9.9.99' 'Transitória'",
-        "saida": "3 contas, nesta ordem: 1.1.01 Caixa, 2.1.05 Fornecedores, 9.9.99 Transitória; 0 erros"
+        "entrada": "arquivo criado pelo teste, 6 linhas de 78 caracteres: 0000001 '1' ATIVO S; 0000002 '11' ATIVO CIRCULANTE S; 0000003 '1101' CAIXA GERAL A; 0000004 '1102' BANCO TESTE A; 0000005 '2' PASSIVO S; 0000006 '201' FORNECEDORES TESTE A; lido dos bytes e de um caminho",
+        "saida": "6 contas nesta ordem, com conta superior: 1 (nenhuma), 11 (1), 1101 (11), 1102 (11), 2 (nenhuma), 201 (2); 0 erros, 0 avisos, sem recusa; o mesmo resultado lendo os bytes ou o caminho"
       }
     },
     {
       "id": "c2",
-      "descricao": "Linha sem código ou sem nome é rejeitada com o número da linha, e as linhas válidas continuam aceitas",
+      "descricao": "Nome de 40 caracteres colado no tipo é lido inteiro",
       "exemplo": {
-        "entrada": "planilha com cabeçalho na linha 1; linha 2: '1.1.01' 'Caixa'; linha 3: '2.1.05' e nome vazio; linha 4: código vazio e 'Bancos'; linha 5: '9.9.99' 'Transitória'",
-        "saida": "2 contas aceitas: 1.1.01 e 9.9.99; 2 erros: 'Linha 3: falta o nome da conta.' e 'Linha 4: falta o código da conta.'"
+        "entrada": "plano de c1 com a linha 0000007 '1103', nome de exatamente 40 caracteres e tipo A logo depois do nome, sem espaço",
+        "saida": "a conta 1103 é aceita com o nome de 40 caracteres e tipo A"
       }
     },
     {
       "id": "c3",
-      "descricao": "Código repetido é rejeitado na segunda ocorrência, apontando as duas linhas",
+      "descricao": "Erro numa analítica sem contas abaixo dela é tolerado: a linha fica de fora com o número dela e o resto entra",
       "exemplo": {
-        "entrada": "planilha com cabeçalho na linha 1; linha 2: '1.1.01' 'Caixa'; linha 3: '2.1.05' 'Fornecedores'; linha 4: '1.1.01' 'Caixa geral'",
-        "saida": "2 contas aceitas: 1.1.01 Caixa e 2.1.05 Fornecedores; 1 erro: 'Linha 4: o código 1.1.01 já apareceu na linha 2.'"
+        "entrada": "plano de c1 com mais 4 analíticas folha abaixo de 11: 1103 sem nome; 1104 com reduzido '12A4567'; 1105 com reduzido 0000000; 1106 sem reduzido",
+        "saida": "as 6 contas de c1 aceitas e 4 erros, nesta ordem: 'Linha 7: falta o nome da conta.'; 'Linha 8: o código reduzido \"12A4567\" precisa ter 7 dígitos.'; 'Linha 9: o código reduzido não pode ser 0000000.'; 'Linha 10: falta o código reduzido da conta.'"
       }
     },
     {
       "id": "c4",
-      "descricao": "Planilha sem contas ou arquivo que não é planilha é recusado inteiro com mensagem em português simples",
+      "descricao": "Erro num grupo, ou erro que não é tolerável, recusa o arquivo inteiro com uma só mensagem que conta só as causas",
       "exemplo": {
-        "entrada": "(a) planilha .xlsx só com o cabeçalho na linha 1; (b) arquivo de texto com extensão .xlsx",
-        "saida": "(a) 0 contas e a mensagem 'A planilha não tem nenhuma conta.'; (b) 0 contas e a mensagem 'Este arquivo não é uma planilha. Envie um arquivo .xlsx.'"
+        "entrada": "(a) plano de c1 com o grupo 11 sem nome; (b) o mesmo com o grupo 2 também sem nome; (c) plano de c1 mais uma analítica 1103 com: tipo em branco, tipo 'X', classificação '11.03', classificação vazia, linha de 60 caracteres, texto depois da posição 78",
+        "saida": "nenhuma conta aceita em todos; (a) 'Linha 2: falta o nome da conta. Corrija essa linha e envie o arquivo de novo.' (as contas abaixo de 11 não entram na contagem); (b) 'Linha 2: falta o nome da conta. Há mais 1 linha com problema. Corrija e envie o arquivo de novo.'; (c) a mensagem de cada erro, com 'Linha 7:' e 'Corrija essa linha e envie o arquivo de novo.'"
+      }
+    },
+    {
+      "id": "c5",
+      "descricao": "Conta sem conta superior no arquivo, ou abaixo de uma analítica, recusa o arquivo, mesmo que a linha tenha um erro que seria tolerado",
+      "exemplo": {
+        "entrada": "plano de c1 mais: (a) analítica 3101; (b) 3101 sem nome; (c) analítica 110101, abaixo da analítica 1101; (d) 110101 sem nome",
+        "saida": "(a) 'Linha 7: a conta 3101 não tem conta superior no arquivo. Corrija essa linha e envie o arquivo de novo.'; (b) a mesma mensagem de conta superior; (c) 'Linha 7: a conta 110101 está abaixo da conta analítica 1101 (linha 3). Corrija essa linha e envie o arquivo de novo.'; (d) a mesma mensagem de conta analítica; nenhuma conta aceita"
+      }
+    },
+    {
+      "id": "c6",
+      "descricao": "Reduzido ou classificação repetidos recusam o arquivo em qualquer ordem das linhas, citando as duas linhas",
+      "exemplo": {
+        "entrada": "plano de c1 mais: (a) grupo 3 e analítica 301 com o mesmo reduzido 0000009; (b) a ordem inversa; (c) duas analíticas com o mesmo reduzido; (d) analítica 202 sem nome com o reduzido 0000006 da linha 6, depois e antes da linha 6; (e) analítica 1102 repetida",
+        "saida": "nenhuma conta aceita em todos; a mensagem começa com a linha de baixo e cita a de cima, por exemplo 'Linha 8: o código reduzido 0000009 já aparece na linha 7.' e 'Linha 7: a classificação 1102 já aparece na linha 4.'"
+      }
+    },
+    {
+      "id": "c7",
+      "descricao": "Sintética sem nenhuma conta abaixo dela vira aviso e não impede a carga",
+      "exemplo": {
+        "entrada": "(a) plano de c1 mais o grupo 12 sem contas abaixo; (b) plano de c1 mais o grupo 12 e a analítica 1201 sem nome",
+        "saida": "(a) aceito, com o aviso 'Linha 7: a conta sintética 12 não tem contas abaixo dela.'; (b) aceito, sem aviso e com o erro 'Linha 8: falta o nome da conta.'"
+      }
+    },
+    {
+      "id": "c8",
+      "descricao": "O mesmo plano em UTF-8, UTF-8 com BOM, Windows-1252 e com fim de linha CRLF dá o mesmo resultado",
+      "exemplo": {
+        "entrada": "plano de c1 mais a analítica 1103 'APLICAÇÃO FINANCEIRA', gravado nas 4 codificações e fins de linha; o mesmo plano com uma linha em branco; o arquivo em UTF-8 com 1 byte inválido",
+        "saida": "as mesmas contas nos 4 casos; com a linha em branco, as contas mantêm o número da linha do arquivo; com o byte inválido: 'Linha 7: falta o tipo da conta (S ou A). Corrija essa linha e envie o arquivo de novo.'"
+      }
+    },
+    {
+      "id": "c9",
+      "descricao": "Arquivo que não é o plano em texto é recusado com mensagem em português simples, sem exceção",
+      "exemplo": {
+        "entrada": "(a) .xlsx ou outro ZIP; (b) PDF; (c) texto com byte nulo; (d) arquivo acima de 20 MiB; (e) arquivo vazio e arquivo só com linhas em branco",
+        "saida": "(a) a (d): 'Este arquivo não é um plano de contas em texto. Envie o plano de contas em arquivo .txt.'; (e) 'O arquivo não tem nenhuma conta.'; nenhuma conta e nenhuma exceção"
+      }
+    },
+    {
+      "id": "c10",
+      "descricao": "Arquivo sem nenhuma conta analítica aceita é recusado",
+      "exemplo": {
+        "entrada": "(a) só os grupos 1, 11 e 2; (b) grupos 1 e 11 e as analíticas 1101 e 1102, as duas sem nome",
+        "saida": "(a) 'O arquivo não tem nenhuma conta analítica. Confira se é o plano de contas do cliente.'; (b) 'Linha 3: falta o nome da conta. Há mais 1 linha com problema. Corrija e envie o arquivo de novo.'; nenhuma conta"
+      }
+    },
+    {
+      "id": "c11",
+      "descricao": "Espaço em branco depois da posição 78 (espaço ou tab) é ignorado; texto depois da posição 78 recusa o arquivo",
+      "exemplo": {
+        "entrada": "plano de c1 com a linha 6 seguida de: (a) um tab; (b) espaços e um tab; (c) um tab e a letra X",
+        "saida": "(a) e (b) as 6 contas de c1 aceitas, 0 erros, 0 avisos, sem recusa; (c) 'Linha 6: a linha tem texto depois da posição 78. Corrija essa linha e envie o arquivo de novo.', nenhuma conta aceita"
+      }
+    },
+    {
+      "id": "c12",
+      "descricao": "Texto nas posições 69 a 78, logo depois do tipo, recusa o arquivo; espaço em branco ali, ou linha que termina antes, é aceito",
+      "exemplo": {
+        "entrada": "plano de c1 com a linha 6 assim: (a) letra X na posição 69; (b) letra X na posição 78; (c) um tab na posição 70; (d) cortada em 70 caracteres; (e) cortada em 68 caracteres, terminando no tipo",
+        "saida": "(a) e (b) 'Linha 6: a linha tem texto depois do tipo da conta (posições 69 a 78). Corrija essa linha e envie o arquivo de novo.', nenhuma conta aceita; (c), (d) e (e) as 6 contas de c1 aceitas, 0 erros, 0 avisos, sem recusa"
       }
     }
   ],
   "verificacao": [
-    {"criterio": "c1", "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_valida_vira_lista_de_contas -q"},
-    {"criterio": "c2", "comando": "pytest tests/registry/test_planilha_plano.py::test_linha_incompleta_rejeitada_com_numero -q"},
-    {"criterio": "c3", "comando": "pytest tests/registry/test_planilha_plano.py::test_codigo_repetido_rejeitado_com_as_duas_linhas -q"},
-    {"criterio": "c4", "comando": "pytest tests/registry/test_planilha_plano.py::test_planilha_sem_contas_recusada -q"},
-    {"criterio": "c4", "comando": "pytest tests/registry/test_planilha_plano.py::test_arquivo_que_nao_e_planilha_recusado -q"}
+    {
+      "criterio": "c1",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_txt_valido_vira_lista_de_contas_com_hierarquia -q"
+    },
+    {
+      "criterio": "c2",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_nome_de_40_caracteres_colado_no_tipo -q"
+    },
+    {
+      "criterio": "c3",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_analitica_e_tolerado_com_numero_da_linha -q"
+    },
+    {
+      "criterio": "c4",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_grupo_recusa_o_arquivo_inteiro -q"
+    },
+    {
+      "criterio": "c5",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_hierarquia_invalida_recusa_o_arquivo_inteiro -q"
+    },
+    {
+      "criterio": "c6",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_repeticao_recusa_em_qualquer_ordem -q"
+    },
+    {
+      "criterio": "c7",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_sintetica_sem_filha_vira_aviso -q"
+    },
+    {
+      "criterio": "c8",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_mesmo_plano_em_utf8_windows_1252_e_crlf -q"
+    },
+    {
+      "criterio": "c9",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_que_nao_e_o_plano_recusado_sem_excecao -q"
+    },
+    {
+      "criterio": "c10",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_sem_conta_analitica_recusado -q"
+    },
+    {
+      "criterio": "c11",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_espaco_em_branco_depois_da_posicao_78_ignorado -q"
+    },
+    {
+      "criterio": "c12",
+      "comando": "pytest tests/registry/test_plano_txt.py::test_texto_nas_posicoes_69_a_78_recusa_o_arquivo -q"
+    }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-27T17:19:55Z",
+    "commit": "84efeac49d1f",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_txt_valido_vira_lista_de_contas_com_hierarquia -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_nome_de_40_caracteres_colado_no_tipo -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_analitica_e_tolerado_com_numero_da_linha -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c4",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_erro_em_grupo_recusa_o_arquivo_inteiro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c5",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_hierarquia_invalida_recusa_o_arquivo_inteiro -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c6",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_repeticao_recusa_em_qualquer_ordem -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c7",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_sintetica_sem_filha_vira_aviso -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c8",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_mesmo_plano_em_utf8_windows_1252_e_crlf -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c9",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_que_nao_e_o_plano_recusado_sem_excecao -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c10",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_arquivo_sem_conta_analitica_recusado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c11",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_espaco_em_branco_depois_da_posicao_78_ignorado -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c12",
+        "comando": "pytest tests/registry/test_plano_txt.py::test_texto_nas_posicoes_69_a_78_recusa_o_arquivo -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

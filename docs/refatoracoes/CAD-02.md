@@ -39,6 +39,9 @@ A branch tem o leitor `.xlsx` em `passing`, mas nunca entrou na `developer`. Ela
 - As **repetições** (E6, E7) são conferidas em toda linha, inclusive nas que já têm erro. É o que torna o resultado independente da ordem das linhas.
 - A **hierarquia** roda em todas as linhas com classificação legível, não só nas aceitas. Senão, uma analítica com filha passa quando a filha tem erro tolerável.
 - Os testes usam **nomes inventados** (regra 1). Os planos reais não entram no repositório.
+- **Reconstrua a imagem do contêiner quando as dependências mudarem.** O `hx verify` roda os testes no serviço `dev` do Docker: o código vem da pasta, mas as bibliotecas ficam gravadas na imagem `lastro-dev` quando ela é construída. Trocar de branch não atualiza a imagem. Rode `docker compose build dev`:
+  - **no passo 1**, se a imagem tiver sido construída a partir da `developer`, que não tem o `openpyxl`. Sem reconstruir, todo teste que importa `lastro.registry.service` falha na coleta com `ModuleNotFoundError: No module named 'openpyxl'` (login, cliente, isolamento), e não só os da planilha;
+  - **no passo 6**, depois de tirar o `openpyxl`. Com a imagem antiga, um import esquecido do `openpyxl` continua passando no teste local e só quebra na CI.
 
 ## Pronto quando
 
