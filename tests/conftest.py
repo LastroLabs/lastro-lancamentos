@@ -29,6 +29,11 @@ TOOLS_DIR = REPO_ROOT / "tools"
 GENERATOR_MODULE = "fixtures_sinteticas"  # tools/fixtures_sinteticas.py (HAR-03, D1)
 FIXTURES_FOLDER = "fixtures"  # same name as the root folder, so `hx fixtures build --check` works
 
+# Parallel runs (issue #93, plan D6, DECISIONS §12 V2): rules for tests in CODING_STANDARDS.md.
+MAX_TEST_PROCESSES = 4
+WEB_TESTS_DIR = Path(__file__).resolve().parent / "web"
+WEB_GROUP = "web"
+
 _CORE_MODULE = "_lastro_core_fixtures"
 _CORE_PATH = Path(__file__).resolve().parent / "core" / "conftest.py"
 _CORE_SPEC = importlib.util.spec_from_file_location(_CORE_MODULE, _CORE_PATH)
@@ -36,6 +41,27 @@ assert _CORE_SPEC is not None and _CORE_SPEC.loader is not None
 _CORE = importlib.util.module_from_spec(_CORE_SPEC)
 sys.modules[_CORE_MODULE] = _CORE
 _CORE_SPEC.loader.exec_module(_CORE)
+
+
+def pytest_xdist_auto_num_workers(config):
+    """Processes for `-n auto` (pyproject addopts): up to 4 for a suite or folder.
+
+    One file or one test (`path.py` or `path.py::name`, as each criterion of
+    `hx feature verify`) runs in series: starting workers would cost more than it saves.
+    """
+    for argument in config.args:
+        if "::" in argument or argument.endswith(".py"):
+            return 0
+    cpus = os.cpu_count() or 1
+    return min(MAX_TEST_PROCESSES, cpus) if cpus > 1 else 0
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(items):
+    """The WEB-01 tests share web/node_modules and web/dist: one group, so one process."""
+    for item in items:
+        if item.path.is_relative_to(WEB_TESTS_DIR):
+            item.add_marker(pytest.mark.xdist_group(WEB_GROUP))
 
 
 @pytest.fixture(scope="session")
