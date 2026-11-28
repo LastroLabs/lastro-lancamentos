@@ -1,4 +1,4 @@
-"""Public interface of the registry module (CAD-01, CAD-03; RF-CAD-01, RF-AUT-03).
+"""Public interface of the registry module (CAD-01, CAD-02, CAD-03; RF-CAD-01, RF-CAD-03, RF-AUT-03).
 
 CNPJ validation is a pure function. Client registration, list and opening take the database
 session and the `Membership` of the session (built by `api/` from the signed-in member); the
@@ -8,6 +8,7 @@ client. This module never imports `access` (plan CAD-03, D3). Access follows the
 """
 
 from collections.abc import Awaitable, Callable, Sequence
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
@@ -23,9 +24,11 @@ from lastro.core.contracts import (
 from lastro.core.service import decide_access, filter_visible_clients
 from lastro.registry import bank_accounts, repository
 from lastro.registry.banks import bank_name
+from lastro.registry.chart_txt import _read_chart_of_accounts
 from lastro.registry.cnpj import _validate_cnpj
 from lastro.registry.contracts import (
     BankAccountSummary,
+    ChartOfAccountsResult,
     ClientNotAssignedError,
     ClientNotFoundError,
     ClientSummary,
@@ -60,6 +63,25 @@ def validate_cnpj(cnpj: str) -> CnpjValidationResult:
         valid, or a plain-Portuguese refusal message when invalid.
     """
     return _validate_cnpj(cnpj)
+
+
+def read_chart_of_accounts(source: bytes | Path) -> ChartOfAccountsResult:
+    """Read and validate the client's chart of accounts exported as text (CAD-02).
+
+    Bad content never raises: it becomes `refusal`, or a message in `errors` or
+    `warnings`. The rule is in docs/modulos/registry.md.
+
+    Args:
+        source: raw bytes of the uploaded file, or the path of the file.
+
+    Returns:
+        The accepted accounts in file order with tolerated errors and warnings, or
+        a single refusal message.
+
+    Raises:
+        OSError: `source` is a path that does not exist or cannot be read (plan D2).
+    """
+    return _read_chart_of_accounts(source)
 
 
 async def register_client(
@@ -314,28 +336,30 @@ async def update_bank_account(
         parsed_account = UUID(account_id)
     except ValueError as error:
         raise ClientNotFoundError from error
-    current = await repository.find_bank_account(
-        db, firm_id, parsed_client, parsed_account
-    )
-    if current is None:
-        raise ClientNotFoundError
-
-    nickname = current.nickname
-    if "nickname" in changes:
-        nickname = bank_accounts.clean_nickname(changes["nickname"])
-    if "bank" in changes and (changes["bank"] or "").strip() != current.bank:
-        raise InvalidBankAccountDataError(bank_accounts.BANK_CHANGE_MESSAGE)
-    bank_accounts.check_nickname_length(nickname)
-    first = current.first_month
-    last = current.last_month
-    if "first_month" in changes:
-        first = bank_accounts.parse_month(changes["first_month"])
-    if "last_month" in changes:
-        last = bank_accounts.parse_month(changes["last_month"])
-    bank_accounts.check_month_order(first, last)
-
     try:
+        # Lock first, read after: a PATCH that waited here must see what the one before it
+        # committed, or it would write back the old nickname or month (rubric CAD-04).
         await repository.lock_client(db, firm_id, parsed_client)
+        current = await repository.find_bank_account(
+            db, firm_id, parsed_client, parsed_account
+        )
+        if current is None:
+            raise ClientNotFoundError
+
+        nickname = current.nickname
+        if "nickname" in changes:
+            nickname = bank_accounts.clean_nickname(changes["nickname"])
+        if "bank" in changes and (changes["bank"] or "").strip() != current.bank:
+            raise InvalidBankAccountDataError(bank_accounts.BANK_CHANGE_MESSAGE)
+        bank_accounts.check_nickname_length(nickname)
+        first = current.first_month
+        last = current.last_month
+        if "first_month" in changes:
+            first = bank_accounts.parse_month(changes["first_month"])
+        if "last_month" in changes:
+            last = bank_accounts.parse_month(changes["last_month"])
+        bank_accounts.check_month_order(first, last)
+
         existing = await repository.list_bank_accounts(db, firm_id, parsed_client)
         _check_nickname_free(existing, nickname, parsed_account)
         await repository.update_bank_account(

@@ -8,7 +8,7 @@
   "prioridade": "must",
   "onda": 2,
   "essencial": false,
-  "estado": "not_started",
+  "estado": "passing",
   "responsavel": "RaissaOliveira19",
   "depende_de": [
     "HAR-03"
@@ -55,5 +55,25 @@
       "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_plano_txt_sem_documento_em_50_sementes -q"
     }
   ],
-  "evidencia": null
+  "evidencia": {
+    "verificado_em": "2026-11-27T14:43:13Z",
+    "commit": "5bd0bc576246",
+    "resultados": [
+      {
+        "criterio": "c1",
+        "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_build_gera_plano_txt_por_cliente -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c2",
+        "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_plano_sintetico_tem_grupos_e_analiticas -q",
+        "resultado": "ok"
+      },
+      {
+        "criterio": "c3",
+        "comando": "pytest tests/harness/test_fixtures_plano_txt.py::test_plano_txt_sem_documento_em_50_sementes -q",
+        "resultado": "ok"
+      }
+    ]
+  }
 }

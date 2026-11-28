@@ -18,10 +18,10 @@
   "criterios": [
     {
       "id": "c1",
-      "descricao": "hx fixtures build gera, com a semente padrão, o cadastro sintético de dois escritórios, com o plano de contas de cada cliente também em planilha",
+      "descricao": "hx fixtures build gera, com a semente padrão, o cadastro sintético de dois escritórios, com o plano de contas de cada cliente também em TXT",
       "exemplo": {
         "entrada": "pasta fixtures/ vazia; roda hx fixtures build sem opções (semente padrão)",
-        "saida": "código de saída 0; ESC-1 com chefe_1, contador_a e contador_b e os clientes EMP-1 (responsável contador_a) e EMP-2 (responsável contador_b); ESC-2 com chefe_2, contador_x e o cliente EMP-9 (responsável contador_x); cada cliente com ao menos 1 conta bancária (banco e apelido), ao menos 1 sócio (nome) e um plano de contas com código e nome por conta, uma delas marcada como transitória; o plano de cada cliente também sai como planilha .xlsx com cabeçalho 'código' e 'nome' na linha 1"
+        "saida": "código de saída 0; ESC-1 com chefe_1, contador_a e contador_b e os clientes EMP-1 (responsável contador_a) e EMP-2 (responsável contador_b); ESC-2 com chefe_2, contador_x e o cliente EMP-9 (responsável contador_x); cada cliente com ao menos 1 conta bancária (banco e apelido), ao menos 1 sócio (nome) e um plano de contas com código e nome por conta, uma delas marcada como transitória; o plano de cada cliente também sai como TXT de 78 colunas, com grupos e analíticas"
       }
     },
     {
@@ -61,7 +61,7 @@
       "descricao": "O cadastro e o gabarito saem num formato fixo, que outros módulos (CAD-05, IA-02) leem sem depender do gerador",
       "exemplo": {
         "entrada": "fixtures/ gerada com a semente padrão; lê fixtures/cadastro.json e, para cada conta bancária, o gabarito indicado nele",
-        "saida": "fixtures/cadastro.json é JSON UTF-8 com as chaves semente (inteiro) e escritorios; cada escritório tem id (ex.: 'ESC-1'), usuarios (lista de {handle, papel}, papel 'chefe' ou 'contador') e clientes; cada cliente tem id (ex.: 'EMP-1'), nome, responsavel (um handle de usuarios do mesmo escritório), socios (lista de {nome}), plano (lista de {codigo, nome, transitoria}, com exatamente 1 transitoria = true), plano_planilha (caminho relativo do .xlsx) e contas_bancarias (lista de {banco com 3 dígitos, apelido, ofx, gabarito}, caminhos relativos a fixtures/); nenhum campo de CNPJ; cada gabarito é JSON UTF-8 com cliente, banco, apelido, saldo_inicial_centavos e saldo_final_centavos (inteiros) e movimentacoes (lista de {data no formato AAAA-MM-DD, valor_centavos inteiro com sinal, descricao, id_transacao igual ao FITID do OFX, conta_correta igual a um codigo do plano do cliente}); todo caminho citado existe"
+        "saida": "fixtures/cadastro.json é JSON UTF-8 com as chaves semente (inteiro) e escritorios; cada escritório tem id (ex.: 'ESC-1'), usuarios (lista de {handle, papel}, papel 'chefe' ou 'contador') e clientes; cada cliente tem id (ex.: 'EMP-1'), nome, responsavel (um handle de usuarios do mesmo escritório), socios (lista de {nome}), plano (lista de {codigo, classificacao, reduzido, nome, tipo, transitoria}, com exatamente 1 transitoria = true), plano_txt (caminho relativo do .txt) e contas_bancarias (lista de {banco com 3 dígitos, apelido, ofx, gabarito}, caminhos relativos a fixtures/); nenhum campo de CNPJ; cada gabarito é JSON UTF-8 com cliente, banco, apelido, saldo_inicial_centavos e saldo_final_centavos (inteiros) e movimentacoes (lista de {data no formato AAAA-MM-DD, valor_centavos inteiro com sinal, descricao, id_transacao igual ao FITID do OFX, conta_correta igual a um codigo do plano do cliente}); todo caminho citado existe"
       }
     }
   ],
@@ -69,10 +69,6 @@
     {
       "criterio": "c1",
       "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q"
-    },
-    {
-      "criterio": "c1",
-      "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q"
     },
     {
       "criterio": "c2",
@@ -128,17 +124,12 @@
     }
   ],
   "evidencia": {
-    "verificado_em": "2026-11-24T18:47:28Z",
-    "commit": "aa057a6f8ce0",
+    "verificado_em": "2026-11-27T14:43:52Z",
+    "commit": "460b4d697c1e",
     "resultados": [
       {
         "criterio": "c1",
         "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_cadastro_dos_dois_escritorios -q",
-        "resultado": "ok"
-      },
-      {
-        "criterio": "c1",
-        "comando": "pytest tests/harness/test_fixtures.py::test_build_gera_planilha_do_plano_por_cliente -q",
         "resultado": "ok"
       },
       {
