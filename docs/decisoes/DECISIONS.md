@@ -219,3 +219,27 @@ A contadora confirmou que o plano chega do Domínio como **texto de largura fixa
 | `tests/access/test_period_link_schema.py` | `test_db03_migracao_reversivel` (c4) | DB-03 | DB-04 | subir até a `0004` no lugar de `head` (constante `DB03_REVISION`); o corpo não muda |
 
 Não mudam e servem de termômetro (o `pytest` completo tem de passar sem tocá-los): os outros testes da DB-02, DB-03, DB-01, CAD-03, IA-02 (`tests/ai/test_gateway_vazamento.py`, que passa a ver os grupos sem quebrar), NUC-03 (`tests/core/test_isolamento_banco.py`), `tests/conftest.py`, `tests/harness/test_session_fixture.py` e `test_build_aborta_se_linha_tiver_documento_valido` (este obriga o gerador a ter limite de tentativas).
+
+## 12. Tempo do `hx verify` — 27/11/2026
+
+A suíte completa leva ~18 min no Docker Desktop do Windows e ~10 min na CI (limite de 15 min no `pr.yml`). O plano `planos/perf-93/plan.md` (issue #93) reduz o tempo sem tirar teste e sem mudar o que cada teste prova: bytecode pré-compilado, `node_modules` do front num volume, um PostgreSQL só, banco-modelo por revisão e paralelo com `pytest-xdist`. Esta seção autoriza, por escrito, a mudança de **fixtures** em `tests/` (exceção à regra 3 do `AGENTS.md`).
+
+| # | Data | Status | Decisão | Por quê | Afeta |
+|---|---|---|---|---|---|
+| V1 | 2026-11-27 | aprovada por caio-nascime (líder) | **Exceção escrita à regra 3, só para fixtures.** Só os itens da tabela abaixo podem mudar, só na branch `perf/93-hx-verify-rapido`. Nenhum `def test_` muda, nenhuma asserção sai, e cada fixture de banco continua entregando a mesma revisão de antes. Qualquer outro teste que falhar é erro na implementação, não autorização. No PR, marcar `git diff developer -- tests/` como "mudou", com o link desta linha. Revisão: camposs04 (CODEOWNERS de `/tools/`). | Preparar o banco migrado custa ~5 s por teste em ~80 testes; o comportamento provado não depende de como o banco foi preparado. | NUC-01, DB-01, DB-02, DB-03, NUC-03, ACE-01, ACE-02, ADM-01, CAD-03, WEB-01 |
+| V2 | 2026-11-27 | aprovada | Paralelo pela configuração do pytest (`addopts` no `pyproject.toml` e gancho no `tests/conftest.py`), sem mudar o `hx`: a suíte roda em até 4 processos; um comando que aponta um teste (`::`), como no `hx feature verify`, roda em série. Biblioteca: `pytest-xdist` (comparação no plano, D5). | O `tests/harness/test_fase_c.py` fixa o passo `pytest -q`; o paralelo vale para qualquer forma de chamar o pytest. | todas |
+| V3 | 2026-11-27 | aprovada | Teste novo segue as regras de "Testes em paralelo" do `CODING_STANDARDS.md` (seção 2). | Teste que divide arquivo, nome, ordem ou estado global falha "às vezes" em paralelo. | todas |
+
+### V1 — fixtures autorizadas a mudar
+
+| Arquivo | Item | Mudança permitida |
+|---|---|---|
+| `tests/conftest.py` | novo: `postgres_server`, fábrica de bancos-modelo por revisão, gancho `pytest_xdist_auto_num_workers`, grupo `xdist_group` dos itens de `tests/web/` | acrescentar; o que já existe não muda |
+| `tests/core/conftest.py` | `postgres_server` | sai daqui (passa ao `tests/conftest.py`, mesmo corpo) |
+| `tests/core/conftest.py` | `migrated_database` | clona o modelo em `head` no lugar de `alembic upgrade head` |
+| `tests/access/conftest.py` | `migrated_database` | clona o modelo em `0002` no lugar de `alembic upgrade 0002` |
+| `tests/access/conftest.py`, `tests/registry/conftest.py` | reatribuição de `postgres_server` | apagar a linha (a fixture vem do `tests/conftest.py`) |
+| `tests/access/test_login.py` | fixture `head_database` | clona o modelo em `head` |
+| `tests/access/test_period_link_schema.py` | fixture `head_database` | clona o modelo em `head` |
+
+Não mudam e servem de termômetro: `fresh_database`, `run_alembic_upgrade`, os testes que sobem e descem migrações no próprio corpo (`test_identity_schema.py`, `test_period_link_schema.py` c4, `test_registry_schema.py` c4, `tests/core/test_migracoes.py`) e as fixtures `database_at_db02` e `database_at_db04` da DB-04 (PR #92), que continuam rodando o alembic.

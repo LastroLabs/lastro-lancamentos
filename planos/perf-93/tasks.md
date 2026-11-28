@@ -3,7 +3,7 @@
 **Plan:** planos/perf-93/plan.md · **Issue:** #93 · **Ficha:** nenhuma
 **Ordem:** T1 → T2 → T3 (sem tocar em `tests/`) → T4 (exceção aprovada por humano) → T5 → T6 → T7 (paralelo) → T8. Um commit por task. Medir depois de cada uma.
 
-> Sem ficha não há testes novos a escrever primeiro: o comportamento (o que cada teste prova) não muda. A T1 troca o "testes antes" por "medição antes", e a prova de cada task é a suíte inteira verde **com o mesmo número de testes** (528 na `developer` de 27/11).
+> Sem ficha não há testes novos a escrever primeiro: o comportamento (o que cada teste prova) não muda. A T1 troca o "testes antes" por "medição antes", e a prova de cada task é a suíte inteira verde **com o mesmo número de testes** (524 nesta branch, base `developer` de 27/11; 528 depois do rebase com o #92).
 
 ---
 
@@ -27,7 +27,7 @@
 - **Arquivos:** `Dockerfile`
 - **Não criar:** passo `compileall` separado; mudança no `docker-compose.yml`
 - **Fora do escopo:** compilar a biblioteca padrão do Python (`python -c pass` já leva 0,14 s)
-- **Pronto quando:** `docker compose build dev` e `pytest -q --durations=25` verdes, com 528 testes; tempo anotado na #93
+- **Pronto quando:** `docker compose build dev` e `pytest -q --durations=25` verdes, com o mesmo número da T1; tempo anotado na #93
 
 ## [ ] T3 · `node_modules` do front num volume nomeado (D2)
 - **Regra (em linguagem simples):** o build e o Vitest leem milhares de arquivos do `node_modules`. Pela pasta compartilhada com o Windows isso é lento; num volume do Docker é rápido. Os 4 testes do front continuam rodando tudo.
@@ -62,7 +62,7 @@
 - **Arquivos:** só os da lista da T4
 - **Reaproveitar:** `PostgresServer`, `FreshDatabase`, `connect`, `_set_password` · **Não criar:** plugin novo (só se o A da D4 falhar; registrar)
 - **Fora do escopo:** banco-modelo (T6)
-- **Pronto quando:** `pytest -q` completo verde, 528 testes, um container só
+- **Pronto quando:** `pytest -q` completo verde, o mesmo número de testes da T1, um container só
 
 ## [ ] T6 · Banco-modelo por revisão (D3)
 - **Regra (em linguagem simples):** em vez de cada teste migrar um banco vazio (~5 s), o banco é migrado uma vez por revisão e cada teste recebe uma cópia em menos de 1 s. Os testes de migração continuam migrando do zero, porque é isso que provam.
@@ -77,7 +77,7 @@
 - **Arquivos:** só os da lista da T4
 - **Reaproveitar:** `run_alembic_upgrade`, `process_output`, `FreshDatabase` · **Não criar:** `pg_dump`; cache entre execuções
 - **Fora do escopo:** `database_at_db02`/`database_at_db04` (DB-04, pergunta 5); paralelo
-- **Pronto quando:** `pytest -q --durations=25` completo verde com 528 testes; `git diff developer -- tests/` só nas fixtures da T4, sem `def test_` alterado
+- **Pronto quando:** `pytest -q --durations=25` completo verde com o mesmo número da T1; `git diff developer -- tests/` só nas fixtures da T4, sem `def test_` alterado
 
 ## [ ] T7 · Testes em paralelo com `pytest-xdist` (D5, D6, D7)
 - **Regra (em linguagem simples):** em vez de um teste por vez, a suíte roda em até 4 processos. Um teste rodado sozinho (`feature verify`) continua em série. As regras para escrever teste seguro em paralelo estão no `CODING_STANDARDS.md`, seção 2.
@@ -86,7 +86,7 @@
   - [ ] `pyproject.toml` ganha `[tool.pytest.ini_options]` com `addopts = "-n auto --dist loadgroup"`
   - [ ] `tests/conftest.py`: `pytest_xdist_auto_num_workers` devolve até 4 (limitado pelos CPUs) e **0** quando algum argumento tem `::`; os itens de `tests/web/` recebem `xdist_group` (um grupo só)
   - [ ] O `hx` (`tools/harness.py`), o `pr.yml` e o `tests/harness/test_fase_c.py` não mudam
-  - [ ] `pytest -q` completo verde **3 vezes seguidas**, com 528 testes; `pytest -n 0 -q` também verde
+  - [ ] `pytest -q` completo verde **3 vezes seguidas**, com o mesmo número da T1; `pytest -n 0 -q` também verde
   - [ ] `hx feature verify` de uma ficha `passing` qualquer (ex.: DB-03) roda cada critério em série e continua OK
   - [ ] Durante a suíte, no máximo 4 containers `postgres:18` de teste (D7)
 - **Exemplos:** `pytest -q` → "created: 4/4 workers"; `pytest tests/x.py::test_y -q` → sem workers.

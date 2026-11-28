@@ -115,7 +115,7 @@ Baixar o `hx verify` para 3–4 min sem tirar teste e sem mudar asserção. Orde
 - **Timeout de 15 min da CI** → hoje a CI leva ~10 min. O plano reduz esse tempo e não mexe no limite.
 
 ## 8. Aprovação
-- [ ] Pergunta 1 respondida (exceção registrada no `DECISIONS.md`)
+- [x] Pergunta 1 respondida (exceção registrada no `DECISIONS.md` §12, V1)
 - [x] Decisões D1 a D4 confirmadas
 - [x] Decisões D5 a D7 (paralelo) confirmadas
 - [x] Plan e tasks revisados por caio-nascime em 27/11
