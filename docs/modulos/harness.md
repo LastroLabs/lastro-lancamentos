@@ -11,7 +11,7 @@ O `hx` roda no host e só usa a biblioteca padrão do Python. Este documento reg
 ## Velocidade do `hx verify` (issue #93)
 
 A suíte completa caiu de ~22 min para poucos minutos sem tirar teste (`planos/perf-93/plan.md`, `DECISIONS.md` §12):
-- **Paralelo:** `pytest` roda em até 4 processos (`pytest-xdist`, `addopts` no `pyproject.toml`). Um arquivo ou um teste (`::`, como em cada critério do `hx feature verify`) roda em série. Para investigar uma falha em série: `pytest -n 0`. Regras para escrever teste seguro em paralelo: `CODING_STANDARDS.md`, seção 2.
+- **Paralelo:** `pytest` roda em até 4 processos (`pytest-xdist`, `addopts` no `pyproject.toml`). Um arquivo (`.py`) ou um teste (`::`, como em cada critério do `hx feature verify`) roda em série. Para investigar uma falha em série: `pytest -n 0`. Regras para escrever teste seguro em paralelo: `CODING_STANDARDS.md`, seção 2.
 - **Banco migrado:** as fixtures `migrated_database` e `head_database` copiam um banco-modelo já migrado (`CREATE DATABASE ... TEMPLATE`), criado uma vez por revisão e por processo (`tests/conftest.py`). Testes que sobem e descem migrações continuam usando `fresh_database`.
 - **Um PostgreSQL por processo**, definido só em `tests/conftest.py` (`postgres_server`).
 - **Front:** `web/node_modules` e a store do pnpm ficam no volume Docker `web-node-modules` (`docker-compose.yml`), não na pasta compartilhada. Para recomeçar do zero: `docker compose --profile dev down` e `docker volume rm <projeto>_web-node-modules` (o prefixo é o nome da pasta do repositório; ex.: `lastro_web-node-modules`). A pasta antiga `.pnpm-store/` na raiz do repositório (ignorada pelo Git) deixa de ser usada e pode ser apagada.
