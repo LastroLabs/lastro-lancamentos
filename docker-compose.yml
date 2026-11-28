@@ -70,6 +70,11 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      # Issue #93: the front dependencies live in a Docker volume, not in the bind-mounted
+      # folder, which is slow on Docker Desktop (Vite build 21 s -> 4 s, Vitest 28 s -> 3 s).
+      # The host keeps its own web/node_modules for the editor. To reset: `docker volume rm`
+      # on the `web-node-modules` volume of this project.
+      - web-node-modules:/app/web/node_modules
     depends_on:
       - docker-proxy
     environment:
@@ -106,3 +111,4 @@ services:
 
 volumes:
   db-data:
+  web-node-modules:

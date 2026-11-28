@@ -38,12 +38,18 @@ COPY --from=node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a94379
 RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm install -g pnpm@12.23.0 \
     && rm -rf /root/.npm
-# `docker compose run --user uid:gid` has no HOME: send only the pnpm store and the XDG dirs
-# (used by Node tools) to /tmp. HOME and CI are NOT set, so pytest and ruff behave as before.
-ENV npm_config_store_dir=/tmp/pnpm-store \
+# `docker compose run --user uid:gid` has no HOME: send the XDG dirs (used by Node tools) to
+# /tmp. HOME and CI are NOT set, so pytest and ruff behave as before.
+# The pnpm store lives in the `web-node-modules` volume (docker-compose.yml, issue #93): same
+# disk as node_modules, kept between runs. pnpm 12 reads only `pnpm_config_*` (the old
+# `npm_config_store_dir` was ignored and the store went to /app/.pnpm-store, in the repository).
+ENV pnpm_config_store_dir=/app/web/node_modules/.pnpm-store \
     XDG_CACHE_HOME=/tmp/.cache \
     XDG_DATA_HOME=/tmp/.local/share \
     XDG_STATE_HOME=/tmp/.local/state
+# Mount point of the volume. A new volume copies this folder's mode, so it is writable by the
+# `--user uid:gid` the hx uses on Linux (tested with --user 1000:1000 on 27/11/2026).
+RUN mkdir -p /app/web/node_modules && chmod 0777 /app/web/node_modules
 
 # --locked: the build fails if uv.lock is out of date with pyproject.toml.
 RUN --mount=type=cache,target=/root/.cache/uv \
