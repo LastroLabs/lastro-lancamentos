@@ -185,10 +185,10 @@ def _run_alembic(database, *arguments):
 
 
 @pytest.fixture
-def head_database(fresh_database):
-    """Fresh database at `alembic upgrade head`; the shared fixture stays at 0002."""
-    _run_alembic(fresh_database, "upgrade", "head")
-    return fresh_database
+def head_database(database_templates):
+    """Fresh database at `head` (copy of the template, issue #93); the shared fixture stays at 0002."""
+    with database_templates.cloned("head") as database:
+        yield database
 
 
 def _act_as(conn, firm):

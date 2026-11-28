@@ -150,8 +150,7 @@ def process_output(result, limit=2000):
 
 
 @pytest.fixture
-def migrated_database(fresh_database):
-    """Fresh database with every migration applied."""
-    result = run_alembic_upgrade(fresh_database)
-    assert result.returncode == 0, f"alembic upgrade head failed:\n{process_output(result)}"
-    return fresh_database
+def migrated_database(database_templates):
+    """Fresh database with every migration applied: a copy of the `head` template (issue #93)."""
+    with database_templates.cloned("head") as database:
+        yield database

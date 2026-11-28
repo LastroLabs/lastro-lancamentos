@@ -1,8 +1,6 @@
 """Reuse NUC-01 fixtures under an unambiguous module name, without a second bootstrap."""
 
 import importlib.util
-import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -30,21 +28,10 @@ fresh_database = _CORE.fresh_database
 
 
 @pytest.fixture
-def migrated_database(fresh_database):
-    """Keep DB-01 checks pinned to revision 0002 as later features add tables."""
-    result = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "0002"],
-        cwd=REPO_ROOT,
-        env={
-            **os.environ,
-            "PYTHONPATH": str(REPO_ROOT / "src"),
-            "DATABASE_URL": fresh_database.database_url,
-            "MIGRATIONS_DATABASE_URL": fresh_database.migrations_database_url,
-        },
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, process_output(result)
-    return fresh_database
+def migrated_database(database_templates):
+    """Keep DB-01 checks pinned to revision 0002 as later features add tables.
+
+    A copy of the `0002` template instead of running Alembic per test (issue #93).
+    """
+    with database_templates.cloned("0002") as database:
+        yield database

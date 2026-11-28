@@ -13,8 +13,12 @@ shares one container per test process (issue #93, DECISIONS §12, V1). Its helpe
 `tests/core/conftest.py`, loaded below under its own name, as `access` and `registry` do.
 """
 
+import contextlib
 import importlib
 import importlib.util
+import os
+import secrets
+import subprocess
 import sys
 from pathlib import Path
 
@@ -74,6 +78,103 @@ def postgres_server():
         yield server
     finally:
         container.stop()
+
+
+class _DatabaseTemplates:
+    """One migrated database per Alembic revision, cloned for each test (issue #93, plan D3).
+
+    Running the migrations costs ~5 s per database; `CREATE DATABASE ... TEMPLATE` copies a
+    migrated one in a fraction of a second. A template is migrated the first time a revision
+    is asked for, by the same `alembic upgrade` the fixtures ran before, then closed to
+    connections, because the copy needs it idle. Tests that move between revisions keep using
+    `fresh_database` and run Alembic themselves: that is what they prove.
+    """
+
+    def __init__(self, server):
+        self._server = server
+        self._names = {}
+
+    def _database(self, name):
+        return _CORE.FreshDatabase(server=self._server, name=name)
+
+    def _execute(self, query):
+        with _CORE.connect(self._database("postgres").conninfo(_CORE.SUPERUSER)) as conn:
+            conn.execute(query)
+
+    def _template(self, revision):
+        if revision in self._names:
+            return self._names[revision]
+        sql = _CORE._psycopg().sql
+        name = f"template_{revision}_{secrets.token_hex(4)}"
+        self._execute(
+            sql.SQL("CREATE DATABASE {} OWNER {}").format(
+                sql.Identifier(name), sql.Identifier(_CORE.OWNER_ROLE)
+            )
+        )
+        result = _alembic_upgrade(self._database(name), revision)
+        if result.returncode != 0:
+            pytest.fail(
+                f"alembic upgrade {revision} failed on the template database:\n"
+                f"{_CORE.process_output(result)}"
+            )
+        self._execute(
+            sql.SQL("ALTER DATABASE {} WITH ALLOW_CONNECTIONS false").format(sql.Identifier(name))
+        )
+        self._names[revision] = name
+        return name
+
+    @contextlib.contextmanager
+    def cloned(self, revision):
+        """New database at `revision`, owned by `lastro_owner`, dropped when the block ends."""
+        sql = _CORE._psycopg().sql
+        template = self._template(revision)
+        name = f"test_{secrets.token_hex(6)}"
+        self._execute(
+            sql.SQL("CREATE DATABASE {} TEMPLATE {} OWNER {}").format(
+                sql.Identifier(name), sql.Identifier(template), sql.Identifier(_CORE.OWNER_ROLE)
+            )
+        )
+        try:
+            yield self._database(name)
+        finally:
+            self._drop(name)
+
+    def _drop(self, name):
+        sql = _CORE._psycopg().sql
+        self._execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(name)))
+
+    def drop_templates(self):
+        for name in self._names.values():
+            self._drop(name)
+        self._names.clear()
+
+
+def _alembic_upgrade(database, revision):
+    """`alembic upgrade <revision>` as the migration owner, as the fixtures ran it before."""
+    return subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", revision],
+        cwd=REPO_ROOT,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(REPO_ROOT / "src"),
+            "DATABASE_URL": database.database_url,
+            "MIGRATIONS_DATABASE_URL": database.migrations_database_url,
+        },
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+
+@pytest.fixture(scope="session")
+def database_templates(postgres_server):
+    """Factory of migrated databases: `with database_templates.cloned("head") as db: ...`."""
+    templates = _DatabaseTemplates(postgres_server)
+    try:
+        yield templates
+    finally:
+        templates.drop_templates()
 
 
 @pytest.fixture(scope="session")
